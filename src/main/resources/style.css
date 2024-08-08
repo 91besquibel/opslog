@@ -1,0 +1,74 @@
+/*
+Oracle CSS Guide
+https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html
+
+color scheme:
+Root Background: -fx-background-color:  #0D0D0D;
+primary: -fx-Border-color:  #2c2c44;
+secondary: -fx-background-color:  #5A5A5A;
+
+text: -fx-text-fill:  #FFFFFF;
+font: -fx-font-family: 'sans-serif';
+size: -fx-font-size: 14px;
+style: -fx-font-style: normal;
+
+
+focus: -fx-border-color:  #0080FF;
+selected: -fx-background-color:  #2c2c44;
+hover: -fx-background-color:  #;
+
+Image: -fx-image: url('path/to/image.png');
+Image: color #FFFFFF
+*/
+
+/*Main screen -----------------------------------------------------------------------------*/
+
+/*Global font setting
+    *, * > * {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: 'sans-serif';
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+}*/
+.split-pane:horizontal > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+.split-pane:vertical > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+
+.table-view .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+.table-view .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+
+.table-view .scroll-bar:vertical .increment-button,
+.table-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.table-view .scroll-bar:horizontal .increment-button,
+.table-view .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.table-view .scroll-bar:vertical .increment-arrow,
+.table-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.table-view .scroll-bar:horizontal .increment-arrow,
+.table-view .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
