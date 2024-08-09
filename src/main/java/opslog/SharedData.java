@@ -37,10 +37,10 @@ public class SharedData{
 	public static final ObservableList<String[]> Main_Path_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Backup_Path_List = FXCollections.observableArrayList();
 
-	public static final ObservableList<String[]> Time_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Parent_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Child_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Profile_List = FXCollections.observableArrayList();
+	public static final ObservableList<String> Time_List = FXCollections.observableArrayList();
 
 	public static final List<String> myList = new ArrayList<String>();
 	
@@ -210,15 +210,13 @@ public class SharedData{
 		return pastTime;
 	}
 
-	private static List<String> timeListPopulate(){
-		List<String> timeList = new ArrayList<String>();
+	private static void timeListPopulate(){
 		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
 		LocalTime time = LocalTime.of(0, 0);
 		while (!time.equals(LocalTime.of(23, 55))) {
-			timeList.add(time.format(timeFormatter));
+			Time_List.add(time.format(timeFormatter));
 			time = time.plusMinutes(5);
 		}
-		return timeList;
 	}
 }

@@ -13,6 +13,8 @@ import javafx.beans.value.ObservableObjectValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -175,13 +177,13 @@ public class Factory{
 			secondary_Background_Fill_Zero.set(new BackgroundFill(newColor, zero_CornerRadii, insets));
 			secondary_Background_Property_Zero.set(new Background(secondary_Background_Fill_Zero.get()));
 		});
-	}
+	}   
 	
 	// Factories for cards
 	public static void card(VBox card){
 		card.backgroundProperty().bind(primary_Background_Property);
 	}
-	
+
 	// Factories
 	public static HBox label_Factory(Label label, double width, double height){
 		label.setAlignment(Pos.CENTER);
@@ -232,35 +234,18 @@ public class Factory{
 		hbox.setPrefWidth(hbox_Width);
 		return hbox;
 	}
-	public static Button one_button_Factory( String image_Standard, String image_Hover){
+	public static Button one_Button_Factory(EventHandler<ActionEvent> button_Action, String image_Standard, String image_Hover){
 		Button button = new Button();
 		make_Button(button, image_Standard, image_Hover);// "/IconLib/eventIW.png" , "/IconLib/eventIG.png"
 		return button;
 	}
-	public static HBox two_button_Factory(String first_Image_Standard, String first_Image_Hover, String second_Image_Standard, String second_Image_Hover){
+	public static HBox two_button_Factory(EventHandler<ActionEvent> first_Button_Action,String first_Image_Standard, String first_Image_Hover, EventHandler<ActionEvent> second_Button_Action, String second_Image_Standard, String second_Image_Hover){
 		Button first_Button = new Button();
 		make_Button(first_Button, first_Image_Standard, first_Image_Hover);
 		Button second_Button = new Button();
 		make_Button(second_Button, second_Image_Standard, second_Image_Hover);
 		
 		HBox hbox = new HBox(first_Button, second_Button);
-		hbox.setPadding(new Insets(standard_Padding, standard_Padding, standard_Padding, standard_Padding));
-		hbox.setSpacing(standard_Spacing);
-		hbox.setPrefHeight(hbox_Height);
-		hbox.setPrefWidth(hbox_Width);
-		hbox.setAlignment(Pos.CENTER_RIGHT);
-
-		return hbox;
-	}
-	public static HBox three_Button_Factory( String first_Image_Standard, String first_Image_Hover, String second_Image_Standard, String second_Image_Hover, String third_Image_Standard, String third_Image_Hover){
-		Button first_Button = new Button();
-		make_Button(first_Button, first_Image_Standard, first_Image_Hover);
-		Button second_Button = new Button();
-		make_Button(second_Button, second_Image_Standard, second_Image_Hover);
-		Button third_Button = new Button();
-		make_Button(third_Button, third_Image_Standard, third_Image_Hover);
-		
-		HBox hbox = new HBox(first_Button, second_Button, third_Button);
 		hbox.setPadding(new Insets(standard_Padding, standard_Padding, standard_Padding, standard_Padding));
 		hbox.setSpacing(standard_Spacing);
 		hbox.setPrefHeight(hbox_Height);
@@ -328,9 +313,15 @@ public class Factory{
 		hbox.setPrefWidth(hbox_Width);
 		return hbox;
 	}
-	public static HBox listView_Factory(double width, double height, ObservableList<String> selected_List, ObservableList<String[]> selectable_List, SelectionMode selectionMode){
+	public static HBox listView_Multiple_Factory(double width, double height, ObservableList<String> selected_List, ObservableList<String[]> selectable_List, SelectionMode selectionMode){
 		ListView<String> listView = new ListView<>();
 		make_ListView(listView, width, height, selected_List, selectable_List, selectionMode);
+		HBox hbox = new HBox(listView);
+		return hbox;
+	}
+	public static HBox listView_Single_Factory(double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List, SelectionMode selectionMode){
+		ListView<String> listView = new ListView<>();
+			make_ListView_Single(listView, width, height, selected_List, selectable_List, selectionMode);
 		HBox hbox = new HBox(listView);
 		return hbox;
 	}
@@ -882,6 +873,88 @@ public class Factory{
 			listView.refresh(); // Refresh the ListView to reflect changes
 		});
 	}
+	private static void make_ListView_Single(ListView<String> listView, double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List, SelectionMode selectionMode) {
+		listView.setPrefWidth(width);
+		listView.setPrefHeight(height);
+		listView.setEditable(false);
+		listView.setFocusTraversable(true);
+		listView.backgroundProperty().bind(primary_Background_Property);
+		listView.borderProperty().bind(standard_Border_Property);
+		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
+
+		listView.setCellFactory(lv -> {
+			ListCell<String> cell = new ListCell<>() {
+				private final Text text = new Text();
+
+				{
+					text.fillProperty().bind(text_Color);
+					text.fontProperty().bind(text_Property);
+					text.setTextAlignment(TextAlignment.CENTER);
+					text.wrappingWidthProperty().bind(listView.widthProperty());
+					setGraphic(text);
+					text.textProperty().bind(itemProperty());
+				}
+
+				@Override
+				protected void updateItem(String item, boolean empty) {
+					super.updateItem(item, empty);
+					if (empty || item == null) {
+						setText(null);
+						setGraphic(null);
+						setBackground(null);
+					} else {
+						setText(item);
+						text.setText(item);
+						if (listView.getSelectionModel().isSelected(getIndex())) {
+							backgroundProperty().bind(selected_Background_Property);
+						} else {	
+							backgroundProperty().bind(secondary_Background_Property);				
+						}
+						if (listView.getFocusModel().isFocused(getIndex())){
+							borderProperty().bind(focus_Border_Property);
+						} else {
+							borderProperty().bind(standard_Border_Property);
+						}
+					}
+				}
+			};
+
+			cell.setAlignment(Pos.CENTER);
+			cell.minWidthProperty().bind(listView.widthProperty());
+			cell.prefWidthProperty().bind(listView.widthProperty());
+			cell.setPadding(new Insets(5.0)); // Top, right, bottom, left
+
+			return cell;
+		});
+
+		// Adding the selected item to the selected_List property
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) change -> {
+			String selectedItem = listView.getSelectionModel().getSelectedItem();
+			if (selectedItem != null) {
+				((SimpleObjectProperty<String>) selected_List).set(selectedItem);
+			}
+			listView.refresh(); // Refresh the ListView to update cell appearance
+		});
+
+		// Initial: Fills the list view with the items from an observable list
+		ObservableList<String> items= FXCollections.observableArrayList();
+		for(String[] array :selectable_List){
+			if(array.length > 1){
+				items.add(array[0]);
+			}
+		}
+		
+		// Change: Repopulates the list view with an updated list
+		selectable_List.addListener((ListChangeListener<String[]>) change -> {
+			items.clear();
+			for (String[] array : selectable_List) {
+				if (array.length > 1) {
+					items.add(array[0]);
+				}
+			}
+			listView.refresh(); // Refresh the ListView to reflect changes
+		});
+	}
 	private static void make_TextArea(TextArea textArea, double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List){
 		textArea.setPrefWidth(width);
 		textArea.setPrefHeight(height);
@@ -901,6 +974,7 @@ public class Factory{
 			}
 		});
 	}
+	
 	// Settings Updaters for listeners
 	public static void updateRootBackground(){
 		BackgroundFill root_Background_Fill = new BackgroundFill(root_Background_Color.get(), cornerRadii, insets);

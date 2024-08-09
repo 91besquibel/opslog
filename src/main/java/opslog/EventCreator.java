@@ -9,44 +9,40 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.scene.Cursor;
-import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableObjectValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 public class EventCreator {
 
+	private Stage popupWindow;
+	private AnchorPane root;
 	private double lastX, lastY;
+	private CountDownLatch latch = new CountDownLatch(1);
 
 	// User Seleciton Storage for presets
 	private static ObservableList<String> input_Tag_Items = FXCollections.observableArrayList();
-	private static ObservableObjectValue<String> input_Type_Item = FXCollections.observableArrayList();
-	private static ObservableObjectValue<String> input_Format_Item = FXCollections.observableArrayList();
+	private static ObservableObjectValue<String> input_Type_Item = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> input_Format_Item = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> input_Start_Time = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> input_Stop_Time = new SimpleObjectProperty<>();
+
 	
 	private double padding = 5.0;
 	private double spacing = 5.0;
@@ -68,8 +64,7 @@ public class EventCreator {
 			createUI();
 			// Create a new scene with the root and set it to the popup window
 			latch.await();
-			Scene scene = new Scene(root, 275, height);
-			bindSelectorsToLists();			
+			Scene scene = new Scene(root, 275, height);		
 
 			String cssPath = getClass().getResource("/style.css").toExternalForm();
 			scene.getStylesheets().add(cssPath);
@@ -102,43 +97,63 @@ public class EventCreator {
 			popupWindow.showAndWait();
 
 		}catch(InterruptedException e){
-			logger.log(Level.SEVERE, classTag + ".display: Event creation failed");
 			e.printStackTrace();
 		}
 	}
 
 	private synchronized void createUI(){
+		
+		EventHandler<ActionEvent> create_Calendar_Action = event-> System.out.println("Creating a new calendar");
+		EventHandler<ActionEvent> search_History_Action = event -> System.out.println("Search history for log");
 
 		// Menu Bar
-		HBox stage_Button_MenuBar = Factory.two_button_Factory( "/IconLib/exitIW.png", "/IconLib/exitIG.png", "/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
+		EventHandler<ActionEvent> stage_Exit_Action = event -> System.out.println("Exit Stage");
+		EventHandler<ActionEvent> stage_Minimize_Action = event-> System.out.println("Minimize Stage");
+		HBox stage_Button_MenuBar = Factory.two_button_Factory(stage_Exit_Action, "/IconLib/exitIW.png", "/IconLib/exitIG.png", stage_Minimize_Action, "/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
 		HBox status_Label_MenuBar = Factory.label_Factory(new Label(), width, height);
-		HBox event_Button_MenuBar = Factory.three_Button_Factory("/IconLib/addIW.png", "/IconLib/addIG.png",  "/IconLib/searchIW.png", "/IconLib/searchIG.png", "/IconLib/calendarIW.png", "/IconLib/calendarIG.png");
-		HBox menuBar = new HBox(stage_Button_MenuBar, status_Label_MenuBar, event_Button_MenuBar);
+		HBox menuBar = new HBox(stage_Button_MenuBar, status_Label_MenuBar);
 
-		//Top Row of Event Card
+		// Top Row of Event Card
 		HBox label_Date_Event = Factory.two_Label_Factory(new Label("Date"), new Label(SharedData.getUTCDate()), width, height);
-		HBox label_Time_Event = Factory.label_Factory(new Label ("Time"), new Label(SharedData.getUTCTime()), width, height);
+		HBox label_Time_Event = Factory.two_Label_Factory(new Label ("Time"), new Label(SharedData.getUTCTime()), width, height);
 		HBox label_Initials_Event = Factory.textField_Factory(new Label("Initials"), width, height);
 		VBox label_Holder = new VBox (label_Date_Event, label_Time_Event, label_Initials_Event);
 		label_Holder.setSpacing(spacing);
-		HBox listView_Type_Event = Factory.listView_Factory(width_ListView, height_ListView, input_Type_Item, SharedData.Type_List, SelectionMode.SINGLE);
-		HBox listView_Tag_Event = Factory.listView_Factory(width_ListView, height_ListView, input_Tag_Items, SharedData.Tag_List, SelectionMode.MULTIPLE);
+		HBox listView_Type_Event = Factory.listView_Single_Factory(width_ListView, height_ListView, input_Type_Item, SharedData.Type_List, SelectionMode.SINGLE);
+		HBox listView_Tag_Event = Factory.listView_Multiple_Factory(width_ListView, height_ListView, input_Tag_Items, SharedData.Tag_List, SelectionMode.MULTIPLE);
 		HBox top_Row_Event = new HBox(label_Holder, listView_Type_Event, listView_Tag_Event);
 		top_Row_Event.setSpacing(spacing);
 
-		//Bottom Row of Event Card
-		HBox listView_Format_Event = Factory.listView_Factory(width_ListView, height_ListView, input_Format_Item, SharedData.Format_List, SelectionMode.Single);
+		// Bottom Row of Event Card
+		HBox listView_Format_Event = Factory.listView_Single_Factory(width_ListView, height_ListView, input_Format_Item, SharedData.Format_List, SelectionMode.SINGLE);
 		HBox textArea_Description_Event = Factory.textArea_Factory(width_TextArea, height_TextArea, input_Format_Item, SharedData.Format_List);
-		HBox bottom_Row_Event = new HBox(listView_Format_Event,textArea_Description_Event);
+		HBox bottom_Row_Event = new HBox( listView_Format_Event, textArea_Description_Event);
 		bottom_Row_Event.setSpacing(spacing);
 
-		VBox card_Event = new VBox(top_Row_Event, bottom_Row_Event);
-		Factory.card(card_Event);
+		// Log button
+		EventHandler<ActionEvent> create_Log_Action = event -> System.out.println("Creating a new log");
+		Button create_Log_Button = Factory.one_Button_Factory(create_Log_Action, "/IconLib/logIW.png", "Iconlib/logIG.png");
+		
+		// Event Card
+		VBox event_Card = new VBox(top_Row_Event, bottom_Row_Event, create_Log_Button);
+		Factory.card(event_Card);
 
-		VBox card_Cal_Check = new VBox();
-		Factory.card(card_Cal_Check);
+		// Calendar and Search Box
+		HBox datepicker_StartDate = Factory.datePicker_Factory(new Label("Start Date"));
+		HBox datepicker_StopDate = Factory.datePicker_Factory(new Label("Stop Date"));
+		HBox listView_StartTime = Factory.listView_Single_Factory(width, height, input_Start_Time, SharedData.Time_List, SelectionMode.SINGLE);
+		HBox listView_StopTime = Factory.listView_Single_Factory(width, height, input_Stop_Time, SharedData.Time_List, SelectionMode.SINGLE);
+		
+		// Calendar Card
+		VBox calendar_Card = new VBox();
+		Factory.card(calendar_Card);
 
-		VBox deck_Of_Cards = new VBox(card_Event);
+		// Search Card
+		VBox search_Card = new VBox();
+		Factory.card(search_Card);
+
+		// Card holder	
+		VBox deck_Of_Cards = new VBox(event_Card, calendar_Card, search_Card);
 		deck_Of_Cards.setSpacing(spacing);
 		deck_Of_Cards.setMinWidth(width);
 		deck_Of_Cards.setMinHeight(height);
