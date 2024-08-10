@@ -52,7 +52,7 @@ public class LogEntry {
 	// Getter for description
 	public String getDescription(){return description.get();}
 	// Setter for Description
-	public void setDescription(String newDescripiton){description.set(newDescription)}
+	public void setDescription(String newDescripiton){description.set(newDescription);}
 	
 	// Optional: Override toString() for better display in TableView
 	@Override

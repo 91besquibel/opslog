@@ -3,6 +3,7 @@ package opslog;
 import java.io.File;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -42,9 +43,9 @@ public class SharedData{
 	public static final ObservableList<String[]> Child_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Profile_List = FXCollections.observableArrayList();
 
-	public static final ObservableList<String> Tag_Simple_List = FXCollections.observabelArrayList();
+	public static final ObservableList<String> Tag_Simple_List = FXCollections.observableArrayList();
 	public static final ObservableList<String> Type_Simple_List = FXCollections.observableArrayList();
-	public static final ObservableList<Sting> Format_Simple_List = FXCollections.observableArrayList();
+	public static final ObservableList<String> Format_Simple_List = FXCollections.observableArrayList();
 	public static final ObservableList<String> Time_List = FXCollections.observableArrayList();
 
 
@@ -86,8 +87,11 @@ public class SharedData{
 	public static int hrs= 72;
 
 	static{
-		Tag_List.addListener(new ListChangeListener<String[]>(){
-			populate_List(Tag_List, Tag_Simple_List);
+		Tag_List.addListener(new ListChangeListener<String[]>() {
+			@Override
+			public void onChanged(Change<? extends String[]> change) {
+				populate_List(Tag_List, Tag_Simple_List);
+			}
 		});
 	}
 	
@@ -213,9 +217,8 @@ public class SharedData{
 		return pastTime;
 	}
 
-	private static void populate_List(){
-		ObservableList<String> list = FXCollections.observableArrayList();
-		for (String[] item : selectable_List) { if (item.length > 0) { list.add(item[0]); } }
+	private static void populate_List(ObservableList<String[]> old_List, ObservableList<String> new_List){
+		for (String[] item : old_List) { if (item.length > 0) { new_List.add(item[0]); } }
 	}
 
 	private static void timeListPopulate(){
