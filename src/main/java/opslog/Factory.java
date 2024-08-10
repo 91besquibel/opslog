@@ -1,3 +1,5 @@
+package opslog;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,39 +55,49 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 
 public class Factory{
+
+	private static double spacing = 5.0;
+	private static double spacing_Zero = 0.0;
 	
-	public static TableView<String[]> custom_TableView(List<TableColumn<String[], String>> columns, double width, double height){
-		TableView<String[]> tableView = new TableView<>();
+	private static double padding = 5.0;
+	private static double padding_Zero = 0.0;
+
+	private static double button_Width = 18.0;
+	private static double button_Height = 18.0;
+	
+	
+	public static TableView<LogEntry> custom_TableView( List<TableColumn<LogEntry, String>> columns, double width, double height){
+		TableView<LogEntry> tableView = new TableView<>();
 		
-		for(TableColumn<String[],String> column : columns){
+		for(TableColumn<LogEntry, String> column : columns){
 			
 		}
 		
 		tableView.setRowFactory(tr -> {
-			TableRow<String[]> row = new TableRow<>();
-			row.backgroundProperty().bind(secondary_Background_Property);
-			row.borderProperty().bind(standard_Border_Property);
+			TableRow<LogEntry> row = new TableRow<>();
+			row.backgroundProperty().bind(Settings.secondary_Background_Property);
+			row.borderProperty().bind(Settings.standard_Border_Property);
 			return row;
 		});
 
 		tableView.getColumns().addAll(columns);
 		tableView.setPadding(new Insets(5));
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-		tableView.backgroundProperty().bind(primary_Background_Property);
-		tableView.borderProperty().bind(standard_Border_Property);
+		tableView.backgroundProperty().bind(Settings.primary_Background_Property);
+		tableView.borderProperty().bind(Settings.standard_Border_Property);
 
 		return tableView;
 	}
 	
 	public static ListView<String> custom_ListView(double width, double height, SelectionMode selectionMode){
-		ListView<String> listView = new ListView();
+		ListView<String> listView = new ListView<>();
 		
 		listView.setPrefWidth(width);
 		listView.setPrefHeight(height);
 		listView.setEditable(false);
 		listView.setFocusTraversable(true);
-		listView.backgroundProperty().bind(primary_Background_Property);
-		listView.borderProperty().bind(standard_Border_Property);
+		listView.backgroundProperty().bind(Settings.primary_Background_Property);
+		listView.borderProperty().bind(Settings.standard_Border_Property);
 		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
 
 		listView.setCellFactory(lv -> {
@@ -93,8 +105,8 @@ public class Factory{
 				private final Text text = new Text();
 
 				{
-					text.fillProperty().bind(text_Color);
-					text.fontProperty().bind(text_Property);
+					text.fillProperty().bind(Settings.text_Color);
+					text.fontProperty().bind(Settings.text_Property);
 					text.setTextAlignment(TextAlignment.CENTER);
 					text.wrappingWidthProperty().bind(listView.widthProperty());
 					setGraphic(text);
@@ -112,14 +124,14 @@ public class Factory{
 						setText(item);
 						text.setText(item);
 						if (listView.getSelectionModel().isSelected(getIndex())) {
-							backgroundProperty().bind(selected_Background_Property);
+							backgroundProperty().bind(Settings.selected_Background_Property);
 						} else {	
-							backgroundProperty().bind(secondary_Background_Property);				
+							backgroundProperty().bind(Settings.secondary_Background_Property);				
 						}
 						if (listView.getFocusModel().isFocused(getIndex())){
-							borderProperty().bind(focus_Border_Property);
+							borderProperty().bind(Settings.focus_Border_Property);
 						} else {
-							borderProperty().bind(standard_Border_Property);
+							borderProperty().bind(Settings.standard_Border_Property);
 						}
 					}
 				}
@@ -132,6 +144,8 @@ public class Factory{
 
 			return cell;
 		});
+
+		return listView;
 	}
 	
 	public static ComboBox<String> custom_ComboBox(double width, double height){
@@ -142,14 +156,14 @@ public class Factory{
 		//combo_Box.setPadding(insets);
 		combo_Box.setEditable(false);
 		combo_Box.setFocusTraversable(true);
-		combo_Box.backgroundProperty().bind(secondary_Background_Property);
-		combo_Box.borderProperty().bind(standard_Border_Property);
-		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(focus_Border_Property);});
-		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(standard_Border_Property);});
+		combo_Box.backgroundProperty().bind(Settings.secondary_Background_Property);
+		combo_Box.borderProperty().bind(Settings.standard_Border_Property);
+		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Settings.focus_Border_Property);});
+		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Settings.standard_Border_Property);});
 
 		combo_Box.setCellFactory(lv -> new ListCell<String>() {
 			{
-				backgroundProperty().bind(secondary_Background_Property);
+				backgroundProperty().bind(Settings.secondary_Background_Property);
 			}
 			@Override
 			protected void updateItem(String item, boolean empty) {
@@ -159,8 +173,8 @@ public class Factory{
 					setStyle("");
 				} else {
 					Text text = new Text(item);
-					text.setFill(text_Color.get());
-					text.setFont(text_Property.get());
+					text.setFill(Settings.text_Color.get());
+					text.setFont(Settings.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
@@ -169,7 +183,7 @@ public class Factory{
 
 		combo_Box.setButtonCell(new ListCell<String>() {
 			{
-				backgroundProperty().bind(secondary_Background_Property);
+				backgroundProperty().bind(Settings.secondary_Background_Property);
 			}
 			@Override
 			protected void updateItem(String item, boolean empty) {
@@ -179,8 +193,8 @@ public class Factory{
 					setStyle("");
 				} else {
 					Text text = new Text(item);
-					text.setFill(text_Color.get());
-					text.setFont(text_Property.get());
+					text.setFill(Settings.text_Color.get());
+					text.setFont(Settings.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
@@ -197,16 +211,16 @@ public class Factory{
 		date_Picker.setPrefHeight(height);
 		date_Picker.setEditable(false);
 		date_Picker.setFocusTraversable(false);
-		date_Picker.backgroundProperty().bind(secondary_Background_Property);
-		date_Picker.borderProperty().bind(standard_Border_Property);
-		date_Picker.setOnMouseEntered(event -> {date_Picker.borderProperty().bind(focus_Border_Property);});
-		date_Picker.setOnMouseExited(event -> {date_Picker.borderProperty().bind(standard_Border_Property);});
+		date_Picker.backgroundProperty().bind(Settings.secondary_Background_Property);
+		date_Picker.borderProperty().bind(Settings.standard_Border_Property);
+		date_Picker.setOnMouseEntered(event -> {date_Picker.borderProperty().bind(Settings.focus_Border_Property);});
+		date_Picker.setOnMouseExited(event -> {date_Picker.borderProperty().bind(Settings.standard_Border_Property);});
 		date_Picker.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
 			// date_Picker.getEditor().setFill(text_Color.get());
-			date_Picker.getEditor().setFont(text_Property.get());
+			date_Picker.getEditor().setFont(Settings.text_Property.get());
 		});
-		date_Picker.getEditor().backgroundProperty().bind(secondary_Background_Property);
-		date_Picker.getEditor().borderProperty().bind(transparent_Border_Property);
+		date_Picker.getEditor().backgroundProperty().bind(Settings.secondary_Background_Property);
+		date_Picker.getEditor().borderProperty().bind(Settings.transparent_Border_Property);
 
 		Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
 			public DateCell call(DatePicker date_Picker){
@@ -231,31 +245,44 @@ public class Factory{
 
 		return date_Picker;
 	}
+
+	public static ColorPicker custom_ColorPicker(double width, double height){
+		ColorPicker color_Picker = new ColorPicker();
+		
+		color_Picker.backgroundProperty().bind(Settings.secondary_Background_Property);
+		color_Picker.borderProperty().bind(Settings.standard_Border_Property);
+		color_Picker.setPrefWidth(width);
+		color_Picker.setPrefHeight(height);
+		color_Picker.setOnMouseEntered(event -> {color_Picker.borderProperty().bind(Settings.focus_Border_Property);});
+		color_Picker.setOnMouseExited(event -> {color_Picker.borderProperty().bind(Settings.standard_Border_Property);});
+		
+		return color_Picker;
+	}
 	
-	public static Label custom_Label(double width, double height){
-		Label label = new Label();
+	public static Label custom_Label(String text, double width, double height){
+		Label label = new Label(text);
 		
 		label.setPrefWidth(width);
 		label.setPrefHeight(height);
-		label.textFillProperty().bind();
-		label.fontProperty().bind();
+		label.textFillProperty().bind(Settings.text_Color);
+		label.fontProperty().bind(Settings.text_Property_Bold);
 
 		label.setAlignment(Pos.CENTER);
 
 		return label;
 	}
 
-	public static TextField custom_TextField(double width, double height,){
-		TextField text_Field = new TextFeild();
+	public static TextField custom_TextField(double width, double height){
+		TextField text_Field = new TextField();
 		
 		text_Field.setPrefWidth(width);
 		text_Field.setPrefHeight(height);
-		text_Field.fontProperty().bind(text_Property);
+		text_Field.fontProperty().bind(Settings.text_Property);
 		// can't use text_Field.fillProperty().bind(text_Color); becuase it doesn't work with the text field
-		text_Field.borderProperty().bind(standard_Border_Property);
-		text_Field.backgroundProperty().bind(secondary_Background_Property);
-		text_Field.setOnMouseEntered(event -> {text_Field.borderProperty().bind(focus_Border_Property);});	
-		text_Field.setOnMouseExited(event -> {text_Field.borderProperty().bind(standard_Border_Property);});
+		text_Field.borderProperty().bind(Settings.standard_Border_Property);
+		text_Field.backgroundProperty().bind(Settings.secondary_Background_Property);
+		text_Field.setOnMouseEntered(event -> {text_Field.borderProperty().bind(Settings.focus_Border_Property);});	
+		text_Field.setOnMouseExited(event -> {text_Field.borderProperty().bind(Settings.standard_Border_Property);});
 
 		return text_Field;
 	}
@@ -265,56 +292,57 @@ public class Factory{
 		
 		textArea.setPrefWidth(width);
 		textArea.setPrefHeight(height);
-		textArea.fontProperty().bind(text_Property);
-		textArea.backgroundProperty().bind(secondary_Background_Property);
-		textArea.borderProperty().bind(standard_Border_Property);
+		textArea.fontProperty().bind(Settings.text_Property);
+		textArea.backgroundProperty().bind(Settings.secondary_Background_Property);
+		textArea.borderProperty().bind(Settings.standard_Border_Property);
 		
 		textArea.setWrapText(true);
 
 		return textArea;
 	}
 
-	public static Button custom_Button(double width, double height, String image_Standard, String image_Hover){
+	public static Button custom_Button(String image_Standard, String image_Hover){
 		Button button = new Button();
 		
-		button.setPrefWidth(width);
-		button.setPrefHeight(height);
-		button.setPadding(new Insets(0, 0, 0, 0));
-		button.backgroundProperty().bind();
-		button.borderProperty().bind();
+		button.setPrefWidth(button_Width);
+		button.setPrefHeight(button_Height);
+		button.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
+		button.backgroundProperty().bind(Settings.transparent_Background_Property);
+		button.borderProperty().bind(Settings.standard_Border_Property);
 		button.setGraphic
 				(new ImageView(new Image(Factory.class.getResourceAsStream
-										 (image_Standard), width, height, true, true))
+										 (image_Standard), button_Width, button_Height, true, true))
 		);
 		button.setOnMouseEntered
 				(e -> button.setGraphic
 				 (new ImageView(new Image(Factory.class.getResourceAsStream
-										  (image_Hover), width, height, true, true)))
+										  (image_Hover), button_Width, button_Height, true, true)))
 		);
 		button.setOnMouseExited
 				(e -> button.setGraphic
 				 (new ImageView(new Image(Factory.class.getResourceAsStream
-										  (image_Standard), width, height, true, true)))
+										  (image_Standard), button_Width, button_Height, true, true)))
 		);
 
 		return button;
 	}
 
-	public static HBox custom_HBox(double width, double height){
+	public static HBox custom_HBox(){
 		HBox hbox = new HBox();
 		
-		hbox.setPadding(new Insets(standard_Padding, standard_Padding, standard_Padding, standard_Padding));
-		hbox.setSpacing(standard_Spacing);
-		hbox.setPrefHeight(hbox_Height);
-		hbox.setPrefWidth(hbox_Width);
+		hbox.setSpacing(spacing);
+		hbox.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
 
 		return hbox;
 	}
 
-	public static VBox custom_VBox(double width, double height){
+	public static VBox custom_VBox(){
 		VBox vbox = new VBox();
 
-		vbox.backgroundProperty().bind(primary_Background_Property)
+		vbox.setSpacing(spacing);
+		vbox.setPadding(new Insets(padding, padding, padding, padding));
+		
+		vbox.backgroundProperty().bind(Settings.primary_Background_Property);
 
 		return vbox;
 	}

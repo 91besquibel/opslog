@@ -28,15 +28,15 @@ public class LogController {
 		try{
 			logger.log(Level.INFO, classTag + ".createLogUI: Creating UI");
 			
-			AnchorPane search_TableView_Anchor = Factory.tableView_Factory_Big(new TableView<String[]>(), SharedData.Search_List);
-			AnchorPane log_TableView_Anchor = Factory.tableView_Factory_Big(new TableView<String[]>(), SharedData.Log_List);
+			AnchorPane search_TableView_Anchor = Factory.custom_TableView(new TableView<String[]>(), SharedData.Search_List);
+			AnchorPane log_TableView_Anchor = Factory.custom_TableView(new TableView<String[]>(), SharedData.Log_List);
 
 			StackPane stackPane = new StackPane(search_TableView_Anchor, log_TableView_Anchor);// the top is on the left, the bottom is on the right
 			stackPane.setAlignment(Pos.CENTER_LEFT);
-			stackPane.backgroundProperty().bind(Factory.root_Background_Property);
+			stackPane.backgroundProperty().bind(Settings.root_Background_Property);
 
 			EventHandler<ActionEvent> create_Event_Action = event -> handleCreateLog(event);
-			Button event_Button = Factory.one_Button_Factory( create_Event_Action, "/IconLib/eventIW.png", "/IconLib/eventIG.png");
+			Button event_Button = Factory.customize_Button( create_Event_Action, "/IconLib/eventIW.png", "/IconLib/eventIG.png");
 
 			GridPane gridPane = createLogViewGrid();
 			gridPane.add(stackPane, 1, 1, 8, 2);// col, row, colSpan, rowSpan
@@ -48,7 +48,7 @@ public class LogController {
 			AnchorPane.setLeftAnchor(gridPane, 0.0);
 			AnchorPane.setRightAnchor(gridPane, 0.0);
 
-			AnchorPane pin_TableView_Anchor = Factory.tableView_Factory_Little(new TableView<String[]>(), SharedData.Pin_Board_List);
+			TableView<String[]> pin_TableView_Anchor = Factory.customize_TableView();
 
 			AnchorPane left_Side = new AnchorPane(pin_TableView_Anchor);
 			AnchorPane.setTopAnchor(pin_TableView_Anchor, 0.0);
@@ -57,7 +57,7 @@ public class LogController {
 			AnchorPane.setRightAnchor(pin_TableView_Anchor, 2.0);
 
 			root = new SplitPane(left_Side, right_Side);
-			root.backgroundProperty().bind(Factory.root_Background_Property);
+			root.backgroundProperty().bind(Settings.root_Background_Property);
 			root.setDividerPositions(0.20f, 0.75f);// 20% width, 75% width
 			HBox.setHgrow(root, Priority.ALWAYS);
 			
@@ -157,6 +157,10 @@ public class LogController {
 	}
 
 	public SplitPane getRootNode(){
+
+		
+		
 		return root;
 	}
+	
 }

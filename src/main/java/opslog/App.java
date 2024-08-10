@@ -52,7 +52,7 @@ public class App extends Application {
 	private Button maximize_Button;
 
 
-	private LogController logController;
+	private LogUI LogUI;
 	private CalendarController calendarController;
 	private SettingsController settingsController;
 
@@ -64,8 +64,8 @@ public class App extends Application {
 		configureLogging();
 		try{
 			logger.log(Level.FINE, classTag + ".start: Starting App");
-			logController = new LogController();
-			logController.createLogUI();
+			LogUI = new LogUI();
+			LogUI.initialize();
 			calendarController = new CalendarController();
 			calendarController.createCalendarUI();
 			settingsController = new SettingsController();
@@ -145,8 +145,8 @@ public class App extends Application {
 		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
 			LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 			menu_Clock_Label.setText(now.format(formatter));
-			menu_Clock_Label.textFillProperty().bind(Factory.text_Color);
-			menu_Clock_Label.fontProperty().bind(Factory.text_Property);
+			menu_Clock_Label.textFillProperty().bind(Settings.text_Color);
+			menu_Clock_Label.fontProperty().bind(Settings.text_Property);
 		}));
 		timeline.setCycleCount(Timeline.INDEFINITE);
 		timeline.play();
@@ -183,8 +183,8 @@ public class App extends Application {
 		viewArea = new AnchorPane();
 		
 		layout = new BorderPane(); 
-		layout.backgroundProperty().bind(Factory.root_Background_Property);
-		layout.borderProperty().bind(Factory.standard_Border_Property);
+		layout.backgroundProperty().bind(Settings.root_Background_Property);
+		layout.borderProperty().bind(Settings.standard_Border_Property);
 		layout.setPadding(new Insets(5, 5, 5, 5));
 		layout.setTop(menu_Bar);
 		layout.setCenter(viewArea);
@@ -199,8 +199,8 @@ public class App extends Application {
 		button.setMaxHeight(buttonSize);
 		button.setMinHeight(buttonSize);
 		button.setPadding(new Insets(0, 0, 0, 0));
-		button.backgroundProperty().bind(Factory.transparent_Background_Property);
-		button.borderProperty().bind(Factory.transparent_Border_Property);
+		button.backgroundProperty().bind(Settings.transparent_Background_Property);
+		button.borderProperty().bind(Settings.transparent_Border_Property);
 		button.setGraphic
 				(new ImageView(new Image(getClass().getResourceAsStream
 										 (icon_White_Location), iconSize, iconSize, true, true))

@@ -1,3 +1,5 @@
+package opslog;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 /*
@@ -13,6 +15,7 @@ public class LogManager {
 	
 	// Global List
 	public static final ObservableList<LogEntry> Log_List = FXCollections.observableArrayList();
+
 	// Singlton instance
 	private static final LogManager instance = new LogManager();
 

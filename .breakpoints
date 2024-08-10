@@ -13,6 +13,14 @@
         "version": 10447,
         "index": 5211
       }
+    ],
+    "src/main/java/opslog/Settings.java": [
+      {
+        "id": "c0b26974-65ed-4a7a-a1d4-91aca7389fe4",
+        "line": 27,
+        "version": 615,
+        "index": 793
+      }
     ]
   }
 }

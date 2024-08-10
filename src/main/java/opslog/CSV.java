@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.time.LocalTime;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /*
@@ -178,14 +179,20 @@ public class CSV {
 		// Read the CSV files and store the data in the appropriate data structures
 		try (BufferedReader br = new BufferedReader(new FileReader(dir_Name))) {
 			logger.log(Level.FINE, classTag + ".readCSV: Reading file at: \n" + dir_Name.toString() + "\n");
-			ArrayList<String[]> rows = new ArrayList<>();
+
 			String line;
+
 			while ((line = br.readLine()) != null) {
 				String[] values = line.split(",");
-				logger.log(Level.CONFIG, classTag + ".readCSV: Adding the following to data storage: \n" + String.join(", ", values) + "\n");
-				rows.add(values);
+
+				// Check if the row has the correct number of columns
+				if (values.length == 6) {
+					System.err.println("fix me dumbass");
+				} else {
+					// Handle or log any issues with the row format here
+					System.err.println("Skipping invalid row: " + line);
+				}
 			}
-			data_storage.setAll(rows);
 		} catch (IOException e) {
 			logger.log(Level.SEVERE,classTag + ".readCSV: Error occurred while reading file at: \n" + dir_Name.toString() + "\n");
 			e.printStackTrace();
@@ -220,8 +227,13 @@ public class CSV {
 						String[] values = line.split(",");
 						// Add the values to the fileData list if they match the filters
 						if(matchesFilters(values,filters)){
-							logger.log(Level.INFO, classTag + ".readBatchCSV: Adding the following to data storage: \n" + String.join(", ", values) + "\n");
-							fileData.add(values);
+							// Create a LogEntry object and add it to LogManager
+							if (values.length == 6) {
+								LogEntry logEntry = new LogEntry(values[0], values[1], values[2], values[3], values[4], values[5]);
+								LogManager.addLogEntry(logEntry);
+							} else {
+								logger.log(Level.WARNING, classTag + ".readBatchCSV: Skipping invalid row with insufficient columns: \n" + String.join(", ", values));
+							}
 						} else {
 							logger.log(Level.WARNING, classTag + ".readCSV: Skipping row, filters:" + String.join(", " , filters) + " did not match: \n" + String.join(", ", values));
 						}
