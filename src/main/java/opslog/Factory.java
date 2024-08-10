@@ -203,6 +203,62 @@ public class Factory{
 
 		return combo_Box;
 	}
+
+	public static ComboBox<Integer> custom_ComboBox_Integer(double width, double height){
+		ComboBox<Integer> combo_Box = new ComboBox<>();
+
+		combo_Box.setPrefWidth(width);
+		combo_Box.setPrefHeight(height);
+		//combo_Box.setPadding(insets);
+		combo_Box.setEditable(false);
+		combo_Box.setFocusTraversable(true);
+		combo_Box.backgroundProperty().bind(Settings.secondary_Background_Property);
+		combo_Box.borderProperty().bind(Settings.standard_Border_Property);
+		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Settings.focus_Border_Property);});
+		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Settings.standard_Border_Property);});
+
+		combo_Box.setCellFactory(lv -> new ListCell<Integer>() {
+			{
+				backgroundProperty().bind(Settings.secondary_Background_Property);
+			}
+			@Override
+			protected void updateItem(Integer item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty || item == null) {
+					setText(null);
+					setStyle("");
+				} else {
+					Text text = new Text(item.toString());
+					text.setFill(Settings.text_Color.get());
+					text.setFont(Settings.text_Property.get());
+					setGraphic(text);
+					setAlignment(Pos.CENTER);
+				}
+			}
+		});
+
+		combo_Box.setButtonCell(new ListCell<Integer>() {
+			{
+				backgroundProperty().bind(Settings.secondary_Background_Property);
+			}
+			@Override
+			protected void updateItem(Integer item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty || item == null) {
+					setText(null);
+					setStyle("");
+				} else {
+					Text text = new Text(item.toString());
+					text.setFill(Settings.text_Color.get());
+					text.setFont(Settings.text_Property.get());
+					setGraphic(text);
+					setAlignment(Pos.CENTER);
+				}
+			}
+		});
+
+		return combo_Box;
+	}
 	
 	public static DatePicker custom_DatePicker(double width, double height){
 		DatePicker date_Picker = new DatePicker();
