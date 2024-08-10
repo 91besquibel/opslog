@@ -2,6 +2,7 @@
 /home/runner/opslog/src/main/java/opslog/CSV.java
 /home/runner/opslog/src/main/java/opslog/CalendarController.java
 /home/runner/opslog/src/main/java/opslog/EventController.java
+/home/runner/opslog/src/main/java/opslog/EventCreator.java
 /home/runner/opslog/src/main/java/opslog/Factory.java
 /home/runner/opslog/src/main/java/opslog/LogController.java
 /home/runner/opslog/src/main/java/opslog/Popup.java

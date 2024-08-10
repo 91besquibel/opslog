@@ -21,6 +21,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -37,11 +38,11 @@ public class EventCreator {
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	// User Seleciton Storage for presets
-	private static ObservableList<String> input_Tag_Items = FXCollections.observableArrayList();
-	private static ObservableObjectValue<String> input_Type_Item = new SimpleObjectProperty<>();
-	private static ObservableObjectValue<String> input_Format_Item = new SimpleObjectProperty<>();
-	private static ObservableObjectValue<String> input_Start_Time = new SimpleObjectProperty<>();
-	private static ObservableObjectValue<String> input_Stop_Time = new SimpleObjectProperty<>();
+	private static ObservableList<String> selected_Tag_Items = FXCollections.observableArrayList();
+	private static ObservableObjectValue<String> selected_Type_Item = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> selected_Format_Item = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> selected_Start_Time = new SimpleObjectProperty<>();
+	private static ObservableObjectValue<String> selected_Stop_Time = new SimpleObjectProperty<>();
 
 	
 	private double padding = 5.0;
@@ -119,14 +120,14 @@ public class EventCreator {
 		HBox label_Initials_Event = Factory.textField_Factory(new Label("Initials"), width, height);
 		VBox label_Holder = new VBox (label_Date_Event, label_Time_Event, label_Initials_Event);
 		label_Holder.setSpacing(spacing);
-		HBox listView_Type_Event = Factory.listView_Single_Factory(width_ListView, height_ListView, input_Type_Item, SharedData.Type_List, SelectionMode.SINGLE);
-		HBox listView_Tag_Event = Factory.listView_Multiple_Factory(width_ListView, height_ListView, input_Tag_Items, SharedData.Tag_List, SelectionMode.MULTIPLE);
+		HBox listView_Type_Event = Factory.listView_StringArray_Factory(SharedData.Type_List, width_ListView, height_ListView, selected_Type_Item, SelectionMode.SINGLE);
+		HBox listView_Tag_Event = Factory.listView_StringArray_Factory(SharedData.Tag_List, width_ListView, height_ListView, selected_Tag_Items, SelectionMode.MULTIPLE);
 		HBox top_Row_Event = new HBox(label_Holder, listView_Type_Event, listView_Tag_Event);
 		top_Row_Event.setSpacing(spacing);
 
 		// Bottom Row of Event Card
-		HBox listView_Format_Event = Factory.listView_Single_Factory(width_ListView, height_ListView, input_Format_Item, SharedData.Format_List, SelectionMode.SINGLE);
-		HBox textArea_Description_Event = Factory.textArea_Factory(width_TextArea, height_TextArea, input_Format_Item, SharedData.Format_List);
+		HBox listView_Format_Event = Factory.listView_StringArray_Factory(SharedData.Format_List, width_ListView, height_ListView, selected_Format_Item, SelectionMode.SINGLE);
+		HBox textArea_Description_Event = Factory.textArea_Factory(width_TextArea, height_TextArea, selected_Format_Item, SharedData.Format_List);
 		HBox bottom_Row_Event = new HBox( listView_Format_Event, textArea_Description_Event);
 		bottom_Row_Event.setSpacing(spacing);
 
@@ -141,8 +142,8 @@ public class EventCreator {
 		// Calendar and Search Box
 		HBox datepicker_StartDate = Factory.datePicker_Factory(new Label("Start Date"));
 		HBox datepicker_StopDate = Factory.datePicker_Factory(new Label("Stop Date"));
-		HBox listView_StartTime = Factory.listView_Single_Factory(width, height, input_Start_Time, SharedData.Time_List, SelectionMode.SINGLE);
-		HBox listView_StopTime = Factory.listView_Single_Factory(width, height, input_Stop_Time, SharedData.Time_List, SelectionMode.SINGLE);
+		HBox listView_StartTime = Factory.listView_String_Factory(new ListView<String>(SharedData.Time_List), width_ListView, height_ListView, selected_Start_Time, SelectionMode.SINGLE);
+		HBox listView_StopTime = Factory.listView_String_Factory(new ListView<String>(SharedData.Time_List), width_ListView, height_ListView, selected_Stop_Time, SelectionMode.SINGLE);
 		
 		// Calendar Card
 		VBox calendar_Card = new VBox();

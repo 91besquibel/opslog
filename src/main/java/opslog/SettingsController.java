@@ -42,8 +42,8 @@ public class SettingsController{
 			HBox name_Parent = Factory.textField_Factory(new Label("Name"), width_Standard, height_Standard);
 			HBox start_Date_Parent = Factory.datePicker_Factory(new Label("Start Date"));
 			HBox stop_Date_Parent = Factory.datePicker_Factory(new Label("End Date"));
-			HBox start_Time_Parent = Factory.comboBox_StringArray_Factory(new Label("Start Time") , SharedData.Time_List);
-			HBox stop_Time_Parent = Factory.comboBox_StringArray_Factory(new Label("Stop Time"), SharedData.Time_List);	
+			HBox start_Time_Parent = Factory.comboBox_String_Factory(new Label("Start Time"), new ComboBox<String>(SharedData.Time_List));
+			HBox stop_Time_Parent = Factory.comboBox_String_Factory(new Label("Stop Time"), new ComboBox<String>(SharedData.Time_List));	
 			HBox type_Parent = Factory.comboBox_StringArray_Factory(new Label("Type"), SharedData.Type_List);
 			HBox tag_Parent = Factory.comboBox_StringArray_Factory(new Label("Tag"), SharedData.Tag_List);
 			HBox description_Parent = Factory.textField_Factory(new Label("Description"), width_Standard, height_Standard);
@@ -61,8 +61,8 @@ public class SettingsController{
 			HBox name_Child = Factory.textField_Factory(new Label("Name"), width_Standard, height_Standard);
 			HBox start_Date_Child = Factory.datePicker_Factory(new Label("Start Date"));
 			HBox stop_Date_Child = Factory.datePicker_Factory(new Label("End Date"));
-			HBox start_Time_Child = Factory.comboBox_StringArray_Factory(new Label("Start Time") , SharedData.Time_List);
-			HBox stop_Time_Child = Factory.comboBox_StringArray_Factory(new Label("Stop Time"), SharedData.Time_List);
+			HBox start_Time_Child = Factory.comboBox_String_Factory(new Label("Start Time") , new ComboBox<String>(SharedData.Time_List));
+			HBox stop_Time_Child = Factory.comboBox_String_Factory(new Label("Stop Time"), new ComboBox<String>(SharedData.Time_List));
 			HBox type_Child = Factory.comboBox_StringArray_Factory(new Label("Type"), SharedData.Type_List);
 			HBox tag_Child = Factory.comboBox_StringArray_Factory(new Label("Tag"), SharedData.Tag_List);
 			HBox description_Child = Factory.textField_Factory(new Label("Description"), width_Standard, height_Standard);
@@ -138,8 +138,8 @@ public class SettingsController{
 			HBox secondary_Background_Color_Profile = Factory.colorPicker_Factory(new Label("Field Color"), Factory.secondary_Background_Color);
 			HBox border_Color_Profile = Factory.colorPicker_Factory(new Label("Border Color"), Factory.standard_Border_Color);
 			HBox text_Color_Profile = Factory.colorPicker_Factory(new Label("Text Color"), Factory.text_Color);
-			HBox text_Size_Profile = Factory.comboBox_Integer_Factory(new Label("Text Size"), new ComboBox<Integer>(Factory.Text_Size_List), Factory.text_Size);
-			HBox text_Style_Profile =  Factory.comboBox_String_Factory(new Label("Text Style"), new ComboBox<String>(Factory.Text_Font_List), Factory.text_Font);
+			HBox text_Size_Profile = Factory.comboBox_PropertyInteger_Factory(new Label("Text Size"), new ComboBox<Integer>(Factory.Text_Size_List), Factory.text_Size);
+			HBox text_Style_Profile =  Factory.comboBox_PropertyString_Factory(new Label("Text Style"), new ComboBox<String>(Factory.Text_Font_List), Factory.text_Font);
 			EventHandler<ActionEvent> add_Profile_Action = event -> System.out.println("Creating Profile");
 			EventHandler<ActionEvent> remove_Profile_Action = event-> System.out.println("Removing Profile");
 			HBox button_Profile = Factory.two_button_Factory(add_Profile_Action, "/IconLib/addIW.png", "/IconLib/addIG.png", remove_Profile_Action, "/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
@@ -167,8 +167,8 @@ public class SettingsController{
 			e.printStackTrace();
 		}
 	}
-	//.setOnAction(::)
-	public static add(){
+	
+	public static void add(){
 		
 	}
 	

@@ -14,6 +14,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.Node;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 public class LogController {
 	private static final Logger logger = Logger.getLogger(App.class.getName());
@@ -34,8 +35,8 @@ public class LogController {
 			stackPane.setAlignment(Pos.CENTER_LEFT);
 			stackPane.backgroundProperty().bind(Factory.root_Background_Property);
 
-			Button event_Button = Factory.one_button_Factory( "/IconLib/eventIW.png", "/IconLib/eventIG.png");
-			event_Button.setOnAction(this::handleCreateLog);
+			EventHandler<ActionEvent> create_Event_Action = event -> handleCreateLog(event);
+			Button event_Button = Factory.one_Button_Factory( create_Event_Action, "/IconLib/eventIW.png", "/IconLib/eventIG.png");
 
 			GridPane gridPane = createLogViewGrid();
 			gridPane.add(stackPane, 1, 1, 8, 2);// col, row, colSpan, rowSpan
@@ -148,29 +149,6 @@ public class LogController {
 			logger.log(Level.SEVERE, classTag + ".handleCreateLog: Log creation failed");
 			e.printStackTrace();
 		}
-
-		/* 
-		Old menu bar logic for prefilling data
-
-		Retrieve values from date pickers
-		String eventStartDate = (startDate.getValue() != null) ? startDate.getValue().toString() : " ";
-		String eventStopDate = (stopDate.getValue() != null) ? stopDate.getValue().toString() : " ";
-		String eventType = typeSelector.getValue();
-		String eventTag = tagSelector.getValue();
-		String eventInitials = initials.getText();
-		String eventDescription = description.getText();
-
-		String[] data = {eventStartDate, eventStopDate, eventType, eventTag, eventInitials, eventDescription};
-
-		for (int i = 0; i < data.length; i++) {
-			//if value == null, set to " "
-			if (data[i] == null) {
-				data[i] = " ";
-			}
-		}
-		*/
-
-
 	}
 
 	public static void showPopup(String title, String message ){

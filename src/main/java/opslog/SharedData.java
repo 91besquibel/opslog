@@ -26,6 +26,7 @@ public class SharedData{
 	private static final String classTag = "SharedData";
 	
 	// Global lists that can only be created once using static and final keywords 
+	//Log_List columns date, time, type, tag, initials,description
 	public static final ObservableList<String[]> Log_List = FXCollections.observableArrayList(); 
 	public static final ObservableList<String[]> Search_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Pin_Board_List = FXCollections.observableArrayList();
@@ -40,7 +41,12 @@ public class SharedData{
 	public static final ObservableList<String[]> Parent_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Child_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Profile_List = FXCollections.observableArrayList();
+
+	public static final ObservableList<String> Tag_Simple_List = FXCollections.observabelArrayList();
+	public static final ObservableList<String> Type_Simple_List = FXCollections.observableArrayList();
+	public static final ObservableList<Sting> Format_Simple_List = FXCollections.observableArrayList();
 	public static final ObservableList<String> Time_List = FXCollections.observableArrayList();
+
 
 	public static final List<String> myList = new ArrayList<String>();
 	
@@ -79,14 +85,11 @@ public class SharedData{
 	public static int days = 3;
 	public static int hrs= 72;
 
-	public static String background_Color;
-	public static String card_Color;
-	public static String border_Color;
-	public static String text_Color;
-	
-	public static String text_Font;
-	public static String text_Size;
-	public static String text_Style;
+	static{
+		Tag_List.addListener(new ListChangeListener<String[]>(){
+			populate_List(Tag_List, Tag_Simple_List);
+		});
+	}
 	
 	/*
 	Description: Initializes the database at app startup when given the correct input
@@ -208,6 +211,11 @@ public class SharedData{
 	public static String getUTCPastTime(){
 		String pastTime = LocalDateTime.now(ZoneId.of("UTC")).minusHours(hrs).format(DateTimeFormatter.ofPattern("HH_mm_ss"));
 		return pastTime;
+	}
+
+	private static void populate_List(){
+		ObservableList<String> list = FXCollections.observableArrayList();
+		for (String[] item : selectable_List) { if (item.length > 0) { list.add(item[0]); } }
 	}
 
 	private static void timeListPopulate(){

@@ -129,25 +129,6 @@ public class Factory{
 	public static ObjectProperty<Font> text_Property = new SimpleObjectProperty<>(Font.font(text_Font.get(), text_Size.get())); //.fontProperty().bind(text_Font);
 	public static ObjectProperty<Font> text_Property_Bold = new SimpleObjectProperty<>(Font.font(text_Font.get(), FontWeight.BOLD, text_Size.get()));
 
-	// CSS: .setStyle(root_style + standard_Border_Style + text_Style);
-	public static String root_Style = "-fx-background-color: " + root_Background_Color.get().toString() + "; ";
-	public static String primary_Style = "-fx-background-color: " + primary_Background_Color.get().toString() + "; ";
-	public static String secondary_Style = "-fx-background-color: " + secondary_Background_Color.get().toString() + "; ";
-	public static String transparent_Style = "-fx-background-color: " + transparent_Background_Color.get().toString() + "; ";
-
-	public static String standard_Border_Style = "-fx-border-color: " + standard_Border_Color.get().toString() + "; ";
-	public static String focus_Border_Style = "-fx-border-color: " + focus_Border_Color.get().toString() + "; ";
-	public static String transparent_Border_Style = "-fx-border-color: " + transparent_Border_Color.get().toString() + "; ";
-
-	public static String text_Style = "-fx-text-fill: " + text_Color.get().toString() + "; ";
-	public static String text_Size_Style = "-fx-font-size: " + text_Size.get() + "pt; ";
-	public static String text_Font_Style = "-fx-font-family: " + text_Font.get() + "; ";
-
-	public static String paddings_Style = "-fx-padding: " + standard_Padding + "px; ";
-	public static String no_paddings_Style = "-fx-padding: 0px; ";
-	public static String margins_Style = "-fx-margin: " + standard_Padding + "px; ";
-	public static String no_margins_Style = "-fx-margin: 0px ;";
-
 	static {
 		standard_Border_Color.addListener((obs, oldColor, newColor) -> {
 			standard_Border_Stroke.set(new BorderStroke(newColor, BorderStrokeStyle.SOLID, cornerRadii, border_Width));
@@ -236,6 +217,7 @@ public class Factory{
 	}
 	public static Button one_Button_Factory(EventHandler<ActionEvent> button_Action, String image_Standard, String image_Hover){
 		Button button = new Button();
+		button.setOnAction(button_Action);
 		make_Button(button, image_Standard, image_Hover);// "/IconLib/eventIW.png" , "/IconLib/eventIG.png"
 		return button;
 	}
@@ -274,7 +256,7 @@ public class Factory{
 	public static HBox comboBox_StringArray_Factory(Label label, ObservableList<String[]> list) {
 		ComboBox<String> combo_Box = new ComboBox<>();
 
-		make_Label(label,standard_Width,standard_Height);
+		make_Label(label, standard_Width, standard_Height);
 		make_ComboBox(combo_Box);
 		bind_List(combo_Box, list);
 
@@ -286,7 +268,19 @@ public class Factory{
 
 		return hbox;
 	}
-	public static HBox comboBox_Integer_Factory(Label label, ComboBox<Integer> combo_Box, ObjectProperty<Integer> event_Handler_Variable){
+	public static HBox comboBox_String_Factory(Label label, ComboBox<String> combo_Box){
+
+		make_Label(label, standard_Width, standard_Height);
+		make_ComboBox(combo_Box);
+		
+
+		HBox hbox = new HBox(label, combo_Box);
+		hbox.setPadding(new Insets(standard_Padding, standard_Padding, standard_Padding, standard_Padding));
+		hbox.setSpacing(standard_Spacing);
+		hbox.setPrefHeight(hbox_Height);
+		hbox.setPrefWidth(hbox_Width);
+	}
+	public static HBox comboBox_PropertyInteger_Factory(Label label, ComboBox<Integer> combo_Box, ObjectProperty<Integer> event_Handler_Variable){
 		make_Label(label,standard_Width,standard_Height);
 		make_ComboBox_Integer(combo_Box);
 		//set the font size
@@ -299,11 +293,11 @@ public class Factory{
 		hbox.setPrefWidth(hbox_Width);
 		return hbox;
 	}
-	public static HBox comboBox_String_Factory(Label label, ComboBox<String> combo_Box, ObjectProperty<String> event_Handler_Variable){
+	public static HBox comboBox_PropertyString_Factory(Label label, ComboBox<String> combo_Box, ObjectProperty<String> event_Handler_Variable){
+		
 		make_Label(label,standard_Width,standard_Height);
 		make_ComboBox(combo_Box);
 
-		// set the font style
 		combo_Box.setOnAction(event -> {event_Handler_Variable.setValue(combo_Box.getValue());});
 
 		HBox hbox = new HBox(label, combo_Box);
@@ -313,15 +307,63 @@ public class Factory{
 		hbox.setPrefWidth(hbox_Width);
 		return hbox;
 	}
-	public static HBox listView_Multiple_Factory(double width, double height, ObservableList<String> selected_List, ObservableList<String[]> selectable_List, SelectionMode selectionMode){
-		ListView<String> listView = new ListView<>();
-		make_ListView(listView, width, height, selected_List, selectable_List, selectionMode);
+	public static HBox listView_StringArray_Factory(double width, double height, ObservableList<String> selected_List, SelectionMode selectionMode){
+		// Turn ArrayList into a List<String> 
+		ObservableList<String> list = FXCollections.observableArrayList();
+		for (String[] item : selectable_List) { if (item.length > 0) { list.add(item[0]); } }
+		ListView<String> listView = new ListView<>(list);
+		
+		make_ListView(listView, width, height, selected_List, selectionMode);
+
+		// Adding the selected items to the list
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) change -> {
+			selected_List.setAll(listView.getSelectionModel().getSelectedItems());
+			listView.refresh(); // Refresh the ListView to update cell appearance
+		});
+
+		// Change: Repopulates the list view with an updated list
+		selectable_List.addListener((ListChangeListener<String[]>) change -> {
+			ObservableList<String> list = FXCollections.observableArrayList();
+			for (String[] item : selectable_List) { if (item.length > 0) { list.add(item[0]); } }
+			listView.refresh(); // Refresh the ListView to reflect changes
+		});
+
+		
 		HBox hbox = new HBox(listView);
 		return hbox;
 	}
-	public static HBox listView_Single_Factory(double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List, SelectionMode selectionMode){
+	public static HBox listView_String_Factory(ListView<String> listView, double width, double height, ObservableObjectValue<String> selected_Item, SelectionMode selectionMode){
 		ListView<String> listView = new ListView<>();
-			make_ListView_Single(listView, width, height, selected_List, selectable_List, selectionMode);
+		make_ListView(listView, width, height, selectionMode);
+
+		// Adding the selected item to the selected_List property
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) change -> {
+			String selectedItem = listView.getSelectionModel().getSelectedItem();
+			if (selectedItem != null) {
+				((SimpleObjectProperty<String>) selected_Item).set(selectedItem);
+			}
+			listView.refresh(); // Refresh the ListView to update cell appearance
+		});
+
+		/* Initial: Fills the list view with the items from an observable list
+		ObservableList<String> items= FXCollections.observableArrayList();
+		for(String[] array :selectable_List){
+			if(array.length > 1){
+				items.add(array[0]);
+			}
+		}
+
+		// Change: Repopulates the list view with an updated list
+		selectable_List.addListener((ListChangeListener<String[]>) change -> {
+			items.clear();
+			for (String[] array : selectable_List) {
+				if (array.length > 1) {
+					items.add(array[0]);
+				}
+			}
+			listView.refresh(); // Refresh the ListView to reflect changes
+		});*/
+		
 		HBox hbox = new HBox(listView);
 		return hbox;
 	}
@@ -795,7 +837,8 @@ public class Factory{
 		// set the date picker to show the current date
 		//date_Picker.setValue(LocalDate.parse(SharedData.getUTCDate()));
 	}
-	private static void make_ListView(ListView<String> listView, double width, double height, ObservableList<String> selected_List, ObservableList<String[]> selectable_List, SelectionMode selectionMode) {
+		
+	private static void make_ListView(ListView<String> listView, double width, double height) {
 		listView.setPrefWidth(width);
 		listView.setPrefHeight(height);
 		listView.setEditable(false);
@@ -847,112 +890,6 @@ public class Factory{
 			cell.setPadding(new Insets(5.0)); // Top, right, bottom, left
 
 			return cell;
-		});
-
-		// Adding the selected items to the list
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) change -> {
-			selected_List.setAll(listView.getSelectionModel().getSelectedItems());
-			listView.refresh(); // Refresh the ListView to update cell appearance
-		});
-
-		// Initial: Fills the list view with the items from an observable list
-		ObservableList<String> items= FXCollections.observableArrayList();
-		for(String[] array :selectable_List){
-			if(array.length > 1){
-				items.add(array[0]);
-			}
-		}
-		// Change: Repopulates the list view with an updated list
-		selectable_List.addListener((ListChangeListener<String[]>) change -> {
-			items.clear();
-			for (String[] array : selectable_List) {
-				if (array.length > 1) {
-					items.add(array[0]);
-				}
-			}
-			listView.refresh(); // Refresh the ListView to reflect changes
-		});
-	}
-	private static void make_ListView_Single(ListView<String> listView, double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List, SelectionMode selectionMode) {
-		listView.setPrefWidth(width);
-		listView.setPrefHeight(height);
-		listView.setEditable(false);
-		listView.setFocusTraversable(true);
-		listView.backgroundProperty().bind(primary_Background_Property);
-		listView.borderProperty().bind(standard_Border_Property);
-		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
-
-		listView.setCellFactory(lv -> {
-			ListCell<String> cell = new ListCell<>() {
-				private final Text text = new Text();
-
-				{
-					text.fillProperty().bind(text_Color);
-					text.fontProperty().bind(text_Property);
-					text.setTextAlignment(TextAlignment.CENTER);
-					text.wrappingWidthProperty().bind(listView.widthProperty());
-					setGraphic(text);
-					text.textProperty().bind(itemProperty());
-				}
-
-				@Override
-				protected void updateItem(String item, boolean empty) {
-					super.updateItem(item, empty);
-					if (empty || item == null) {
-						setText(null);
-						setGraphic(null);
-						setBackground(null);
-					} else {
-						setText(item);
-						text.setText(item);
-						if (listView.getSelectionModel().isSelected(getIndex())) {
-							backgroundProperty().bind(selected_Background_Property);
-						} else {	
-							backgroundProperty().bind(secondary_Background_Property);				
-						}
-						if (listView.getFocusModel().isFocused(getIndex())){
-							borderProperty().bind(focus_Border_Property);
-						} else {
-							borderProperty().bind(standard_Border_Property);
-						}
-					}
-				}
-			};
-
-			cell.setAlignment(Pos.CENTER);
-			cell.minWidthProperty().bind(listView.widthProperty());
-			cell.prefWidthProperty().bind(listView.widthProperty());
-			cell.setPadding(new Insets(5.0)); // Top, right, bottom, left
-
-			return cell;
-		});
-
-		// Adding the selected item to the selected_List property
-		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) change -> {
-			String selectedItem = listView.getSelectionModel().getSelectedItem();
-			if (selectedItem != null) {
-				((SimpleObjectProperty<String>) selected_List).set(selectedItem);
-			}
-			listView.refresh(); // Refresh the ListView to update cell appearance
-		});
-
-		// Initial: Fills the list view with the items from an observable list
-		ObservableList<String> items= FXCollections.observableArrayList();
-		for(String[] array :selectable_List){
-			if(array.length > 1){
-				items.add(array[0]);
-			}
-		}
-		
-		// Change: Repopulates the list view with an updated list
-		selectable_List.addListener((ListChangeListener<String[]>) change -> {
-			items.clear();
-			for (String[] array : selectable_List) {
-				if (array.length > 1) {
-					items.add(array[0]);
-				}
-			}
-			listView.refresh(); // Refresh the ListView to reflect changes
 		});
 	}
 	private static void make_TextArea(TextArea textArea, double width, double height, ObservableObjectValue<String> selected_Item, ObservableList<String[]> selectable_List){
