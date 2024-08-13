@@ -141,7 +141,23 @@ public class CSV {
 		}
 	}
 
-	// Writes a 
+	public static void write(File fileLocation, String[] data) {
+		try {
+			// if the file does not exist create it
+			if (!fileLocation.exists()) {
+				fileLocation.createNewFile(); 
+			}
+			// Write the data to the file and auto close writer
+			try (FileWriter writer = new FileWriter(fileLocation, true)) {
+				writer.append(String.join(",", data));
+				writer.append("\n");
+			} // The writer will be automatically closed here
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// Writes a single line to a CSV for Logs only
 	public static void writeToCSV(File fileName, String[] data){
 		File newLogLocation = createLogFileName(); // Create a new log file name
 		File parentDir = newLogLocation.getParentFile(); // Get the parent directory

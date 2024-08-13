@@ -307,12 +307,13 @@ public class SettingsController{
 		bpath_Creation_Frame.getChildren().addAll(bpath_Creation_Label,bpath_Creation_TextField);
 
 		// Backup Path Buttons
-		EventHandler<ActionEvent> bpath_Switch_Action = event -> System.out.println("Switching Backup Path");
-		Button bpath_Switch_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
-		EventHandler<ActionEvent> bpath_Add_Action = event -> System.out.println("Creating Backup Path");
 		Button bpath_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
-		EventHandler<ActionEvent> bpath_Remove_Action = event-> System.out.println("Removeing Backup Path");
+
+		Button bpath_Switch_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
+		bpath_Switch_Button.setOnAction(event -> handle_bpath("Switch",bpath_Selection_ComboBox.getValuOf()));
+		
 		Button bpath_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
+		bpath_Delete_Button.setOnAction(event -> handle_bpath("Delete",bpath_CreationTextField.get()));
 		HBox bpath_Button_Frame = Factory.custom_HBox();
 		bpath_Button_Frame.getChildren().addAll(bpath_Switch_Button, bpath_Add_Button, bpath_Delete_Button);
 
@@ -347,10 +348,11 @@ public class SettingsController{
 		type_Pattern_Frame.getChildren().addAll(type_Pattern_Label, type_Pattern_TextField);
 		
 		// Type Buttons
-		EventHandler<ActionEvent> type_Add_Action = event -> System.out.println("Creating Type");
 		Button type_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
+		type_Add_Button.setOnAction( event -> handle_Type("Add", type_Name_TextField.getText(), type_Pattern_TextField.getText()));
 		EventHandler<ActionEvent> type_Delete_Action = event-> System.out.println("Removeing Type");
 		Button type_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
+		type_Delete_Action.setOnAction(event -> handle_Type("Delete", type_Name_TextField.getText(), type_Pattern_TextField.getText()));
 		HBox type_Button_Frame = Factory.custom_HBox();
 		type_Button_Frame.getChildren().addAll(type_Add_Button,type_Delete_Button);
 
@@ -534,8 +536,44 @@ public class SettingsController{
 		
 	}
 	
-	public static void add(){
+	public static void handle_Type(String action, String name, String pattern){
+		String [] data = new String[2];
 		
+		if (action.equals("Add")){
+			CSV.write(SharedData.Type_Dir, data);
+			System.out.println("Adding "+name+" with pattern "+pattern);
+		} else if (action.equals("Delete")) {
+			// Write the code to delet in the CSV class
+			System.out.println("Deleting "+name+" with pattern "+pattern);
+		} else {
+			System.out.println("Input from button incorrect");
+		}
+	}
+
+	public static void handle_Tag(String action, String name, String pattern){
+		String [] data = new String [] (name,pattern);
+		if (action.equals("Add")){
+			CSV.write(SharedData.Tag_Dir,data);
+			System.out.println("Adding "+name+" with pattern "+pattern);
+		} else if (action.equals("Delete")) {
+			// Write the code to delet in the CSV class
+			System.out.println("Deleting "+name+" with pattern "+pattern);
+		} else {
+			System.out.println("Input from button incorrect");
+		}
+	}
+
+	public static void handle_Format(String action, String name, String pattern){
+		String [] data = new String [] (name,pattern);
+		if (action.equals("Add")){
+			CSV.write(SharedData.Format_Dir, data);
+			System.out.println("Adding "+name+" with pattern "+pattern);
+		} else if (action.equals("Delete")) {
+			// Write the code to delet in the CSV class
+			System.out.println("Deleting "+name+" with pattern "+pattern);
+		} else {
+			System.out.println("Input from button incorrect");
+		}
 	}
 
 	public static ObservableList<String> array_Converter(ObservableList<String[]> oldList, int index){

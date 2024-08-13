@@ -1,13 +1,11 @@
 package opslog;
 
-import java.io.File;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.util.Duration;
@@ -32,20 +32,18 @@ public class SharedData{
 	public static final ObservableList<String[]> Search_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Pin_Board_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Calendar_List = FXCollections.observableArrayList();
-	public static final ObservableList<String[]> Checklist_List = FXCollections.observableArrayList();
+	public static final ObservableList<String[]> Parent_List = FXCollections.observableArrayList();
+	public static final ObservableList<String[]> Child_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Tag_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Type_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Format_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Main_Path_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Backup_Path_List = FXCollections.observableArrayList();
-
-	public static final ObservableList<String[]> Parent_List = FXCollections.observableArrayList();
-	public static final ObservableList<String[]> Child_List = FXCollections.observableArrayList();
 	public static final ObservableList<String[]> Profile_List = FXCollections.observableArrayList();
 
-	public static final ObservableList<String> Tag_Simple_List = FXCollections.observableArrayList();
-	public static final ObservableList<String> Type_Simple_List = FXCollections.observableArrayList();
-	public static final ObservableList<String> Format_Simple_List = FXCollections.observableArrayList();
+	//public static final ObservableList<String> Tag_Simple_List = FXCollections.observableArrayList();
+	//public static final ObservableList<String> Type_Simple_List = FXCollections.observableArrayList();
+	//public static final ObservableList<String> Format_Simple_List = FXCollections.observableArrayList();
 	public static final ObservableList<String> Time_List = FXCollections.observableArrayList();
 
 
@@ -53,17 +51,17 @@ public class SharedData{
 	
 
 	// Global variables that can be used anywhere in the program and changed anywhere
-	public static File Log_Dir;
-	public static File Pin_Board_Dir;
-	public static File Calendar_Dir;
-	public static File Checklist_Dir;
-	public static File Type_Dir;
-	public static File Tag_Dir;
-	public static File Format_Dir;
-	public static File Main_Path_Dir;
-	public static File Backup_Path_Dir;
-	public static File Import_Dir;
-	public static File Export_Dir;
+	public static Path Log_Dir;
+	public static Path Pin_Board_Dir;
+	public static Path Calendar_Dir;
+	public static Path Checklist_Dir;
+	public static Path Type_Dir;
+	public static Path Tag_Dir;
+	public static Path Format_Dir;
+	public static Path Main_Path_Dir;
+	public static Path Backup_Path_Dir;
+	public static Path Import_Dir;
+	public static Path Export_Dir;
 
 	// Global variables Log filters
 	public static String start_Date_Log_Filter;
@@ -85,21 +83,12 @@ public class SharedData{
 	public static String [] search_Filters;
 	public static int days = 3;
 	public static int hrs= 72;
-
-	static{
-		Tag_List.addListener(new ListChangeListener<String[]>() {
-			@Override
-			public void onChanged(Change<? extends String[]> change) {
-				populate_List(Tag_List, Tag_Simple_List);
-			}
-		});
-	}
 	
 	/*
 	Description: Initializes the database at app startup when given the correct input
 	Usage: App.start and Settings.updatePath
 	*/
-	public static void initialize(String newFilePath){
+	public static void initialize(String newPath){
 		
 		// Default Log Filters for loading initial data
 		start_Date_Log_Filter = getUTCPastDate();
@@ -113,19 +102,19 @@ public class SharedData{
 		};
 		
 		// Check if the main directory exists
-		File user_Input = new File(newFilePath);
-		if (!user_Input.exists()) {
-			Platform.runLater(() -> showPopup("File Tree Builder","Specified file path: \n" + user_Input + "\nDoes not exist."));
+		Path userInput = Paths.get(newPath);
+		if (Files.notExists(userInput)) {
+			Platform.runLater(() -> showPopup("File Tree Builder", "Specified file path: \n" + userInput.toString() + "\nDoes not exist."));
 			return;
 		}
 		// Since the user input is valid, update global directory paths
-		updateDirNames(newFilePath);
+		updatePaths(newPath);
 		// Create all new or replace missing directories and files
-		CSV.buildFileTree();
+		FileManager.build();
 
 		timeListPopulate();
 		
-		// Schedule regular updates to the database
+		// Schedule regular updates to the Observable lists
 		ScheduledService<Void> scheduledService = new ScheduledService<>() {
 			@Override
 			protected Task<Void> createTask() {
@@ -147,54 +136,55 @@ public class SharedData{
 
 	/*  
 	Description: Update the global directory names used during
-	Usage: App.start, Setting.changeMainPath
+	Usage: App.start() , SettingsController.ChangeMainPath()
 	*/
-	private static void updateDirNames(String newFilePath){
-		
-		String log_File = "/opslog/logs";
-		String pinBoard_File = "/opslog/pinboard/pinboard.csv";
-		String calendar_File = "/opslog/calendar/calendar.csv";
-		String checklist_File = "/opslog/checklist/checklist.csv";
-		String Type_File = "/opslog/setting/type.csv";
-		String Tag_File = "/opslog/setting/tag.csv";
-		String Format_File = "/opslog/setting/format.csv";
-		String Main_Path_File = "/opslog/setting/mainpath.csv";
-		String Backup_Path_File = "/opslog/setting/backuppath.csv";
-		String Import_File = "/opslog/import/import.csv";
-		String Export_File = "/opslog/export/export.csv";
+	private static void updatePaths(String newPath) {
+		Path baseDir = Paths.get(newPath);
 
-		Log_Dir = new File(newFilePath + log_File);
-		Pin_Board_Dir = new File(newFilePath + pinBoard_File);
-		Calendar_Dir = new File(newFilePath + calendar_File);
-		Checklist_Dir = new File(newFilePath + checklist_File);
-		Type_Dir = new File(newFilePath + Type_File);
-		Tag_Dir = new File(newFilePath + Tag_File);
-		Format_Dir = new File(newFilePath + Format_File);
-		Main_Path_Dir = new File(newFilePath + Main_Path_File);
-		Backup_Path_Dir = new File(newFilePath + Backup_Path_File);
-		
-		Import_Dir = new File(newFilePath + Import_File);
-		Export_Dir = new File(newFilePath + Export_File);
-		
+		Path logDir = baseDir.resolve("opslog/logs");
+		Path pinBoardDir = baseDir.resolve("opslog/pinboard/pinboard.csv");
+		Path calendarDir = baseDir.resolve("opslog/calendar/calendar.csv");
+		Path checklistDir = baseDir.resolve("opslog/checklist/checklist.csv");
+		Path typeDir = baseDir.resolve("opslog/setting/type.csv");
+		Path tagDir = baseDir.resolve("opslog/setting/tag.csv");
+		Path formatDir = baseDir.resolve("opslog/setting/format.csv");
+		Path mainPathDir = baseDir.resolve("opslog/setting/mainpath.csv");
+		Path backupPathDir = baseDir.resolve("opslog/setting/backuppath.csv");
+		Path importDir = baseDir.resolve("opslog/import/import.csv");
+		Path exportDir = baseDir.resolve("opslog/export/export.csv");
+
+		Log_Dir = logDir;
+		Pin_Board_Dir = pinBoardDir;
+		Calendar_Dir = calendarDir;
+		Checklist_Dir = checklistDir;
+		Type_Dir = typeDir;
+		Tag_Dir = tagDir;
+		Format_Dir = formatDir;
+		Main_Path_Dir = mainPathDir;
+		Backup_Path_Dir = backupPathDir;
+		Import_Dir = importDir;
+		Export_Dir = exportDir;
 	}
 
 	public static void showPopup(String title, String message ){
 		Popup popup = new Popup();
 		popup.display(title, message);
 	}
-
+	
 	private static void loadData(){
-		CSV.readBatchCSV(Log_Dir, Log_List, log_Filters);
-		CSV.readSingleCSV(Pin_Board_Dir, Pin_Board_List);
-		CSV.readSingleCSV(Calendar_Dir, Calendar_List);
-		CSV.readSingleCSV(Checklist_Dir, Checklist_List);
-		CSV.readSingleCSV(Type_Dir, Type_List);
-		CSV.readSingleCSV(Tag_Dir, Tag_List);
-		CSV.readSingleCSV(Format_Dir, Format_List);
-		CSV.readSingleCSV(Main_Path_Dir, Main_Path_List);
-		CSV.readSingleCSV(Backup_Path_Dir, Backup_Path_List);
+		// Array of directories
+		Path [] paths = {
+			Log_Dir, Pin_Board_Dir, Calendar_Dir,
+			Checklist_Dir, Type_Dir, Tag_Dir, 
+			Format_Dir, Main_Path_Dir, Backup_Path_Dir
+		
+		
 	}
 
+	private static void readCSV(Path path){
+		List<String[]> temp_list= CSV.read();
+	}
+	
 	public static String getUTCDate() {
 		String currentDate = LocalDate.now(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyy_MMM_dd"));
 		return currentDate;

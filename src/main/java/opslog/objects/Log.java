@@ -1,8 +1,9 @@
-package opslog;
-
+package opslog.objects;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 /*
 
@@ -14,20 +15,20 @@ newLogEntry.setTag("System");
 newLogEntry.setInitials("JD");
 newLogEntry.setDescription("Application started successfully");
 
-LogManager.addLogEntry(newLogEntry);
+LogManager.addLog(newLogEntry);
 
 */
-public class LogEntry {
+public class Log{
 
 	private final StringProperty date = new SimpleStringProperty();
 	private final StringProperty time = new SimpleStringProperty();
-	private final StringProperty type = new SimpleStringProperty();
-	private final StringProperty tag = new SimpleStringProperty();
+	private final ObjectProperty<Type> type = new SimpleObjectProperty<>();
+	private final ObjectProperty<Tag> tag = new SimpleObjectProperty<>();
 	private final StringProperty initials = new SimpleStringProperty();
 	private final StringProperty description = new SimpleStringProperty();
 
 	// Constructor to initialize a LogEntry
-	public LogEntry(String date, String time, String type, String tag, String initials, String description) {
+	public Log(String date, String time, Type type, Tag tag, String initials, String description) {
 		this.date.set(date);
 		this.time.set(time);
 		this.type.set(type);
@@ -50,19 +51,29 @@ public class LogEntry {
 	// Property for time
 	public StringProperty timeProperty() {return time;}
 
+	/* 
+	 *Example usage of tag in a calendar object
+	 *Create a new Tag with a title and color
+	 *Tag workTag = new Tag("Work", "Hatch");
+	*/
 	// Getter for type
-	public String getType() { return type.get(); }
+	public Type getType() { return type.get(); }
 	// Setter for type
-	public void setType(String newType) { type.set(newType); }
+	public void setType(Type newType) { type.set(newType); }
 	// Property for type
-	public StringProperty typeProperty() {return type;}
-	
+	public ObjectProperty<Type> typeProperty() { return type; }
+
+	/* 
+	 *Example usage of tag in a calendar object
+	 *Create a new Tag with a title and color
+	 *Tag workTag = new Tag("Work", Color.BLUE);
+	*/
 	// Getter for tag
-	public String getTag() { return tag.get(); }
+	public Tag getTag() { return tag.get(); }
 	// Setter for tag
-	public void setTag(String newTag) { tag.set(newTag); }
+	public void setTag(Tag newTag) { tag.set(newTag); }
 	// Property for tag
-	public StringProperty tagProperty() {return tag;}
+	public ObjectProperty<Tag> tagProperty() { return tag; }
 
 	// Getter for initials
 	public String getInitials() { return initials.get(); }
@@ -77,15 +88,4 @@ public class LogEntry {
 	public void setDescription(String newDescription) { description.set(newDescription); }
 	// Property for description
 	public StringProperty descriptionProperty() {return description;}
-
-	// Optional: Override toString() for better display in TableView
-	@Override
-	public String toString() {
-		return date.get() + " " + time.get() + " (" + type.get() + ")";
-	}
-
-	// Optional: Convert LogEntry to CSV format
-	public String toCSV() {
-		return String.join(",", getDate(), getTime(), getType(), getTag(), getInitials(), getDescription());
-	}
 }

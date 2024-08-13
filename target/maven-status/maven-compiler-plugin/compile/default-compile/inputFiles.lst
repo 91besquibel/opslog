@@ -4,7 +4,7 @@
 /home/runner/opslog/src/main/java/opslog/EventController.java
 /home/runner/opslog/src/main/java/opslog/EventCreator.java
 /home/runner/opslog/src/main/java/opslog/Factory.java
-/home/runner/opslog/src/main/java/opslog/LogEntry.java
+/home/runner/opslog/src/main/java/opslog/FileManager.java
 /home/runner/opslog/src/main/java/opslog/LogManager.java
 /home/runner/opslog/src/main/java/opslog/LogUI.java
 /home/runner/opslog/src/main/java/opslog/Popup.java
@@ -12,3 +12,8 @@
 /home/runner/opslog/src/main/java/opslog/Settings.java
 /home/runner/opslog/src/main/java/opslog/SettingsController.java
 /home/runner/opslog/src/main/java/opslog/SharedData.java
+/home/runner/opslog/src/main/java/opslog/objects/Calendar.java
+/home/runner/opslog/src/main/java/opslog/objects/Format.java
+/home/runner/opslog/src/main/java/opslog/objects/Log.java
+/home/runner/opslog/src/main/java/opslog/objects/Tag.java
+/home/runner/opslog/src/main/java/opslog/objects/Type.java
