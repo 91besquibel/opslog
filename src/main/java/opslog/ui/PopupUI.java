@@ -1,4 +1,4 @@
-package opslog;
+package opslog.ui;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,8 +9,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
 
-public class Popup {
+public class PopupUI implements UpdateListener{
 	private Label messageLabel;
 	private VBox layout;
 	private Stage popupWindow;

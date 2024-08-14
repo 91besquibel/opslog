@@ -1,4 +1,4 @@
-package opslog;
+package opslog.ui;
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogUI{
+public class LogUI implements UpdateListener{
 
 	public static SplitPane root;
 

@@ -1,9 +1,10 @@
-package opslog;
+package opslog.ui;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.nio.file.Path;
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
@@ -20,14 +21,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.*;  // Add other necessary import statements as needed
+import javafx.scene.control.*; 
 import javafx.scene.layout.Priority;
 
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
 
-
-
-public class SettingsController{
-	private static final Logger logger = Logger.getLogger(App.class.getName());
+public class Settings implements UpdateListener{
+	
+	private static final Logger logger = Logger.getLogger(Settings.class.getName());
 	private static final String classTag = "SettingsController";
 
 	private static final double width_Standard = 100.0;
@@ -37,11 +43,18 @@ public class SettingsController{
 	ObservableList<String> list_MainPath = FXCollections.observableArrayList();
 	
 	private static ScrollPane root;
+
+	private final ObservableList<Parent> tempParentList = FXCollections.observableArrayList();
+	private final ObservableList<Child> tempChildList = FXCollections.observableArrayList();
+	
 	
 	public void createSettingsUI(){
 		try{
 			logger.log(Level.INFO, classTag + ".createSettingsUI: Creating settings UI");
 
+			// Register for updates to prevent ui interuption
+			UpdateManager.registerListener("ParentList", this);
+			
 			// Parent Checklist creation card:
 			VBox parent_Card = create_Parent_Card();
 
@@ -95,7 +108,8 @@ public class SettingsController{
 		
 		// Parent Selection
 		Label parent_Selection_Label = Factory.custom_Label("Edit Parent",width_Standard, height_Standard);
-		ComboBox<String> parent_Selection_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		ComboBox<T> parent_Selection_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		parent_Selection_ComboBox.setItems(ParentManager.parentList);
 		HBox parent_Selection_Frame = Factory.custom_HBox();
 		parent_Selection_Frame.getChildren().addAll(parent_Selection_Label, parent_Selection_ComboBox);
 
@@ -119,25 +133,26 @@ public class SettingsController{
 
 		// Parent Start Time
 		Label parent_StartTime_Label = Factory.custom_Label("Start Time",width_Standard, height_Standard);
-		ComboBox<String> parent_StartTime_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		ComboBox<T> parent_StartTime_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
 		HBox parent_StartTime_Frame = Factory.custom_HBox();
 		parent_StartTime_Frame.getChildren().addAll(parent_StartTime_Label, parent_StartTime_ComboBox);
 
 		// Parent Stop Time
 		Label parent_StopTime_Label = Factory.custom_Label("Stop Time",width_Standard, height_Standard);
-		ComboBox<String> parent_StopTime_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		ComboBox<T> parent_StopTime_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		parent_StopTime_ComboBox.setItems(SharedData.Time_List);
 		HBox parent_StopTime_Frame = Factory.custom_HBox();
 		parent_StopTime_Frame.getChildren().addAll(parent_StopTime_Label, parent_StopTime_ComboBox);
 
 		// Parent Type
 		Label parent_Type_Label = Factory.custom_Label("Type",width_Standard, height_Standard);
-		ComboBox<String> parent_Type_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		ComboBox<T> parent_Type_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
 		HBox parent_Type_Frame = Factory.custom_HBox();
 		parent_Type_Frame.getChildren().addAll(parent_Type_Label, parent_Type_ComboBox);
 		
 		// Parent Tag
 		Label parent_Tag_Label = Factory.custom_Label("Tag",width_Standard, height_Standard);
-		ComboBox<String> parent_Tag_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
+		ComboBox<T> parent_Tag_ComboBox = Factory.custom_ComboBox(width_Standard, height_Standard);
 		HBox parent_Tag_Frame = Factory.custom_HBox();
 		parent_Tag_Frame.getChildren().addAll(parent_Tag_Label, parent_Tag_ComboBox);
 
@@ -148,15 +163,26 @@ public class SettingsController{
 		parent_Description_Frame.getChildren().addAll(parent_Description_Label,parent_Description_TextField);
 
 		// Parent Buttons
-		EventHandler<ActionEvent> parent_Add_Action = event -> System.out.println("Creating Parent Checklist");
 		Button parent_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
-		EventHandler<ActionEvent> parent_Edit_Action = event ->  System.out.println("Editing Parent Checklist");
 		Button parent_Edit_Button = Factory.custom_Button("/IconLib/editIW.png", "/IconLib/editIG.png");
-		EventHandler<ActionEvent> parent_Delete_Action = event-> System.out.println("Deleting Parent Checklist");
 		Button parent_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
 		HBox parent_Button_Frame = Factory.custom_HBox();
 		parent_Button_Frame.getChildren().addAll(parent_Add_Button,parent_Edit_Button,parent_Delete_Button);
 
+		// Parent Listeners
+		parent_StartDate_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_StopDate_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_StartTime_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_StopTime_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_Type_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_Tag_ComboBox.valueProperty().addListener(this::updateParentList);
+		parent_Description_TextField.textProperty().addListener(this::updateParentList);
+
+		// Parent button actions
+		parent_Add_Button.setOnAction(event -> handle_Parent("Add"));
+		parent_Edit_Button.setOnAction(event -> handle_Parent("Edit"));
+		parent_Delete_Button.setOnAction(event -> handle_Parent("Delete"));
+			
 		// Parent Card
 		VBox parent_Card = Factory.custom_VBox();
 		parent_Card.getChildren().addAll(
@@ -168,7 +194,6 @@ public class SettingsController{
 		// Return to initialize();
 		return parent_Card;
 	}
-
 	private static VBox create_Child_Card(){
 
 		// Card Title
@@ -239,6 +264,20 @@ public class SettingsController{
 		HBox child_Button_Frame = Factory.custom_HBox();
 		child_Button_Frame.getChildren().addAll(child_Add_Button,child_Edit_Button,child_Delete_Button);
 
+		// Child Listeners
+		child_StartDate_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_StopDate_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_StartTime_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_StopTime_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_Type_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_Tag_ComboBox.valueProperty().addListener(this::updateChildList);
+		child_Description_TextField.textProperty().addListener(this::updateChildList);
+
+		// Child button actions
+		child_Add_Button.setOnAction(event -> handle_Parent("Add"));
+		child_Edit_Button.setOnAction(event -> handle_Parent("Edit"));
+		child_Delete_Button.setOnAction(event -> handle_Parent("Delete"));
+
 		// Child Card
 		VBox child_Card = Factory.custom_VBox();
 		child_Card.getChildren().addAll(
@@ -251,7 +290,6 @@ public class SettingsController{
 		return child_Card;
 		
 	}
-
 	private static VBox create_MPath_Card(){
 
 		// Main Path Title
@@ -287,7 +325,6 @@ public class SettingsController{
 		return mpath_Card;
 		
 	}
-
 	private static VBox create_BPath_Card(){
 		
 		// Backup Path Title
@@ -310,10 +347,10 @@ public class SettingsController{
 		Button bpath_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
 
 		Button bpath_Switch_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
-		bpath_Switch_Button.setOnAction(event -> handle_bpath("Switch",bpath_Selection_ComboBox.getValuOf()));
+		bpath_Switch_Button.setOnAction(event -> handle_bpath("Switch", bpath_Selection_ComboBox.getValue()));
 		
 		Button bpath_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
-		bpath_Delete_Button.setOnAction(event -> handle_bpath("Delete",bpath_CreationTextField.get()));
+		bpath_Delete_Button.setOnAction(event -> handle_bpath("Delete", bpath_Creation_TextField.getText()));
 		HBox bpath_Button_Frame = Factory.custom_HBox();
 		bpath_Button_Frame.getChildren().addAll(bpath_Switch_Button, bpath_Add_Button, bpath_Delete_Button);
 
@@ -323,7 +360,6 @@ public class SettingsController{
 		return bpath_Card;
 
 	}
-
 	private static VBox create_Type_Card(){
 
 		// Type Title
@@ -347,12 +383,13 @@ public class SettingsController{
 		HBox type_Pattern_Frame = Factory.custom_HBox();
 		type_Pattern_Frame.getChildren().addAll(type_Pattern_Label, type_Pattern_TextField);
 		
-		// Type Buttons
+		// Type Add button
 		Button type_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
 		type_Add_Button.setOnAction( event -> handle_Type("Add", type_Name_TextField.getText(), type_Pattern_TextField.getText()));
-		EventHandler<ActionEvent> type_Delete_Action = event-> System.out.println("Removeing Type");
+		// Type Delete button
 		Button type_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
 		type_Delete_Action.setOnAction(event -> handle_Type("Delete", type_Name_TextField.getText(), type_Pattern_TextField.getText()));
+		// Frame for buttons
 		HBox type_Button_Frame = Factory.custom_HBox();
 		type_Button_Frame.getChildren().addAll(type_Add_Button,type_Delete_Button);
 
@@ -364,17 +401,16 @@ public class SettingsController{
 		return type_Card;
 		
 	}
-
 	private static VBox create_Tag_Card(){
 		
 		// Tag Title
 		Label tag_Label = Factory.custom_Label("Tag Presets",width_Large, height_Standard);
 
 		// Tag List
-		List<TableColumn<LogEntry, String>> columns = new ArrayList<>();		
-		TableColumn<LogEntry, String> column = new TableColumn<>();
+		List<TableColumn<Tag, String>> columns = new ArrayList<>();		
+		TableColumn<Tag, String> column = new TableColumn<>();
 		columns.add(column);
-		TableView<LogEntry> tag_List_TableView = Factory.custom_TableView(columns, width_Large, width_Large);
+		TableView<Tag> tag_List_TableView = Factory.custom_TableView(columns, width_Large, width_Large);
 
 		// Tag Name
 		Label tag_Name_Label = Factory.custom_Label("Name",width_Standard, height_Standard);
@@ -389,9 +425,7 @@ public class SettingsController{
 		tag_Color_Frame.getChildren().addAll(tag_Color_Label, tag_Color_TextField);
 
 		// Tag Buttons
-		EventHandler<ActionEvent> tag_Add_Action = event -> System.out.println("Creating Tag");
 		Button tag_Add_Button = Factory.custom_Button("/IconLib/addIW.png", "/IconLib/addIG.png");
-		EventHandler<ActionEvent> tag_Delete_Action = event-> System.out.println("Removeing Tag");
 		Button tag_Delete_Button = Factory.custom_Button("/IconLib/deleteIW.png", "/IconLib/deleteIG.png");
 		HBox tag_Button_Frame = Factory.custom_HBox();
 		tag_Button_Frame.getChildren().addAll(tag_Add_Button,tag_Delete_Button);
@@ -404,7 +438,6 @@ public class SettingsController{
 		return tag_Card;
 		
 	}
-
 	private static VBox create_Format_Card(){
 		// Format Title
 		Label format_Label = Factory.custom_Label("Format Presets",width_Large, height_Standard);
@@ -441,7 +474,6 @@ public class SettingsController{
 		// Return to initialize()
 		return format_Card;
 	}
-
 	private static VBox create_Profile_Card(){
 
 		// Profile Title
@@ -535,48 +567,147 @@ public class SettingsController{
 		return profile_Card;
 		
 	}
+
+	private static void updateParentList(){
+		// Method to update the ObservableList
+		private void updateParentList(ObservableValue<?> observable, Object oldValue, Object newValue) {
+			Parent tempParent = new Parent(
+
+				parent_Name_TextField.getText(),
+				parent_StartDate_DatePicker.getValue() != null ? parent_StartDate_DatePicker.getValue().toString() : "",
+				parent_StopDate_DatePicker.getValue() != null ? parent_StopDate_DatePicker.getValue().toString() : "",
+				parent_StartTime_ComboBox.getValue(),
+				parent_StopTime_ComboBox.getText(),
+				parent_Type_ComboBox.getValue(),
+				parent_Tag_ComboBox.getValue(),
+				descriptionField.getText()
+				
+			);
+
+			// Clear and add the new Parent object to the list
+			tempParentList.clear();
+			tempParentList.add(tempParent);
+		}
+	}
+	private static void updateChildList(){
+		// Method to update the ObservableList
+		private void updateChildList(ObservableValue<?> observable, Object oldValue, Object newValue) {
+			Child tempChild = new Child(
+
+				child_Name_TextField.getText(),
+				child_StartDate_DatePicker.getValue() != null ? child_StartDate_DatePicker.getValue().toString() : "",
+				child_StopDate_DatePicker.getValue() != null ? child_StopDate_DatePicker.getValue().toString() : "",
+				child_StartTime_ComboBox.getValue(),
+				child_StopTime_ComboBox.getText(),
+				child_Type_ComboBox.getValue(),
+				child_Tag_ComboBox.getValue(),
+				descriptionField.getText()
+
+			);
+
+			// Clear and add the new Parent object to the list
+			tempChildList.clear();
+			tempChildList.add(tempChild);
+		}
+	}
+
+	private static void handle_Parent(String action){
+		switch (action) {
+			case "Add":
+				CSV.write(FileManager.Parent_Dir, data);
+				break;
+			case "Delete":
+				CSV.delete(FileManager.Parent_Dir, data);
+				break;
+			case "Edit":
+				CSV.edit();
+			default:
+				break;
+		}
+	}
 	
-	public static void handle_Type(String action, String name, String pattern){
+	private static void handle_Child(String action, String name, String pattern){}
+	private static void handle_MPath(String action, String name, String pattern){}
+	private static void handle_BPath(String action, String name, String pattern){}
+	private static void handle_Type(String action, String name, String pattern){
 		String [] data = new String[2];
+		data.add(name); // index 0
+		data.add(pattern); // index 1
 		
 		if (action.equals("Add")){
-			CSV.write(SharedData.Type_Dir, data);
+			CSV.write(FileManager.Type_Dir, data);
 			System.out.println("Adding "+name+" with pattern "+pattern);
 		} else if (action.equals("Delete")) {
 			// Write the code to delet in the CSV class
+			CSV.delete(FileManager.Type_Dir, data);
 			System.out.println("Deleting "+name+" with pattern "+pattern);
 		} else {
-			System.out.println("Input from button incorrect");
+			System.out.println("Input from button incorrect?");
 		}
 	}
-
-	public static void handle_Tag(String action, String name, String pattern){
-		String [] data = new String [] (name,pattern);
+	private static void handle_Tag(String action, String name, String pattern){
+		String[] data = new String[] {name, pattern};
 		if (action.equals("Add")){
-			CSV.write(SharedData.Tag_Dir,data);
+			CSV.write(FileManager.Tag_Dir, data);
 			System.out.println("Adding "+name+" with pattern "+pattern);
 		} else if (action.equals("Delete")) {
 			// Write the code to delet in the CSV class
+			CSV.delete(FileManager.Tag_Dir, data);
 			System.out.println("Deleting "+name+" with pattern "+pattern);
 		} else {
 			System.out.println("Input from button incorrect");
 		}
 	}
-
-	public static void handle_Format(String action, String name, String pattern){
-		String [] data = new String [] (name,pattern);
+	private static void handle_Format(String action, String name, String pattern){
+		String [] data = new String[] {name, pattern};
 		if (action.equals("Add")){
-			CSV.write(SharedData.Format_Dir, data);
+			CSV.write(FileManager.Format_Dir, data);
 			System.out.println("Adding "+name+" with pattern "+pattern);
 		} else if (action.equals("Delete")) {
-			// Write the code to delet in the CSV class
+			CSV.delete(FileManager.Format_Dir, data);
 			System.out.println("Deleting "+name+" with pattern "+pattern);
 		} else {
 			System.out.println("Input from button incorrect");
 		}
 	}
 
-	public static ObservableList<String> array_Converter(ObservableList<String[]> oldList, int index){
+	private static void handle_Profile(String action, String name, String pattern){}
+
+	@Override
+	public void beforeUpdate(String listName) {
+		switch (listName) {
+			case "ParentList":
+				// Store the current selection for ParentList
+				Parent selectedParent = parent_Selection_ComboBox.getSelectionModel().getSelectedItem();
+				break;
+			case "ChildList":
+				// Store the current selection for OtherAssetList
+				Child selectedChild = other_Asset_ComboBox.getSelectionModel().getSelectedItem();
+				break;
+		}
+	}
+
+	@Override
+	public void afterUpdate(String listName) {
+		switch (listName) {
+			case "ParentList":
+				// Restore the previous selection for ParentList
+				Parent selectedParent = parent_Selection_ComboBox.getSelectionModel().getSelectedItem();
+				if (selectedParent != null && ParentManager.getParentList().contains(selectedParent)) {
+					parent_Selection_ComboBox.getSelectionModel().select(selectedParent);
+				}
+				break;
+			case "ChildList":
+				// Restore the previous selection for OtherAssetList
+				OtherAsset selectedChild = Child_Selection_ComboBox.getSelectionModel().getSelectedItem();
+				if (selectedChild != null && OtherAssetManager.getAssetList().contains(selectedChild)) {
+					other_Asset_ComboBox.getSelectionModel().select(selectedChild);
+				}
+				break;
+		}
+	}
+	
+	private static ObservableList<String> array_Converter(ObservableList<String[]> oldList, int index){
 		
 		ObservableList<String> newList = FXCollections.observableArrayList();
 		for (String[] row : oldList) {

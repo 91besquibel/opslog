@@ -1,4 +1,4 @@
-package opslog;
+package opslog.util;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,6 +54,13 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
+
 public class Factory{
 
 	private static double spacing = 5.0;
@@ -66,72 +73,71 @@ public class Factory{
 	private static double button_Height = 18.0;
 	
 	
-	public static TableView<LogEntry> custom_TableView( List<TableColumn<LogEntry, String>> columns, double width, double height){
-		TableView<LogEntry> tableView = new TableView<>();
+	public static <T> TableView<T> custom_TableView( List<TableColumn<T, String>> columns, double width, double height){
+		TableView<T> tableView = new TableView<>();
 		
-		for(TableColumn<LogEntry, String> column : columns){
-			
+		for(TableColumn<T, String> column : columns){
+			//Cell Factory
 		}
 		
 		tableView.setRowFactory(tr -> {
-			TableRow<LogEntry> row = new TableRow<>();
-			row.backgroundProperty().bind(Settings.secondary_Background_Property);
-			row.borderProperty().bind(Settings.standard_Border_Property);
+			TableRow<T> row = new TableRow<>();
+			row.backgroundProperty().bind(Customizations.secondary_Background_Property);
+			row.borderProperty().bind(Customizations.standard_Border_Property);
 			return row;
 		});
 
 		tableView.getColumns().addAll(columns);
 		tableView.setPadding(new Insets(5));
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-		tableView.backgroundProperty().bind(Settings.primary_Background_Property);
-		tableView.borderProperty().bind(Settings.standard_Border_Property);
+		tableView.backgroundProperty().bind(Customizations.primary_Background_Property);
+		tableView.borderProperty().bind(Customizations.standard_Border_Property);
 
 		return tableView;
 	}
 	
-	public static ListView<String> custom_ListView(double width, double height, SelectionMode selectionMode){
-		ListView<String> listView = new ListView<>();
+	public static <T> ListView<T> custom_ListView(double width, double height, SelectionMode selectionMode){
+		ListView<T> listView = new ListView<>();
 		
 		listView.setPrefWidth(width);
 		listView.setPrefHeight(height);
 		listView.setEditable(false);
 		listView.setFocusTraversable(true);
-		listView.backgroundProperty().bind(Settings.primary_Background_Property);
-		listView.borderProperty().bind(Settings.standard_Border_Property);
+		listView.backgroundProperty().bind(Customizations.primary_Background_Property);
+		listView.borderProperty().bind(Customizations.standard_Border_Property);
 		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
 
 		listView.setCellFactory(lv -> {
-			ListCell<String> cell = new ListCell<>() {
+			ListCell<T> cell = new ListCell<>() {
 				private final Text text = new Text();
 
 				{
-					text.fillProperty().bind(Settings.text_Color);
-					text.fontProperty().bind(Settings.text_Property);
+					text.fillProperty().bind(Customizations.text_Color);
+					text.fontProperty().bind(Customizations.text_Property);
 					text.setTextAlignment(TextAlignment.CENTER);
 					text.wrappingWidthProperty().bind(listView.widthProperty());
 					setGraphic(text);
-					text.textProperty().bind(itemProperty());
 				}
 
 				@Override
-				protected void updateItem(String item, boolean empty) {
+				protected void updateItem(T item, boolean empty) {
 					super.updateItem(item, empty);
 					if (empty || item == null) {
 						setText(null);
 						setGraphic(null);
 						setBackground(null);
 					} else {
-						setText(item);
-						text.setText(item);
+						setText(item.toString());
+						text.setText(item.toString());
 						if (listView.getSelectionModel().isSelected(getIndex())) {
-							backgroundProperty().bind(Settings.selected_Background_Property);
+							backgroundProperty().bind(Customizations.selected_Background_Property);
 						} else {	
-							backgroundProperty().bind(Settings.secondary_Background_Property);				
+							backgroundProperty().bind(Customizations.secondary_Background_Property);				
 						}
 						if (listView.getFocusModel().isFocused(getIndex())){
-							borderProperty().bind(Settings.focus_Border_Property);
+							borderProperty().bind(Customizations.focus_Border_Property);
 						} else {
-							borderProperty().bind(Settings.standard_Border_Property);
+							borderProperty().bind(Customizations.standard_Border_Property);
 						}
 					}
 				}
@@ -148,53 +154,53 @@ public class Factory{
 		return listView;
 	}
 	
-	public static ComboBox<String> custom_ComboBox(double width, double height){
-		ComboBox<String> combo_Box = new ComboBox<>();
+	public static <T> ComboBox<T> custom_ComboBox(double width, double height){
+		ComboBox<T> combo_Box = new ComboBox<>();
 		
 		combo_Box.setPrefWidth(width);
 		combo_Box.setPrefHeight(height);
 		//combo_Box.setPadding(insets);
 		combo_Box.setEditable(false);
 		combo_Box.setFocusTraversable(true);
-		combo_Box.backgroundProperty().bind(Settings.secondary_Background_Property);
-		combo_Box.borderProperty().bind(Settings.standard_Border_Property);
-		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Settings.focus_Border_Property);});
-		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Settings.standard_Border_Property);});
+		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		combo_Box.borderProperty().bind(Customizations.standard_Border_Property);
+		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Customizations.focus_Border_Property);});
+		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Customizations.standard_Border_Property);});
 
-		combo_Box.setCellFactory(lv -> new ListCell<String>() {
+		combo_Box.setCellFactory(lv -> new ListCell<T>() {
 			{
-				backgroundProperty().bind(Settings.secondary_Background_Property);
+				backgroundProperty().bind(Customizations.secondary_Background_Property);
 			}
 			@Override
-			protected void updateItem(String item, boolean empty) {
+			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
 					setStyle("");
 				} else {
-					Text text = new Text(item);
-					text.setFill(Settings.text_Color.get());
-					text.setFont(Settings.text_Property.get());
+					Text text = new Text(item.toString());
+					text.setFill(Customizations.text_Color.get());
+					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
 			}
 		});
 
-		combo_Box.setButtonCell(new ListCell<String>() {
+		combo_Box.setButtonCell(new ListCell<T>() {
 			{
-				backgroundProperty().bind(Settings.secondary_Background_Property);
+				backgroundProperty().bind(Customizations.secondary_Background_Property);
 			}
 			@Override
-			protected void updateItem(String item, boolean empty) {
+			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
 					setStyle("");
 				} else {
-					Text text = new Text(item);
-					text.setFill(Settings.text_Color.get());
-					text.setFont(Settings.text_Property.get());
+					Text text = new Text(item.toString());
+					text.setFill(Customizations.text_Color.get());
+					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
@@ -212,14 +218,14 @@ public class Factory{
 		//combo_Box.setPadding(insets);
 		combo_Box.setEditable(false);
 		combo_Box.setFocusTraversable(true);
-		combo_Box.backgroundProperty().bind(Settings.secondary_Background_Property);
-		combo_Box.borderProperty().bind(Settings.standard_Border_Property);
-		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Settings.focus_Border_Property);});
-		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Settings.standard_Border_Property);});
+		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		combo_Box.borderProperty().bind(Customizations.standard_Border_Property);
+		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Customizations.focus_Border_Property);});
+		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Customizations.standard_Border_Property);});
 
 		combo_Box.setCellFactory(lv -> new ListCell<Integer>() {
 			{
-				backgroundProperty().bind(Settings.secondary_Background_Property);
+				backgroundProperty().bind(Customizations.secondary_Background_Property);
 			}
 			@Override
 			protected void updateItem(Integer item, boolean empty) {
@@ -229,8 +235,8 @@ public class Factory{
 					setStyle("");
 				} else {
 					Text text = new Text(item.toString());
-					text.setFill(Settings.text_Color.get());
-					text.setFont(Settings.text_Property.get());
+					text.setFill(Customizations.text_Color.get());
+					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
@@ -239,7 +245,7 @@ public class Factory{
 
 		combo_Box.setButtonCell(new ListCell<Integer>() {
 			{
-				backgroundProperty().bind(Settings.secondary_Background_Property);
+				backgroundProperty().bind(Customizations.secondary_Background_Property);
 			}
 			@Override
 			protected void updateItem(Integer item, boolean empty) {
@@ -249,8 +255,8 @@ public class Factory{
 					setStyle("");
 				} else {
 					Text text = new Text(item.toString());
-					text.setFill(Settings.text_Color.get());
-					text.setFont(Settings.text_Property.get());
+					text.setFill(Customizations.text_Color.get());
+					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
 				}
@@ -267,16 +273,16 @@ public class Factory{
 		date_Picker.setPrefHeight(height);
 		date_Picker.setEditable(false);
 		date_Picker.setFocusTraversable(false);
-		date_Picker.backgroundProperty().bind(Settings.secondary_Background_Property);
-		date_Picker.borderProperty().bind(Settings.standard_Border_Property);
-		date_Picker.setOnMouseEntered(event -> {date_Picker.borderProperty().bind(Settings.focus_Border_Property);});
-		date_Picker.setOnMouseExited(event -> {date_Picker.borderProperty().bind(Settings.standard_Border_Property);});
+		date_Picker.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		date_Picker.borderProperty().bind(Customizations.standard_Border_Property);
+		date_Picker.setOnMouseEntered(event -> {date_Picker.borderProperty().bind(Customizations.focus_Border_Property);});
+		date_Picker.setOnMouseExited(event -> {date_Picker.borderProperty().bind(Customizations.standard_Border_Property);});
 		date_Picker.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
 			// date_Picker.getEditor().setFill(text_Color.get());
-			date_Picker.getEditor().setFont(Settings.text_Property.get());
+			date_Picker.getEditor().setFont(Customizations.text_Property.get());
 		});
-		date_Picker.getEditor().backgroundProperty().bind(Settings.secondary_Background_Property);
-		date_Picker.getEditor().borderProperty().bind(Settings.transparent_Border_Property);
+		date_Picker.getEditor().backgroundProperty().bind(Customizations.secondary_Background_Property);
+		date_Picker.getEditor().borderProperty().bind(Customizations.transparent_Border_Property);
 
 		Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
 			public DateCell call(DatePicker date_Picker){
@@ -305,12 +311,12 @@ public class Factory{
 	public static ColorPicker custom_ColorPicker(double width, double height){
 		ColorPicker color_Picker = new ColorPicker();
 		
-		color_Picker.backgroundProperty().bind(Settings.secondary_Background_Property);
-		color_Picker.borderProperty().bind(Settings.standard_Border_Property);
+		color_Picker.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		color_Picker.borderProperty().bind(Customizations.standard_Border_Property);
 		color_Picker.setPrefWidth(width);
 		color_Picker.setPrefHeight(height);
-		color_Picker.setOnMouseEntered(event -> {color_Picker.borderProperty().bind(Settings.focus_Border_Property);});
-		color_Picker.setOnMouseExited(event -> {color_Picker.borderProperty().bind(Settings.standard_Border_Property);});
+		color_Picker.setOnMouseEntered(event -> {color_Picker.borderProperty().bind(Customizations.focus_Border_Property);});
+		color_Picker.setOnMouseExited(event -> {color_Picker.borderProperty().bind(Customizations.standard_Border_Property);});
 		
 		return color_Picker;
 	}
@@ -320,8 +326,8 @@ public class Factory{
 		
 		label.setPrefWidth(width);
 		label.setPrefHeight(height);
-		label.textFillProperty().bind(Settings.text_Color);
-		label.fontProperty().bind(Settings.text_Property_Bold);
+		label.textFillProperty().bind(Customizations.text_Color);
+		label.fontProperty().bind(Customizations.text_Property_Bold);
 
 		label.setAlignment(Pos.CENTER);
 
@@ -333,12 +339,12 @@ public class Factory{
 		
 		text_Field.setPrefWidth(width);
 		text_Field.setPrefHeight(height);
-		text_Field.fontProperty().bind(Settings.text_Property);
+		text_Field.fontProperty().bind(Customizations.text_Property);
 		// can't use text_Field.fillProperty().bind(text_Color); becuase it doesn't work with the text field
-		text_Field.borderProperty().bind(Settings.standard_Border_Property);
-		text_Field.backgroundProperty().bind(Settings.secondary_Background_Property);
-		text_Field.setOnMouseEntered(event -> {text_Field.borderProperty().bind(Settings.focus_Border_Property);});	
-		text_Field.setOnMouseExited(event -> {text_Field.borderProperty().bind(Settings.standard_Border_Property);});
+		text_Field.borderProperty().bind(Customizations.standard_Border_Property);
+		text_Field.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		text_Field.setOnMouseEntered(event -> {text_Field.borderProperty().bind(Customizations.focus_Border_Property);});	
+		text_Field.setOnMouseExited(event -> {text_Field.borderProperty().bind(Customizations.standard_Border_Property);});
 
 		return text_Field;
 	}
@@ -348,9 +354,9 @@ public class Factory{
 		
 		textArea.setPrefWidth(width);
 		textArea.setPrefHeight(height);
-		textArea.fontProperty().bind(Settings.text_Property);
-		textArea.backgroundProperty().bind(Settings.secondary_Background_Property);
-		textArea.borderProperty().bind(Settings.standard_Border_Property);
+		textArea.fontProperty().bind(Customizations.text_Property);
+		textArea.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		textArea.borderProperty().bind(Customizations.standard_Border_Property);
 		
 		textArea.setWrapText(true);
 
@@ -363,8 +369,8 @@ public class Factory{
 		button.setPrefWidth(button_Width);
 		button.setPrefHeight(button_Height);
 		button.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
-		button.backgroundProperty().bind(Settings.transparent_Background_Property);
-		button.borderProperty().bind(Settings.standard_Border_Property);
+		button.backgroundProperty().bind(Customizations.transparent_Background_Property);
+		button.borderProperty().bind(Customizations.standard_Border_Property);
 		button.setGraphic
 				(new ImageView(new Image(Factory.class.getResourceAsStream
 										 (image_Standard), button_Width, button_Height, true, true))
@@ -398,7 +404,7 @@ public class Factory{
 		vbox.setSpacing(spacing);
 		vbox.setPadding(new Insets(padding, padding, padding, padding));
 		
-		vbox.backgroundProperty().bind(Settings.primary_Background_Property);
+		vbox.backgroundProperty().bind(Customizations.primary_Background_Property);
 
 		return vbox;
 	}

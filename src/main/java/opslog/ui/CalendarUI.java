@@ -1,4 +1,4 @@
-package opslog;
+package opslog.ui;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.ListView;
@@ -15,8 +15,15 @@ import javafx.geometry.Orientation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class CalendarController {
-	private static final Logger logger = Logger.getLogger(App.class.getName());
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
+
+public class CalendarUI implements UpdateListener{
+	private static final Logger logger = Logger.getLogger(CalendarUI.class.getName());
 	private static final String classTag = "CalendarController";
 
 

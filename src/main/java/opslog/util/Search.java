@@ -1,13 +1,10 @@
 package opslog.managers;
 
-import opslog.objects.Log;
-import opslog.objects.Type;
-import opslog.objects.Tag;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,7 +13,14 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchManager {
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
+
+public class Search{
 
 	private static final long DEFAULT_SEARCH_HOURS = 72;
 
@@ -37,17 +41,18 @@ public class SearchManager {
 		}
 
 		// First, get the list of files within the date and time range
-		List<File> logFiles = FileManager.searchLogsByDateRange(startDate, endDate, startTime, endTime);
+		List<Path> logFiles = FileManager.search(startDate, endDate, startTime, endTime);
 
 		// Create a list to store the filtered logs
 		List<Log> filteredLogs = new ArrayList<>();
 
-		for (File file : logFiles) {
-			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+		for (Path file : logFiles) {
+			try (BufferedReader reader = new BufferedReader(new FileReader(file.toFile()))) {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					String[] values = line.split(",");
 					if (values.length >= 6) {
+						
 						// Parse CSV line into Log object
 						Log log = new Log(values[0], values[1], Type.valueOf(values[2]), Tag.valueOf(values[3]), values[4], values[5]);
 

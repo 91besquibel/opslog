@@ -1,4 +1,4 @@
-package opslog;
+package opslog.util;
 
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
@@ -6,6 +6,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
 
 /**
  * Listener class for resizing and moving a JavaFX Stage.

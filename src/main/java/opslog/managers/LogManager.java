@@ -1,101 +1,93 @@
 package opslog.managers;
 
-import opslog.objects.Log;
-import opslog.objects.Type;
-import opslog.objects.Tag;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+// My Imports
+import opslog.managers.*;
+import opslog.listeners.*;
+import opslog.objects.*;
+import opslog.ui.*;
+import opslog.util.*;
+
+
+/* 
+Usage Example
+LogManager manager = LogManager.getInstance();
+manager.addLog(new Log("Title", "StartDate", "StopDate", "StartTime", "StopTime", new Type("Type"), new Tag("Tag"), "Description"));
+*/
 public class LogManager {
 
-	private final ObservableList<Log> logEntries = FXCollections.observableArrayList();
+	// Global ObservableList to store Log objects
+	private static LogManager instance;
+	private final ObservableList<Log> logList = FXCollections.observableArrayList();
 
-	// Add a new log entry
-	public void addLog(Log log) {
-		logEntries.add(log);
+	// Constructor to prevent instances
+	private LogManager() {}
+
+	// Public method to get the single instance
+	public static LogManager getInstance() {
+		if (instance == null) {
+			instance = new LogManager();
+		}
+		return instance;
 	}
 
-	// Remove a log entry
-	public void removeLog(Log log) {
-		logEntries.remove(log);
-	}
-
-	// Update a log entry
-	public void updateLog(Log oldLog, Log newLog) {
-		int index = logEntries.indexOf(oldLog);
-		if (index >= 0) {
-			logEntries.set(index, newLog);
+	// Add a Log to CSV file
+	public void add(Log log){
+		try {
+			String[] newRow = log.toStringArray();
+			CSV.write(Directory.Log_Dir, newRow);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	// Get all log entries
-	public ObservableList<Log> getLogEntries() {
-		return logEntries;
+	// Edit a Log in CSV file
+	public void edit(Log oldLog, Log newLog) {
+		try{
+			// Edits need to append when it comes to the logs not overwrite
+			String [] oldValue = oldLog.toStringArray();
+			String [] newValue = newLog.toStringArray();
+			CSV.edit(Directory.Log_Dir, oldValue,);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 
-	// Find logs by date
-	public ObservableList<Log> findByDate(String date) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getDate().equals(date)) {
-				results.add(log);
+	// Read Logs from a CSV file
+	public void updateLogs(Path path) {
+		Update.notifyBeforeUpdate("LogList");
+		
+		try{
+
+			List<String[]> rows = CSV.read(path);
+			for (String[] row : rows) {
+				Type type = Type.valueOf(row[2]); // Get the Type instance
+				TagManager tagManager = TagManager.getInstance();
+				Tag tag = tagManager.valueOf(row[3]);
+				Log log = new Log(row[0], row[1], type, tag, row[4], row[5]);
+				addToList(log);
 			}
+		} catch(IOException e){
+			e.printStackTrace();
 		}
-		return results;
+
+		Update.notifyAfterUpdate("LogList");
 	}
 
-	// Find logs by time
-	public ObservableList<Log> findByTime(String time) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getTime().equals(time)) {
-				results.add(log);
-			}
-		}
-		return results;
+	// Add a Log from CSV to list
+	public void addToList(Log log) {
+		logList.add(log);
 	}
 
-	// Find logs by type
-	public ObservableList<Log> findByType(Type type) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getType().equals(type)) {
-				results.add(log);
-			}
-		}
-		return results;
+	public ObservableList<Log> getLogList() {
+		return logList;
 	}
 
-	// Find logs by tag
-	public ObservableList<Log> findByTag(Tag tag) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getTag().equals(tag)) {
-				results.add(log);
-			}
-		}
-		return results;
-	}
-
-	// Find logs by initials
-	public ObservableList<Log> findByInitials(String initials) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getInitials().equalsIgnoreCase(initials)) {
-				results.add(log);
-			}
-		}
-		return results;
-	}
-
-	// Find logs by description keyword
-	public ObservableList<Log> findByDescriptionKeyword(String keyword) {
-		ObservableList<Log> results = FXCollections.observableArrayList();
-		for (Log log : logEntries) {
-			if (log.getDescription().toLowerCase().contains(keyword.toLowerCase())) {
-				results.add(log);
-			}
-		}
-		return results;
-	}
 }
+

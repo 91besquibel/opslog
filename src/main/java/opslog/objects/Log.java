@@ -5,19 +5,13 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-/*
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
 
-LogEntry newLogEntry = new LogEntry();
-newLogEntry.setDate("2024-08-09");
-newLogEntry.setTime("15:30");
-newLogEntry.setType("Info");
-newLogEntry.setTag("System");
-newLogEntry.setInitials("JD");
-newLogEntry.setDescription("Application started successfully");
-
-LogManager.addLog(newLogEntry);
-
-*/
 public class Log{
 
 	private final StringProperty date = new SimpleStringProperty();
@@ -37,55 +31,44 @@ public class Log{
 		this.description.set(description);
 	}
 
-	// Getter for date
+	// date
 	public String getDate() { return date.get(); }
-	// Setter for date
 	public void setDate(String newDate) { date.set(newDate); }
-	// Property for date
 	public StringProperty dateProperty() {return date;}
 
-	// Getter for time
+	// time
 	public String getTime() { return time.get(); }
-	// Setter for time
 	public void setTime(String newTime) { time.set(newTime); }
-	// Property for time
 	public StringProperty timeProperty() {return time;}
 
-	/* 
-	 *Example usage of tag in a calendar object
-	 *Create a new Tag with a title and color
-	 *Tag workTag = new Tag("Work", "Hatch");
-	*/
-	// Getter for type
+	// type
 	public Type getType() { return type.get(); }
-	// Setter for type
 	public void setType(Type newType) { type.set(newType); }
-	// Property for type
 	public ObjectProperty<Type> typeProperty() { return type; }
 
-	/* 
-	 *Example usage of tag in a calendar object
-	 *Create a new Tag with a title and color
-	 *Tag workTag = new Tag("Work", Color.BLUE);
-	*/
-	// Getter for tag
+	// tag
 	public Tag getTag() { return tag.get(); }
-	// Setter for tag
 	public void setTag(Tag newTag) { tag.set(newTag); }
-	// Property for tag
 	public ObjectProperty<Tag> tagProperty() { return tag; }
 
-	// Getter for initials
+	// initials
 	public String getInitials() { return initials.get(); }
-	// Setter for initials
 	public void setInitials(String newInitials) { initials.set(newInitials); }
-	// Property for initials
 	public StringProperty initialsProperty() {return initials;}
 
-	// Getter for description
+	// description
 	public String getDescription() { return description.get(); }
-	// Setter for description
 	public void setDescription(String newDescription) { description.set(newDescription); }
-	// Property for description
 	public StringProperty descriptionProperty() {return description;}
+	
+	public String[] toStringArray() {
+		return new String[]{
+			getDate(),
+			getTime(),
+			getType() != null ? getType().toString() : "",
+			getTag() != null ? getTag().toString() : "",
+			getInitials(),
+			getDescription()
+		};
+	}
 }

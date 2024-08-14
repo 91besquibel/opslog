@@ -1,4 +1,4 @@
-package opslog;
+package opslog.util;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,7 +16,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-public class Settings{
+// My imports
+import opslog.objects.*;
+import opslog.managers.*;
+import opslog.ui.*;
+import opslog.util.*;
+import opslog.listeners.*;
+
+public class Customizations{
 
 	// Font Size
 	public static final ObservableList<Integer> Text_Size_List = FXCollections.observableArrayList(
