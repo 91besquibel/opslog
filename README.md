@@ -6,7 +6,7 @@
 
 ## 🛠️ **Overview**
 
-Welcome to the **Operations Tracking and Logging Application**, your all-in-one tool designed in **OpenJDK** and **JavaFX 17**. Built for satellite operations, this application streamlines your troubleshooting, scheduling, checklists, and note-taking processes—all while ensuring your data remains secure and accessible.
+Welcome to the **Operations Tracking and Logging Application**, your all-in-one tool designed in **OpenJDK** and **JavaFX 17**. Built for an operations environment, this application streamlines your troubleshooting, scheduling, checklists, and note-taking.
 
 ### 🎯 **Key Features**
 - 📜 **Running Log:** Real-time operational logging to keep track of activities and events.
@@ -20,7 +20,7 @@ Welcome to the **Operations Tracking and Logging Application**, your all-in-one 
 
 ## 💡 **Motivation**
 
-Why was this application created? The mission was simple: replace **Microsoft OneNote**. In our satellite operations environment, OneNote's limited capabilities and clunky interface were no longer sufficient. Security concerns and budget constraints led to the development of this custom-built solution that addresses the unique needs of our team.
+Why was this application created? The mission was simple: replace **Microsoft OneNote**. In our satellite operations environment, OneNote's limited capabilities and clunky interface were no longer sufficient.
 
 ---
 
@@ -67,12 +67,6 @@ We're just getting started! Here's what could be coming next:
 ## 🙌 **Acknowledgments**
 
 This application is my first foray into software design and development. It's been a challenging yet incredibly rewarding journey. Your feedback, contributions, and suggestions are not just welcome—they're encouraged!
-
----
-
-## 📜 **License**
-
-This project is licensed under the **[Your Chosen License]**. Please see the LICENSE file for more details.
 
 ---
 
