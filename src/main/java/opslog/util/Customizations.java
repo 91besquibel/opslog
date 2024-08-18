@@ -21,7 +21,7 @@ import opslog.objects.*;
 import opslog.managers.*;
 import opslog.ui.*;
 import opslog.util.*;
-import opslog.listeners.*;
+import opslog.interfaces.*;
 
 public class Customizations{
 
@@ -49,14 +49,14 @@ public class Customizations{
 	public static ObjectProperty<Background> root_Background_Property = new SimpleObjectProperty<>( new Background(root_Background_Fill.get()));
 
 	// Background Primary
-	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.GREY); // Set by: primary_background_Color_Profile
+	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.DARKGRAY); // Set by: primary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), cornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property = new SimpleObjectProperty<>( new Background(primary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), zero_CornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property_Zero = new SimpleObjectProperty<>( new Background(primary_Background_Fill_Zero.get()));
 
 	// Background Secondary
-	public static ObjectProperty<Color> secondary_Background_Color = new SimpleObjectProperty<>(Color.LIGHTSLATEGREY); // Set by: secondary_background_Color_Profile
+	public static ObjectProperty<Color> secondary_Background_Color = new SimpleObjectProperty<>(Color.GREY); // Set by: secondary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> secondary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(secondary_Background_Color.get(), cornerRadii, insets));
 	public static ObjectProperty<Background> secondary_Background_Property = new SimpleObjectProperty<>( new Background(secondary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> secondary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(secondary_Background_Color.get(), zero_CornerRadii, insets));

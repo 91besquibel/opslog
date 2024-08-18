@@ -4,14 +4,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.paint.Color;
-
-// My imports
-import opslog.objects.*;
-import opslog.managers.*;
-import opslog.ui.*;
-import opslog.util.*;
-import opslog.listeners.*;
 
 public class Calendar {
 
@@ -25,7 +17,6 @@ public class Calendar {
 	private final StringProperty initials = new SimpleStringProperty();
 	private final StringProperty description = new SimpleStringProperty();
 
-	// Constructor to initialize a CalendarEntry
 	public Calendar(String title, String startdate, String stopdate, String starttime, String stoptime, Type type, Tag tag, String initials, String description) {
 		this.title.set(title);
 		this.startdate.set(startdate);
@@ -38,50 +29,44 @@ public class Calendar {
 		this.description.set(description);
 	}
 
-	// title
-	public String getTitle(){return title.get();}
 	public void setTitle(String newTitle){ title.set(newTitle);}
-	public StringProperty titleProperty(){ return title; }
+	public String getTitle(){return title.get();}
+	public StringProperty getTitleProperty(){ return title; }
 	
-	// start date
-	public String getStartDate() { return startdate.get(); }
 	public void setStartDate(String newStartDate) { startdate.set(newStartDate); }
-	public StringProperty startDateProperty() { return startdate; }
+	public String getStartDate() { return startdate.get(); }
+	public StringProperty getStartDateProperty() { return startdate; }
 
-	// stop date
-	public String getStopDate() { return stopdate.get(); }
 	public void setStopDate(String newStopDate) { stopdate.set(newStopDate); }
-	public StringProperty stopDateProperty() { return stopdate; }
+	public String getStopDate() { return stopdate.get(); }
+	public StringProperty getStopDateProperty() { return stopdate; }
 
-	// start time
-	public String getStartTime() { return starttime.get(); }
 	public void setStartTime(String newStartTime) { starttime.set(newStartTime); }
-	public StringProperty startTimeProperty() { return starttime; }
-
-	// stop time
-	public String getStopTime() { return stoptime.get(); }
+	public String getStartTime() { return starttime.get(); }
+	public StringProperty getStartTimeProperty() { return starttime; }
+	
 	public void setStopTime(String newStopTime) { stoptime.set(newStopTime); }
-	public StringProperty stopTimeProperty() { return stoptime; }
+	public String getStopTime() { return stoptime.get(); }
+	public StringProperty getStopTimeProperty() { return stoptime; }
 
-	// type
-	public Type getType() { return type.get(); }
 	public void setType(Type newType) { type.set(newType); }
-	public ObjectProperty<Type> typeProperty() { return type; }
+	public Type getType() { return type.get(); }
+	public ObjectProperty<Type> getTypeProperty() { return type; }
 
-	// tag
-	public Tag getTag() { return tag.get(); }
 	public void setTag(Tag newTag) { tag.set(newTag); }
-	public ObjectProperty<Tag> tagProperty() { return tag; }
+	public Tag getTag() { return tag.get(); }
+	public ObjectProperty<Tag> getTagProperty() { return tag; }
 
-	// initials
-	public String getInitials() { return initials.get(); }
 	public void setInitials(String newInitials) { initials.set(newInitials); }
-	public StringProperty initialsProperty() { return initials; }
+	public String getInitials() { return initials.get(); }
+	public StringProperty getInitialsProperty() { return initials; }
 
-	// description
-	public String getDescription() { return description.get(); }
 	public void setDescription(String newDescription) { description.set(newDescription); }
-	public StringProperty descriptionProperty() { return description; }
+	public String getDescription() { return description.get(); }
+	public StringProperty getDescriptionProperty() { return description; }
+
+	@Override
+	public String toString(){return title.get();}
 
 	public String[] toStringArray() {
 		return new String[]{

@@ -12,13 +12,13 @@ import opslog.objects.*;
 import opslog.managers.*;
 import opslog.ui.*;
 import opslog.util.*;
-import opslog.listeners.*;
+import opslog.interfaces.*;
 
 /**
  * Listener class for resizing and moving a JavaFX Stage.
  * Handles mouse events for resizing and moving the stage.
  */
-class ResizeListener implements EventHandler<MouseEvent> {
+public class ResizeListener implements EventHandler<MouseEvent> {
 
 	private final Stage stage;
 	private final double border = 10;

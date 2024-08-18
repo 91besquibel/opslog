@@ -9,13 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-// My imports
-import opslog.objects.*;
-import opslog.managers.*;
-import opslog.ui.*;
-import opslog.util.*;
-import opslog.listeners.*;
-
 public class CSV {
 
 	// Method to read a CSV file and return a list of all rows in file
@@ -30,7 +23,6 @@ public class CSV {
 		}
 		return data;
 	}
-
 	// Method to write a String array to a CSV file
 	public static void write(Path path, String[] data) throws IOException {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toString(), true))) {
@@ -38,7 +30,6 @@ public class CSV {
 			bw.newLine();
 		}
 	}
-
 	// can edit all but log for now
 	public static void edit(Path path, String[] oldValue, String[] newValue) throws IOException {
 		List<String[]> data = readAll(path);  // Read all data from the file
@@ -51,7 +42,6 @@ public class CSV {
 		}
 		writeAll(path, data, false);  // Overwrite the file with the updated data
 	}
-
 	// Overloaded method - uses single filter value for each row ie Keyword search
 	public static List<String[]> find(Path path, String value) throws IOException {
 		List<String[]> foundRows = new ArrayList<>();
@@ -60,7 +50,6 @@ public class CSV {
 			while ((line = br.readLine()) != null) {
 				if (line.contains(value)) {
 					String[] values = line.split(",");
-
 					foundRows.add(values);
 				}
 			}
@@ -78,24 +67,15 @@ public class CSV {
 				boolean match = true;
 				int k = 0;
 				for (String[] colFil : rowFilters) {
-					for (String filter : colFil) {
-						if (!row[k].contains(filter)) {
-							match = false;
-							break;
-						}
-					}
+					for (String filter : colFil) {if (!row[k].contains(filter)) {match = false; break;}}
 					k++;
 					if (!match) break;
 				}
-				if (match) {
-					matchingRows.add(row);
-				}
+				if (match) {matchingRows.add(row);}
 			}
 		}
-
 		return matchingRows;
 	}
-
 	// Overloaded method - delete rows if they match the List<String[]> rowFilters
 	public static void delete(Path path, List<String[]> rowFilters) throws IOException {
 		try{
@@ -108,7 +88,7 @@ public class CSV {
 			List<String[]> deleteable = find(path, rowFilters);
 
 			// Iterate over all rows and keep only those that don't match the filters
-			for (String[] row : data) {
+			for (String[] row : data) { 
 				boolean shouldDelete = false;
 				for (String[] deleteRow : deleteable) {
 					if (compareRows(row, deleteRow)) {
@@ -116,9 +96,7 @@ public class CSV {
 						break;
 					}
 				}
-				if (!shouldDelete) {
-					keep.add(row);
-				}
+				if (!shouldDelete) {keep.add(row);}
 			}
 
 			writeAll(path, keep, false);  // Overwrite the file with the rows to keep

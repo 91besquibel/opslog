@@ -4,26 +4,25 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.geometry.Pos;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -33,56 +32,48 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import opslog.ui.*;
+import opslog.util.*;
 
 public class App extends Application {
 
 	private static final Logger logger = Logger.getLogger(App.class.getName());
 	private static final String classTag = "App";
 
-	// Create values for window manipulation
 	private double lastX, lastY;
 	private double originalWidth;
 	private double originalHeight;
+
+	private static LogUI logUI;
+	private static CalendarUI calendarUI;
+	private static SettingsUI settingsUI;
+	private  EventUI eventUI;
 	
-	private BorderPane layout;
 	private AnchorPane viewArea;
+	private BorderPane root;
 
-	private Button exit_Button;
-	private Button minimize_Button;
 	private Button maximize_Button;
-
-
-	private LogUI LogUI;
-	private CalendarController calendarController;
-	private SettingsController settingsController;
-
-	private int buttonSize = 30;
-	private int iconSize = 25;
 	
 	@Override
 	public void start(Stage stage) throws IOException {
 		configureLogging();
-		try{
-			logger.log(Level.FINE, classTag + ".start: Starting App");
-			LogUI = new LogUI();
-			LogUI.initialize();
-			calendarController = new CalendarController();
-			calendarController.createCalendarUI();
-			settingsController = new SettingsController();
-			settingsController.createSettingsUI();
-			createLayout();
-			SharedData.initialize("/home/runner/opslog");
-			showWindow(stage);
-			logger.log(Level.CONFIG, classTag + ".start: App started \n");
-		}catch(Exception e){
-			logger.log(Level.SEVERE, classTag + ".start: App failed to start");
-			e.printStackTrace();
-		}
+		DateTime.timeListPopulate();
+		this.eventUI = new EventUI();
+		try{logUI = new LogUI();
+			logUI.initialize();
+			calendarUI = new CalendarUI();
+			calendarUI.initialize();
+			settingsUI = new SettingsUI();
+			settingsUI.initialize();
+			createUI();
+			Directory.initialize("/home/runner/opslog");
+			Update.startPeriodicUpdates(15, TimeUnit.SECONDS);
+			display(stage);
+		}catch(Exception e){e.printStackTrace();}
 	}
 
-	// Display Window
-	private void showWindow(Stage stage){
-		Scene scene = new Scene(layout, 800, 600);
+	private void display(Stage stage){
+		Scene scene = new Scene(root, 800, 600);
 		String cssPath = getClass().getResource("/style.css").toExternalForm();
 		scene.getStylesheets().add(cssPath);
 		stage.initStyle(StageStyle.TRANSPARENT);  
@@ -90,16 +81,16 @@ public class App extends Application {
 		scene.setOnMouseMoved(resizeListener);
 		scene.setOnMousePressed(resizeListener);
 		scene.setOnMouseDragged(resizeListener);
-		layout.setOnMousePressed(event -> {
+		root.setOnMousePressed(event -> {
 			if (event.getY() <= 30) {
 				lastX = event.getScreenX();
 				lastY = event.getScreenY();
-				layout.setCursor(Cursor.MOVE);
+				root.setCursor(Cursor.MOVE);
 			}
 		});
 
-		layout.setOnMouseDragged(event -> {
-			if (layout.getCursor() == Cursor.MOVE) {
+		root.setOnMouseDragged(event -> {
+			if (root.getCursor() == Cursor.MOVE) {
 				double deltaX = event.getScreenX() - lastX;
 				double deltaY = event.getScreenY() - lastY;
 				stage.setX(stage.getX() + deltaX);
@@ -109,8 +100,8 @@ public class App extends Application {
 			}
 		});
 
-		layout.setOnMouseReleased(event -> {
-			layout.setCursor(Cursor.DEFAULT);
+		root.setOnMouseReleased(event -> {
+			root.setCursor(Cursor.DEFAULT);
 		});
 		stage.setScene(scene);
 		stage.setResizable(true);
@@ -118,183 +109,143 @@ public class App extends Application {
 		stage.show();
 	}
 	
-	// Create UI
-	private void createLayout(){
-		// Window buttons
-		exit_Button =  new Button();
-		exit_Button = button_Factory(new Button(), "/IconLib/exitIG.png", "/IconLib/exitIG.png");
-		exit_Button.setOnAction(this::exit);
-		Button minimize_Button =  new Button();
-		minimize_Button = button_Factory(new Button(), "/IconLib/minimizeIG.png", "/IconLib/minimizeIG.png");
-		minimize_Button.setOnAction(this::minimize);
-		Button maximize_Button =  new Button();
-		maximize_Button = button_Factory(new Button(), "/IconLib/maximizeIG.png", "/IconLib/maximizeIG.png");
+	private void createUI(){
+		Button exit_Button = Factory.custom_Button("/IconLib/closeIW.png", "/IconLib/closeIG.png");
+		exit_Button.setOnAction(event -> {Platform.exit();});
+		exit_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		Button minimize_Button = Factory.custom_Button("/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
+		minimize_Button.setOnAction(event -> ((Stage) minimize_Button.getScene().getWindow()).setIconified(true));
+		minimize_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		Button maximize_Button = Factory.custom_Button("/IconLib/maximizeIW.png", "/IconLib/maximizeIG.png");
 		maximize_Button.setOnAction(this::maximize);
-		HBox window_Button_Bar = new HBox(exit_Button, maximize_Button, minimize_Button );
-		window_Button_Bar.setSpacing(5);
-		window_Button_Bar.setAlignment(Pos.CENTER);
-		window_Button_Bar.setPadding(new Insets(0, 0, 0, 0));
-
-		// Left Spacer
+		maximize_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
 		Region left_Menu_Spacer = new Region();
 		HBox.setHgrow(left_Menu_Spacer, Priority.ALWAYS);
 
-		// Create Clock
-		Label menu_Clock_Label = new Label("Clock place holder");
+		Label clock = Factory.custom_Label("Clock", 300, 30);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy | HH:mm:ss");
 		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
 			LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-			menu_Clock_Label.setText(now.format(formatter));
-			menu_Clock_Label.textFillProperty().bind(Settings.text_Color);
-			menu_Clock_Label.fontProperty().bind(Settings.text_Property);
+			clock.setText(now.format(formatter));
+			clock.textFillProperty().bind(Customizations.text_Color);
+			clock.fontProperty().bind(Customizations.text_Property);
 		}));
 		timeline.setCycleCount(Timeline.INDEFINITE);
 		timeline.play();
-		logger.log(Level.INFO,classTag+ ".createMenuClock: Date and Time started \n");
 
-		// Right Spacer
 		Region right_Menu_Spacer = new Region();
 		HBox.setHgrow(right_Menu_Spacer, Priority.ALWAYS);
-		
-		// Screen buttons
-		Button log_Button = new Button();
-		log_Button = button_Factory(new Button(), "/IconLib/logIW.png", "/IconLib/logIG.png");
+
+		Button log_Button = Factory.custom_Button("/IconLib/logIW.png", "/IconLib/logIG.png");
 		log_Button.setOnAction(this::goToLog);
-		Button calendar_Button = new Button();
-		calendar_Button = button_Factory(new Button(), "/IconLib/calendarIW.png", "/IconLib/calendarIG.png");
+		log_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		Button calendar_Button = Factory.custom_Button("/IconLib/calendarIW.png", "/IconLib/calendarIG.png");
 		calendar_Button.setOnAction(this::goToCalendar);
-		Button checklist_Button =  new Button();
-		checklist_Button = button_Factory(new Button(), "/IconLib/checklistIW.png", "/IconLib/checklistIG.png");
-		//checklist_Button.setOnAction(this::goToChecklist);
-		Button settings_Button = button_Factory(new Button(), "/IconLib/settingIW.png", "/IconLib/settingIG.png");
+		calendar_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		Button checklist_Button = Factory.custom_Button("/IconLib/checklistIW.png", "/IconLib/checklistIG.png");
+		checklist_Button.setOnAction(this::goToChecklist);
+		checklist_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		Button settings_Button = Factory.custom_Button("/IconLib/settingsIW.png", "/IconLib/settingsIG.png");
 		settings_Button.setOnAction(this::goToSettings);
-		HBox view_Button_Bar = new HBox(log_Button, calendar_Button, checklist_Button, settings_Button);
-		view_Button_Bar.setSpacing(5);
-		view_Button_Bar.setAlignment(Pos.CENTER);
-		view_Button_Bar.setPadding(new Insets(0, 0, 0, 0));
-
-		// Container for all top bar assets
-		HBox menu_Bar = new HBox(window_Button_Bar, left_Menu_Spacer, menu_Clock_Label, right_Menu_Spacer, view_Button_Bar);
-		menu_Bar.setAlignment(Pos.CENTER);
-		menu_Bar.setPadding(new Insets(0, 0, 0, 0));
-		menu_Bar.setSpacing(5);
+		settings_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
+		Separator separator = new Separator();
+		separator.setOrientation(Orientation.VERTICAL);
+		separator.backgroundProperty().bind(Customizations.root_Background_Property);
 
+		Button event_Button = Factory.custom_Button("/IconLib/editIW.png", "/IconLib/editIG.png");
+		event_Button.setOnAction(this::goToEvent);
+		event_Button.backgroundProperty().bind(Customizations.root_Background_Property);
+		
+		HBox windowBar = Factory.custom_HBox();
+		windowBar.getChildren().addAll(
+			exit_Button,minimize_Button,maximize_Button,
+			left_Menu_Spacer,clock,right_Menu_Spacer,
+			log_Button,calendar_Button,checklist_Button,
+			settings_Button,separator,event_Button
+		);
+		windowBar.backgroundProperty().bind(Customizations.root_Background_Property);
+		
 		viewArea = new AnchorPane();
-		
-		layout = new BorderPane(); 
-		layout.backgroundProperty().bind(Settings.root_Background_Property);
-		layout.borderProperty().bind(Settings.standard_Border_Property);
-		layout.setPadding(new Insets(5, 5, 5, 5));
-		layout.setTop(menu_Bar);
-		layout.setCenter(viewArea);
-		layout.setBottom(null);
-		layout.setLeft(null);
-		layout.setRight(null);
+		root = new BorderPane(); 
+		root.backgroundProperty().bind(Customizations.root_Background_Property);
+		root.borderProperty().bind(Customizations.standard_Border_Property);
+		root.setPadding(new Insets(5, 5, 5, 5));
+		root.setTop(windowBar);
+		root.setCenter(viewArea);
+		root.setBottom(null);
+		root.setLeft(null);
+		root.setRight(null);
 	}
-	
-	private Button button_Factory(Button button, String icon_White_Location, String icon_Grey_Location){
-		button.setMaxWidth(buttonSize);
-		button.setMinWidth(buttonSize);
-		button.setMaxHeight(buttonSize);
-		button.setMinHeight(buttonSize);
-		button.setPadding(new Insets(0, 0, 0, 0));
-		button.backgroundProperty().bind(Settings.transparent_Background_Property);
-		button.borderProperty().bind(Settings.transparent_Border_Property);
-		button.setGraphic
-				(new ImageView(new Image(getClass().getResourceAsStream
-										 (icon_White_Location), iconSize, iconSize, true, true))
-		);
-		button.setOnMouseEntered
-				(e -> button.setGraphic
-				 (new ImageView(new Image(getClass().getResourceAsStream
-										  (icon_Grey_Location), iconSize, iconSize, true, true)))
-		);
-		button.setOnMouseExited
-				(e -> button.setGraphic
-				 (new ImageView(new Image(getClass().getResourceAsStream
-										  (icon_White_Location), iconSize, iconSize, true, true)))
-		);
-		return button;
-	}
-	
-	// Button handlers
-	private void exit(ActionEvent event) {
-		Platform.exit();
-	}
-	private void minimize(ActionEvent event){
-		try{
-			logger.log(Level.INFO, classTag + ".minimize: Minimizing Stage");
-			Stage stage = (Stage)  
-			minimize_Button.getScene().getWindow();
-			stage.setIconified(true); 
-			logger.log(Level.FINE,classTag+ ".minimize: Minimizing....");
-		}catch(Exception e){
-			logger.log(Level.SEVERE,classTag+ ".minimize: Failed to minimize");
-			e.printStackTrace();
-		}
-	}
-	private void maximize(ActionEvent event){
-		try{
+
+	private void maximize(ActionEvent event) {
+		try {
 			Stage stage = (Stage) maximize_Button.getScene().getWindow();
 			if (stage.isFullScreen()) {
-				logger.log(Level.FINE,classTag+ " Returning to original size....");
-				// If already in full-screen mode, restore the original scene size
+				logger.log(Level.FINE, classTag + " Returning to original size....");
 				stage.setFullScreen(false);
 				stage.setWidth(originalWidth);
 				stage.setHeight(originalHeight);
-				logger.log(Level.FINE,classTag+ " Returned to original size");
 			} else {
-				logger.log(Level.FINE,classTag+ " Maximizing....");
-				// If not in full-screen mode, store the original scene size
+				logger.log(Level.FINE, classTag + " Maximizing....");
 				originalWidth = stage.getWidth();
 				originalHeight = stage.getHeight();
-				// Get the screen bounds
 				Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-				// Set the scene size to match the screen size
+				stage.setX(screenBounds.getMinX());
+				stage.setY(screenBounds.getMinY());
 				stage.setWidth(screenBounds.getWidth());
 				stage.setHeight(screenBounds.getHeight());
-				// Enter full-screen mode
 				stage.setFullScreen(true);
-				logger.log(Level.FINE,classTag+ " Window maximized");
 			}
-		}catch(Exception e){
-			logger.log(Level.SEVERE,classTag+ " Failed to adjust sreen size");
-			e.printStackTrace();
+			logger.log(Level.FINE, classTag + (stage.isFullScreen() ? " Window maximized" : " Returned to original size"));
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, classTag + " Failed to adjust screen size", e);
 		}
 	}
+
 	private void goToLog(ActionEvent event) {
 		logger.log(Level.INFO, classTag + ".goToLog: Switching to Log");
 		viewArea.getChildren().clear();
-		viewArea.getChildren().add(logController.getRootNode());
-		AnchorPane.setLeftAnchor(logController.getRootNode(), 0.0);
-		AnchorPane.setRightAnchor(logController.getRootNode(), 0.0);
-		AnchorPane.setTopAnchor(logController.getRootNode(), 0.0);
-		AnchorPane.setBottomAnchor(logController.getRootNode(), 0.0);
+		viewArea.getChildren().add(logUI.getRootNode());
+		AnchorPane.setLeftAnchor(logUI.getRootNode(), 0.0);
+		AnchorPane.setRightAnchor(logUI.getRootNode(), 0.0);
+		AnchorPane.setTopAnchor(logUI.getRootNode(), 0.0);
+		AnchorPane.setBottomAnchor(logUI.getRootNode(), 0.0);
 	}
 	private void goToCalendar(ActionEvent event){
 		logger.log(Level.INFO, classTag + ".goToCalendar: Switching to Calendar");
 		viewArea.getChildren().clear();
-		viewArea.getChildren().add(calendarController.getRootNode());
-		AnchorPane.setLeftAnchor(calendarController.getRootNode(), 0.0);
-		AnchorPane.setRightAnchor(calendarController.getRootNode(), 0.0);
-		AnchorPane.setTopAnchor(calendarController.getRootNode(), 0.0);
-		AnchorPane.setBottomAnchor(calendarController.getRootNode(), 0.0);
+		viewArea.getChildren().add(calendarUI.getRootNode());
+		AnchorPane.setLeftAnchor(calendarUI.getRootNode(), 0.0);
+		AnchorPane.setRightAnchor(calendarUI.getRootNode(), 0.0);
+		AnchorPane.setTopAnchor(calendarUI.getRootNode(), 0.0);
+		AnchorPane.setBottomAnchor(calendarUI.getRootNode(), 0.0);
+	}
+	private void goToChecklist(ActionEvent event){
+		System.out.println("Checklist incomplete");
 	}
 	private void goToSettings(ActionEvent event){
 		logger.log(Level.INFO, classTag + ".goToSettings: Switching to Settings");
 		viewArea.getChildren().clear();
-		viewArea.getChildren().add(settingsController.getRootNode());
-		AnchorPane.setLeftAnchor(settingsController.getRootNode(), 0.0);
-		AnchorPane.setRightAnchor(settingsController.getRootNode(), 0.0);
-		AnchorPane.setTopAnchor(settingsController.getRootNode(), 0.0);
-		AnchorPane.setBottomAnchor(settingsController.getRootNode(), 0.0);
+		viewArea.getChildren().add(settingsUI.getRootNode());
+		AnchorPane.setLeftAnchor(settingsUI.getRootNode(), 0.0);
+		AnchorPane.setRightAnchor(settingsUI.getRootNode(), 0.0);
+		AnchorPane.setTopAnchor(settingsUI.getRootNode(), 0.0);
+		AnchorPane.setBottomAnchor(settingsUI.getRootNode(), 0.0);
+	}
+	private void goToEvent(ActionEvent event){
+		eventUI.display();
 	}
 
-	// Helper methods
 	public static void showPopup(String title, String message ){
-		Popup popup = new Popup();
-		popup.display(title, message);
+		PopupUI popupUI = new PopupUI();
+		popupUI.display(title, message);
 	}
 	private void configureLogging() {
 		// Define ANSI escape codes for colors

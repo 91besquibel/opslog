@@ -1,4 +1,4 @@
-package opslog.managers;
+package opslog.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +18,7 @@ import opslog.objects.*;
 import opslog.managers.*;
 import opslog.ui.*;
 import opslog.util.*;
-import opslog.listeners.*;
+import opslog.interfaces.*;
 
 public class Search{
 
@@ -41,7 +41,7 @@ public class Search{
 		}
 
 		// First, get the list of files within the date and time range
-		List<Path> logFiles = FileManager.search(startDate, endDate, startTime, endTime);
+		List<Path> logFiles = Directory.search(startDate, endDate, startTime, endTime);
 
 		// Create a list to store the filtered logs
 		List<Log> filteredLogs = new ArrayList<>();
@@ -54,9 +54,8 @@ public class Search{
 					if (values.length >= 6) {
 						
 						// Parse CSV line into Log object
-						Log log = new Log(values[0], values[1], Type.valueOf(values[2]), Tag.valueOf(values[3]), values[4], values[5]);
+						Log log = new Log(LocalDate.parse(values[0]), values[1], TypeManager.valueOf(values[2]), TagManager.valueOf(values[3]), values[4], values[5]);
 
-						// Apply filters
 						boolean matches = true;
 
 						if (typeFilter != null && !typeFilter.toString().equals(values[2])) {

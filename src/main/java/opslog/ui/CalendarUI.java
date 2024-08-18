@@ -11,18 +11,10 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Orientation;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// My imports
-import opslog.objects.*;
-import opslog.managers.*;
-import opslog.ui.*;
-import opslog.util.*;
-import opslog.listeners.*;
-
-public class CalendarUI implements UpdateListener{
+public class CalendarUI{
 	private static final Logger logger = Logger.getLogger(CalendarUI.class.getName());
 	private static final String classTag = "CalendarController";
 
@@ -35,7 +27,7 @@ public class CalendarUI implements UpdateListener{
 	private GridPane calendarGrid;
 
 	// Iiniialize UI elements for calendar screen and access database
-	public void createCalendarUI() {
+	public void initialize() {
 		try{
 			logger.log(Level.INFO, classTag + ".createCalendarUI: Creating calendar UI");
 

@@ -1,8 +1,6 @@
 package opslog.util;
 
-import java.io.File;
 import java.nio.file.FileAlreadyExistsException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,50 +13,62 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.application.Platform;
-
-// My Imports
-import opslog.managers.*;
-import opslog.listeners.*;
-import opslog.objects.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import opslog.ui.*;
-import opslog.util.*;
+
 
 public class Directory{
 
-	private static final Logger logger = Logger.getLogger(Directory
-													.class.getName());
-	
-
+	private static final Logger logger = Logger.getLogger(Directory.class.getName());
 	private static String classTag = "CSV";
 
-	// Global variables for Paths
-	public static Path Log_Dir;
-	public static Path Pin_Board_Dir;
-	public static Path Calendar_Dir;
-	public static Path Parent_Dir;
-	public static Path Child_Dir;
-	public static Path Type_Dir;
-	public static Path Tag_Dir;
-	public static Path Format_Dir;
-	public static Path Main_Path_Dir;
-	public static Path Backup_Path_Dir;
-	public static Path Import_Dir;
-	public static Path Export_Dir;
+	public static ObservableList<String> mainPathList = FXCollections.observableArrayList();
+	public static ObservableList<String> backupPathList = FXCollections.observableArrayList();
+	
+	public static ObjectProperty<Path> Log_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Pin_Board_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Calendar_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Parent_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Child_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Type_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Tag_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Format_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Main_Path_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Backup_Path_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Profile_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Import_Dir = new SimpleObjectProperty<>();
+	public static ObjectProperty<Path> Export_Dir = new SimpleObjectProperty<>();
 
-	// Array of Paths
 	public static Path [] paths = {
-		Log_Dir, Pin_Board_Dir, Calendar_Dir,
-		Parent_Dir, Child_Dir, Type_Dir, Tag_Dir, 
-		Format_Dir, Main_Path_Dir, Backup_Path_Dir
+		Log_Dir.get(), Pin_Board_Dir.get(), Calendar_Dir.get(),
+		Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(), 
+		Format_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
 	};
 
 	// Initializes the file directories
 	public static void initialize(String newPath){
 		updatePaths(newPath);
-		buildTree();		
+		buildTree();
+		add(Main_Path_Dir.get(), newPath);
 	}
+	
+	public static void add(Path path, String newPath){
+		try{String [] data = {newPath};
+			if(checkPath(newPath)){CSV.write(path,data);}
+		}catch(IOException e){e.printStackTrace();}
+	}
+
+	public static void delete(Path path,String selectedPath){
+		try{String [] data = {selectedPath};
+			if(checkPath(selectedPath)){CSV.delete(path,data);}
+		}catch(IOException e){e.printStackTrace();}
+	}
+
+	public static void swap(String newPath){updatePaths(newPath);}
 	
 	private static Boolean checkPath(String newPath){
 		// Check if the main directory exists
@@ -78,7 +88,7 @@ public class Directory{
 		Path logDir = baseDir.resolve("opslog/logs");
 		Path pinBoardDir = baseDir.resolve("opslog/pinboard/pinboard.csv");
 		Path calendarDir = baseDir.resolve("opslog/calendar/calendar.csv");
-		Path dayDir = baseDir.resolve("opslog/checklist/parent.csv");
+		Path parentDir = baseDir.resolve("opslog/checklist/parent.csv");
 		Path childDir = baseDir.resolve("opslog/checklist/child.csv");
 		Path typeDir = baseDir.resolve("opslog/setting/type.csv");
 		Path tagDir = baseDir.resolve("opslog/setting/tag.csv");
@@ -88,29 +98,33 @@ public class Directory{
 		Path importDir = baseDir.resolve("opslog/import/import.csv");
 		Path exportDir = baseDir.resolve("opslog/export/export.csv");
 
-		Log_Dir = logDir;
-		Pin_Board_Dir = pinBoardDir;
-		Calendar_Dir = calendarDir;
-		Parent_Dir = dayDir;
-		Child_Dir = childDir;
-		Type_Dir = typeDir;
-		Tag_Dir = tagDir;
-		Format_Dir = formatDir;
-		Main_Path_Dir = mainPathDir;
-		Backup_Path_Dir = backupPathDir;
-		Import_Dir = importDir;
-		Export_Dir = exportDir;
+		Log_Dir.set(logDir);
+		Pin_Board_Dir.set(pinBoardDir);
+		Calendar_Dir.set(calendarDir);
+		Parent_Dir.set(parentDir);
+		Child_Dir.set(childDir);
+		Type_Dir.set(typeDir);
+		Tag_Dir.set(tagDir);
+		Format_Dir.set(formatDir);
+		Main_Path_Dir.set(mainPathDir);
+		Backup_Path_Dir.set(backupPathDir);
+		Import_Dir.set(importDir);
+		Export_Dir.set(exportDir);
 
 		paths = new Path[] {
-			Log_Dir, Pin_Board_Dir, Calendar_Dir,
-			Parent_Dir, Child_Dir, Type_Dir, Tag_Dir, 
-			Format_Dir, Main_Path_Dir, Backup_Path_Dir
+			Pin_Board_Dir.get(), Calendar_Dir.get(),
+			Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(), 
+			Format_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
 		};
 	}
 	
 	// Builds the file tree or any missing components
 	public static void buildTree(){
-		for(Path path : paths){build(path);}
+		for(Path path : paths){
+			build(path);
+		}
+		Path log = newLog();
+		build(log);
 	}
 	// Directory and file creation
 	public static void build(Path path) {
@@ -119,8 +133,12 @@ public class Directory{
 			
 			Path dayDir = path.getParent();
 			try {
-				Files.createDirectories(dayDir);
-				Files.createFile(path);
+				if(!Files.exists(dayDir)){
+					Files.createDirectories(dayDir);
+					if(!Files.exists(path)){
+						Files.createFile(path);
+					}
+				}
 			}catch(FileAlreadyExistsException e){
 				e.printStackTrace();
 			}catch(IOException e ){
@@ -135,16 +153,14 @@ public class Directory{
 
 	// Returns the file name and location based on the current date
 	public static Path newLog() {
-		// Retrieves the current date "yyyy_MMM_dd"
-		String currentDate = SharedData.getUTCDate();
-		// Convert the string to "/yyyy/MMM/dd"
-		String convertedDate = currentDate.replace("_", "/");
+		// Retrieves the current date "yyyy/MMM/dd"
+		String currentDate = DateTime.convertDate(DateTime.getDate()).replace("-", "/");
 		// Retrieves the current time "HH_mm_ss"
-		String currentTime = SharedData.getUTCTime();
+		String currentTime = DateTime.getTime().replace(":", "_");
 		// Combine into "/yyyy/MMM/dd/log_HH_mm_ss.csv"
 		String fileName = "log_" + currentTime + ".csv";
 		// Combine into "/user/input/opslog/log/yyyy/MMM/dd/log_HH_mm_ss.csv"
-		Path path = Paths.get(Log_Dir.toString(), convertedDate, fileName);
+		Path path = Log_Dir.get().resolve(currentDate).resolve(fileName);
 		// Return the file name and location
 		return path;
 	}
@@ -157,7 +173,7 @@ public class Directory{
 		LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime != null ? endTime : LocalTime.MAX);
 
 		try {
-			Files.walk(Log_Dir)
+			Files.walk(Log_Dir.get())
 				.filter(Files::isRegularFile)
 				.filter(path -> {
 					String fileName = path.getFileName().toString();

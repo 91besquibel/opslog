@@ -1,83 +1,49 @@
 package opslog.util;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableObjectValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 
-// My imports
-import opslog.objects.*;
-import opslog.managers.*;
-import opslog.ui.*;
-import opslog.util.*;
-import opslog.listeners.*;
-
 public class Factory{
 
 	private static double spacing = 5.0;
-	private static double spacing_Zero = 0.0;
-	
 	private static double padding = 5.0;
 	private static double padding_Zero = 0.0;
-
-	private static double button_Width = 18.0;
-	private static double button_Height = 18.0;
+	private static double button_Width = 20.0;
+	private static double button_Height = 20.0;
 	
 	
 	public static <T> TableView<T> custom_TableView( List<TableColumn<T, String>> columns, double width, double height){
 		TableView<T> tableView = new TableView<>();
 		
-		for(TableColumn<T, String> column : columns){
-			//Cell Factory
+		for (TableColumn<T, String> column : columns) {
+			column.setCellValueFactory(cellData -> {
+				String value = ((cellData.getValue() != null) ? cellData.getValue().toString() : "");
+				return new SimpleStringProperty(value);
+			});
+			column.setCellFactory(col -> new TableCell<T, String>() {
+				@Override
+				protected void updateItem(String item, boolean empty) {
+					super.updateItem(item, empty);
+					if (empty || item == null) {
+						setText(null);
+						setGraphic(null);
+					} else {
+						setText(item);
+					}
+				}
+			});
 		}
 		
 		tableView.setRowFactory(tr -> {
@@ -90,7 +56,7 @@ public class Factory{
 		tableView.getColumns().addAll(columns);
 		tableView.setPadding(new Insets(5));
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-		tableView.backgroundProperty().bind(Customizations.primary_Background_Property);
+		tableView.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		tableView.borderProperty().bind(Customizations.standard_Border_Property);
 
 		return tableView;
@@ -103,7 +69,7 @@ public class Factory{
 		listView.setPrefHeight(height);
 		listView.setEditable(false);
 		listView.setFocusTraversable(true);
-		listView.backgroundProperty().bind(Customizations.primary_Background_Property);
+		listView.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		listView.borderProperty().bind(Customizations.standard_Border_Property);
 		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
 
@@ -328,7 +294,6 @@ public class Factory{
 		label.setPrefHeight(height);
 		label.textFillProperty().bind(Customizations.text_Color);
 		label.fontProperty().bind(Customizations.text_Property_Bold);
-
 		label.setAlignment(Pos.CENTER);
 
 		return label;
@@ -369,8 +334,6 @@ public class Factory{
 		button.setPrefWidth(button_Width);
 		button.setPrefHeight(button_Height);
 		button.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
-		button.backgroundProperty().bind(Customizations.transparent_Background_Property);
-		button.borderProperty().bind(Customizations.standard_Border_Property);
 		button.setGraphic
 				(new ImageView(new Image(Factory.class.getResourceAsStream
 										 (image_Standard), button_Width, button_Height, true, true))
@@ -391,21 +354,19 @@ public class Factory{
 
 	public static HBox custom_HBox(){
 		HBox hbox = new HBox();
-		
 		hbox.setSpacing(spacing);
+		hbox.setAlignment(Pos.CENTER);
 		hbox.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
-
+		hbox.backgroundProperty().bind(Customizations.primary_Background_Property);
 		return hbox;
 	}
 
 	public static VBox custom_VBox(){
 		VBox vbox = new VBox();
-
 		vbox.setSpacing(spacing);
+		vbox.setAlignment(Pos.CENTER);
 		vbox.setPadding(new Insets(padding, padding, padding, padding));
-		
 		vbox.backgroundProperty().bind(Customizations.primary_Background_Property);
-
 		return vbox;
 	}
 	
