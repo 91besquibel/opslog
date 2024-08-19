@@ -1,9 +1,14 @@
 package opslog.util;
 
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -11,9 +16,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
+import opslog.objects.*;
 
 public class Factory{
 
@@ -24,42 +32,157 @@ public class Factory{
 	private static double button_Height = 20.0;
 	
 	
-	public static <T> TableView<T> custom_TableView( List<TableColumn<T, String>> columns, double width, double height){
+	public static <T> TableView<T> custom_TableView(List<TableColumn<T, ?>> columns, double width, double height) {
 		TableView<T> tableView = new TableView<>();
-		
-		for (TableColumn<T, String> column : columns) {
-			column.setCellValueFactory(cellData -> {
-				String value = ((cellData.getValue() != null) ? cellData.getValue().toString() : "");
-				return new SimpleStringProperty(value);
-			});
-			column.setCellFactory(col -> new TableCell<T, String>() {
-				@Override
-				protected void updateItem(String item, boolean empty) {
-					super.updateItem(item, empty);
-					if (empty || item == null) {
-						setText(null);
-						setGraphic(null);
-					} else {
-						setText(item);
-					}
-				}
-			});
-		}
-		
-		tableView.setRowFactory(tr -> {
-			TableRow<T> row = new TableRow<>();
-			row.backgroundProperty().bind(Customizations.secondary_Background_Property);
-			row.borderProperty().bind(Customizations.standard_Border_Property);
-			return row;
-		});
 
+		for (TableColumn<T, ?> column : columns) {
+			Label headerLabel = new Label(column.getText());
+			headerLabel.setFont(Customizations.text_Property_Bold.get());
+			headerLabel.setTextFill(Customizations.text_Color.get());
+			headerLabel.backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);
+			headerLabel.borderProperty().bind(Customizations.standard_Border_Property);
+			headerLabel.prefWidthProperty().bind(Bindings.subtract(column.widthProperty(), 8));			
+			headerLabel.setPrefHeight(30);
+			headerLabel.setAlignment(Pos.CENTER);
+			column.setGraphic(headerLabel);
+			column.setText("");
+			column.prefWidthProperty().bind(tableView.widthProperty().divide(columns.size()).subtract(10));
+		};
+
+		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		tableView.getColumns().addAll(columns);
 		tableView.setPadding(new Insets(5));
-		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-		tableView.backgroundProperty().bind(Customizations.secondary_Background_Property);
-		tableView.borderProperty().bind(Customizations.standard_Border_Property);
+		tableView.setPrefHeight(height);
+		tableView.setPrefWidth(width);
+		tableView.setBackground(Customizations.secondary_Background_Property.get());
+		tableView.setBorder(Customizations.standard_Border_Property.get());
 
 		return tableView;
+	}
+	
+	public static <T> Callback<TableView<T>, TableRow<T>> createRowFactory() {
+		return new Callback<TableView<T>, TableRow<T>>() {
+			@Override
+			public TableRow<T> call(TableView<T> tableView) {
+				return new TableRow<T>() {
+					{
+						fontProperty().bind(Customizations.text_Property);
+						setPrefWidth(USE_COMPUTED_SIZE - 5);
+					}	
+					
+					@Override
+					protected void updateItem(T item, boolean empty) {
+						super.updateItem(item, empty);
+
+						if (empty || item == null) {
+							setBackground(Customizations.secondary_Background_Property.get());
+							setLineSpacing(2);
+							setPadding(new Insets(2));
+						} else {
+							textFillProperty().bind(Customizations.text_Color);
+							setBackground(Customizations.secondary_Background_Property.get());
+							setLineSpacing(2);
+							setPadding(new Insets(2));
+						}
+
+						focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+							if (isNowFocused) {
+								setBorder(Customizations.focus_Border_Property.get());
+								setBackground(Customizations.selected_Background_Property.get());
+								setLineSpacing(2);
+								setPadding(new Insets(2));
+							} else {
+								setBorder(Customizations.transparent_Border_Property.get());
+								setBackground(Customizations.secondary_Background_Property.get());
+								setLineSpacing(2);
+								setPadding(new Insets(2));
+							}
+						});
+					}
+				};
+			}
+		};
+	}
+
+	
+	public static <T> Callback<TableColumn<T, String>, TableCell<T, String>> cellFactory() {
+		return new Callback<TableColumn<T, String>, TableCell<T, String>>() {
+			@Override
+			public TableCell<T, String> call(TableColumn<T, String> param) {
+				return new TableCell<T, String>() {
+					@Override
+					protected void updateItem(String text, boolean empty) {
+						super.updateItem(text, empty);
+						if (text == null || empty) {
+							setText(null);
+						} else {
+						 	setText(text);
+						 	setFont(Customizations.text_Property.get());
+							setBackground(Customizations.secondary_Background_Property.get());
+							textFillProperty().bind(Customizations.text_Color);
+							setLineSpacing(2);
+							setPadding(new Insets(2));
+						}
+
+						focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+							if (isNowFocused) {
+								setBackground(Customizations.selected_Background_Property.get());
+								setLineSpacing(2);
+								setPadding(new Insets(2));
+							} else {
+								setBackground(Customizations.secondary_Background_Property.get());
+								setLineSpacing(2);
+								setPadding(new Insets(2));
+							}
+						});
+					}
+				};
+			}
+		};
+	}
+	public static <T> Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>> cellValueFactory(Function<T, String> stringExtractor) {
+		return new Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>>() {
+			@Override
+			public ObservableValue<String> call(TableColumn.CellDataFeatures<T, String> param) {
+				return new SimpleStringProperty(stringExtractor.apply(param.getValue()));
+			}
+		};
+	}
+
+	public static Callback<TableColumn<Tag, Color>, TableCell<Tag, Color>> createColorCellFactory() {
+		return new Callback<TableColumn<Tag, Color>, TableCell<Tag, Color>>() {
+			@Override
+			public TableCell<Tag, Color> call(TableColumn<Tag, Color> param) {
+				return new TableCell<Tag, Color>() {
+					private final Rectangle rectangle = new Rectangle(20, 20);
+
+					@Override
+					protected void updateItem(Color color, boolean empty) {
+						super.updateItem(color, empty);
+						if (color == null || empty) {
+							setGraphic(null);
+						} else {
+							setBackground(Customizations.secondary_Background_Property.get());
+							rectangle.setFill(color);
+							//VBox wrapper = new VBox(rectangle);
+							//wrapper.setAlignment(Pos.CENTER);
+							//wrapper.setBorder(Customizations.standard_Border_Property.get());
+							//wrapper.setPrefSize(rectangle.getWidth() + 4, rectangle.getHeight() + 4);
+							setGraphic(rectangle);
+							setAlignment(Pos.CENTER);
+						}
+					}
+				};
+			}
+		};
+	}
+	public static Callback<TableColumn.CellDataFeatures<Tag, Color>, ObservableValue<Color>> createColorCellValueFactory() {
+		return new Callback<TableColumn.CellDataFeatures<Tag, Color>, ObservableValue<Color>>() {
+			@Override
+			public ObservableValue<Color> call(TableColumn.CellDataFeatures<Tag, Color> param) {
+				return new SimpleObjectProperty<>(param.getValue().getColor());
+			}
+		};
 	}
 	
 	public static <T> ListView<T> custom_ListView(double width, double height, SelectionMode selectionMode){
@@ -328,26 +451,50 @@ public class Factory{
 		return textArea;
 	}
 
-	public static Button custom_Button(String image_Standard, String image_Hover){
+	public static Button custom_Button(String image_Standard, String image_Hover) {
 		Button button = new Button();
-		
+
 		button.setPrefWidth(button_Width);
 		button.setPrefHeight(button_Height);
 		button.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
-		button.setGraphic
-				(new ImageView(new Image(Factory.class.getResourceAsStream
-										 (image_Standard), button_Width, button_Height, true, true))
-		);
-		button.setOnMouseEntered
-				(e -> button.setGraphic
-				 (new ImageView(new Image(Factory.class.getResourceAsStream
-										  (image_Hover), button_Width, button_Height, true, true)))
-		);
-		button.setOnMouseExited
-				(e -> button.setGraphic
-				 (new ImageView(new Image(Factory.class.getResourceAsStream
-										  (image_Standard), button_Width, button_Height, true, true)))
-		);
+		button.backgroundProperty().bind(Customizations.primary_Background_Property);
+		try {
+			// Load standard image
+			InputStream standardStream = Factory.class.getResourceAsStream(image_Standard);
+			if (standardStream == null) {
+				throw new NullPointerException("Standard image not found: " + image_Standard);
+			} else {
+				button.setGraphic(new ImageView(new Image(standardStream, button_Width, button_Height, true, true)));
+			}
+
+			// Set hover event
+			button.setOnMouseEntered(e -> {
+				try {
+					InputStream hoverStream = Factory.class.getResourceAsStream(image_Hover);
+					if (hoverStream == null) {
+						throw new NullPointerException("Hover image not found: " + image_Hover);
+					} else {
+						button.setGraphic(new ImageView(new Image(hoverStream, button_Width, button_Height, true, true)));
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace(); // Print stack trace for hover event errors
+				}
+			});
+
+			// Reset to standard image on mouse exit
+			button.setOnMouseExited(e -> {
+				try {
+					InputStream exitStream = Factory.class.getResourceAsStream(image_Standard);
+					if (exitStream != null) {
+						button.setGraphic(new ImageView(new Image(exitStream, button_Width, button_Height, true, true)));
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace(); // Print stack trace for exit event errors
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace(); // Print stack trace for standard image load errors
+		}
 
 		return button;
 	}
