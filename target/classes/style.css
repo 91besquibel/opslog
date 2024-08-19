@@ -72,3 +72,44 @@ Image: color #FFFFFF
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.column-header-background {
+    -fx-background-color: transparent; 
+}
+
+.column-header {
+    -fx-background-color: transparent; 
+}
+.filler {
+    -fx-background-color: transparent;
+}
+
+.column-resize-line {
+    -fx-background-color: transparent; /* Gray color for resize line */
+    -fx-border-color: transparent; /* Darker border color */
+    -fx-border-width: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding:0;
+}
+.table-view .column-separator {
+    -fx-background-color: transparent; /* Or any desired color */
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding:0;
+}
+
+.table-view .table-column {
+    -fx-padding: 0; /* Adjust padding around columns */
+    -fx-margin: 0;  /* Adjust margin around columns, if applicable */
+}
+
+.table-view .column-header {
+    -fx-pref-width: auto; /* Adjust width as needed */
+}

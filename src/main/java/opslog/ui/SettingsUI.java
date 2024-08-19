@@ -9,8 +9,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.layout.Priority;
 
 import opslog.objects.*;
@@ -20,11 +22,13 @@ import opslog.util.*;
 public class SettingsUI{
 	
 	private static final Logger logger = Logger.getLogger(SettingsUI.class.getName());
-	private static final String classTag = "CustomizationsController";
+	private static final String classTag = "SettingsUI";
+	static {Logging.config(logger);}
 
 	private static final double width_Standard = 100.0;
 	private static final double height_Standard = 30.0;
-	private static final double width_Large = 205.0;
+	private static final double width_Large = 200.0;
+	private static final double height_Large = 250.0;
 
 	ObservableList<String> list_MainPath = FXCollections.observableArrayList();
 	
@@ -50,21 +54,20 @@ public class SettingsUI{
 	
 	public void initialize(){
 		try{
-			logger.log(Level.INFO, classTag + ".initialize: creating settings UI" );
+			logger.log(Level.INFO, classTag + ".initialize: Creating user interface" );
 
 			// Register for updates to prevent ui interuption
 			//Update.registerListener("ParentList", this);
 			
 			VBox parent_Card = create_Parent_Card();
 			VBox child_Card = create_Child_Card();
-			VBox mpath_Card = create_MPath_Card();
-			VBox bpath_Card = create_BPath_Card();
+			VBox path_Card = create_Path_Card();
 			VBox type_Card = create_Type_Card();
 			VBox tag_Card = create_Tag_Card();
 			VBox format_Card = create_Format_Card();
 			VBox profile_Card = create_Profile_Card();
 			
-			TilePane deck_Of_Cards = new TilePane(parent_Card, child_Card, mpath_Card, bpath_Card, type_Card, tag_Card, format_Card, profile_Card);
+			TilePane deck_Of_Cards = new TilePane(profile_Card, parent_Card, child_Card, type_Card, tag_Card, format_Card, path_Card);
 			deck_Of_Cards.setHgap(5);
 			deck_Of_Cards.setVgap(5);
 			deck_Of_Cards.setPadding(Customizations.insets);
@@ -79,8 +82,11 @@ public class SettingsUI{
 			root.setFitToHeight(true);
 			root.backgroundProperty().bind(Customizations.root_Background_Property);
 
-			logger.log(Level.INFO, classTag + ".initialize: creating settings UI" );
-		}catch(Exception e){e.printStackTrace();}
+			logger.log(Level.CONFIG, classTag + ".initialize: User interface created \n" );
+		}catch(Exception e){
+			logger.log(Level.SEVERE, classTag + ".initialize: Failed to create user interface: \n" );
+			e.printStackTrace();
+		}
 	}
 	
 	private static VBox create_Parent_Card(){
@@ -155,12 +161,14 @@ public class SettingsUI{
 		parent_Delete_Button.setOnAction(event -> handle_Parent("Delete",tempParent,parent_Selection_ComboBox.getValue()));
 		HBox parent_Button_Frame = Factory.custom_HBox();
 		parent_Button_Frame.getChildren().addAll(parent_Add_Button,parent_Edit_Button,parent_Delete_Button);
-
+		parent_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
+		
 		VBox parent_Card = Factory.custom_VBox();
 		parent_Card.getChildren().addAll(
 			parent_Label, parent_Selection_Frame, parent_Name_Frame,
 			parent_StartDate_Frame, parent_StopDate_Frame, parent_StartTime_Frame,
-			parent_StopTime_Frame, parent_Type_Frame, parent_Tag_Frame, parent_Description_Frame
+			parent_StopTime_Frame, parent_Type_Frame, parent_Tag_Frame,
+			parent_Description_Frame ,parent_Button_Frame
 		);
 		return parent_Card;
 	}
@@ -236,17 +244,19 @@ public class SettingsUI{
 		child_Delete_Button.setOnAction(event -> handle_Child("Add",tempChild,child_Selection_ComboBox.getValue()));
 		HBox child_Button_Frame = Factory.custom_HBox();
 		child_Button_Frame.getChildren().addAll(child_Add_Button,child_Edit_Button,child_Delete_Button);
-
+		child_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
+		
 		VBox child_Card = Factory.custom_VBox();
 		child_Card.getChildren().addAll(
 			child_Label, child_Selection_Frame, child_Name_Frame,
 			child_StartDate_Frame, child_StopDate_Frame, child_StartTime_Frame,
-			child_StopTime_Frame, child_Type_Frame, child_Tag_Frame, child_Description_Frame
+			child_StopTime_Frame, child_Type_Frame, child_Tag_Frame,
+			child_Description_Frame, child_Button_Frame
 		);
 
 		return child_Card;
 	}
-	private static VBox create_MPath_Card(){
+	private static VBox create_Path_Card(){
 		
 		Label mpath_Label = Factory.custom_Label("Main Path",width_Large, height_Standard);
 
@@ -271,14 +281,6 @@ public class SettingsUI{
 		HBox mpath_Button_Frame = Factory.custom_HBox();
 		mpath_Button_Frame.getChildren().addAll(mpath_Switch_Button, mpath_Add_Button, mpath_Delete_Button);
 
-		VBox mpath_Card = Factory.custom_VBox();
-		mpath_Card.getChildren().addAll(mpath_Label, mpath_Selection_Frame, mpath_Creation_Frame, mpath_Button_Frame);
-
-		return mpath_Card;
-		
-	}
-	private static VBox create_BPath_Card(){
-		
 		Label bpath_Label = Factory.custom_Label("Backup Path",width_Large, height_Standard);
 
 		Label bpath_Selection_Label = Factory.custom_Label("Change",width_Standard, height_Standard);
@@ -300,20 +302,32 @@ public class SettingsUI{
 		bpath_Delete_Button.setOnAction(event -> handle_BPath("Delete", bpath_Creation_TextField.getText(),bpath_Selection_ComboBox.getValue()));
 		HBox bpath_Button_Frame = Factory.custom_HBox();
 		bpath_Button_Frame.getChildren().addAll(bpath_Swap_Button, bpath_Add_Button, bpath_Delete_Button);
+		bpath_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
+		
+		VBox path_Card = Factory.custom_VBox();
+		path_Card.getChildren().addAll(
+			mpath_Label, mpath_Selection_Frame, mpath_Creation_Frame,
+			mpath_Button_Frame, bpath_Label, bpath_Selection_Frame,
+			bpath_Creation_Frame, bpath_Button_Frame
+		);
 
-		VBox bpath_Card = Factory.custom_VBox();
-		bpath_Card.getChildren().addAll(bpath_Label, bpath_Selection_Frame, bpath_Creation_Frame, bpath_Button_Frame);
-
-		return bpath_Card;
-
+		return path_Card;
+		
 	}
 	private static VBox create_Type_Card(){
 		Label type_Label = Factory.custom_Label("Type Presets",width_Large, height_Standard);
 		
-		List<TableColumn<Type, String>> columns = new ArrayList<>();
-		TableColumn<Type, String> column = new TableColumn<>();
-		columns.add(column);
-		TableView<Type> type_List_TableView = Factory.custom_TableView(columns, width_Large, width_Large);
+		List<TableColumn<Type, ?>> columns = new ArrayList<>();
+		TableColumn<Type, String> title = new TableColumn<>("Title");
+		TableColumn<Type, String> pattern = new TableColumn<>("Pattern");
+		title.setCellFactory(Factory.cellFactory());
+		title.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTitle()));
+		pattern.setCellFactory(Factory.cellFactory());
+		pattern.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPattern()));
+		columns.add(title);
+		columns.add(pattern);
+		TableView<Type> type_List_TableView = Factory.custom_TableView(columns, width_Large, height_Large);
+		type_List_TableView.setRowFactory(Factory.createRowFactory());
 		type_List_TableView.setItems(TypeManager.getTypeList());
 	
 		Label type_Name_Label = Factory.custom_Label("Name",width_Standard, height_Standard);
@@ -334,6 +348,7 @@ public class SettingsUI{
 		type_Delete_Button.setOnAction(event -> handle_Type("Delete", tempType));
 		HBox type_Button_Frame = Factory.custom_HBox();
 		type_Button_Frame.getChildren().addAll(type_Add_Button,type_Delete_Button);
+		type_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
 
 		VBox type_Card = Factory.custom_VBox();
 		type_Card.getChildren().addAll(type_Label,type_List_TableView,type_Name_Frame,type_Pattern_Frame,type_Button_Frame);
@@ -344,10 +359,17 @@ public class SettingsUI{
 		
 		Label tag_Label = Factory.custom_Label("Tag Presets",width_Large, height_Standard);
 
-		List<TableColumn<Tag, String>> columns = new ArrayList<>();		
-		TableColumn<Tag, String> column = new TableColumn<>();
-		columns.add(column);
-		TableView<Tag> tag_List_TableView = Factory.custom_TableView(columns, width_Large, width_Large);
+		List<TableColumn<Tag, ?>> columns = new ArrayList<>();		
+		TableColumn<Tag, String> title = new TableColumn<>("Title");
+		TableColumn<Tag, Color> color = new TableColumn<>("Color");
+		title.setCellFactory(Factory.cellFactory());
+		title.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTitle()));
+		color.setCellFactory(Factory.createColorCellFactory());
+		color.setCellValueFactory(Factory.createColorCellValueFactory());
+		columns.add(title);
+		columns.add(color);
+		TableView<Tag> tag_List_TableView = Factory.custom_TableView(columns, width_Large, height_Large);
+		tag_List_TableView.setRowFactory(Factory.createRowFactory());
 		tag_List_TableView.setItems(TagManager.getTagList());
 			
 		Label tag_Name_Label = Factory.custom_Label("Name",width_Standard, height_Standard);
@@ -368,6 +390,7 @@ public class SettingsUI{
 		tag_Delete_Button.setOnAction(event -> handle_Tag("Delete", tempTag));
 		HBox tag_Button_Frame = Factory.custom_HBox();
 		tag_Button_Frame.getChildren().addAll(tag_Add_Button,tag_Delete_Button);
+		tag_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
 
 		VBox tag_Card = Factory.custom_VBox();
 		tag_Card.getChildren().addAll(tag_Label, tag_List_TableView, tag_Name_Frame, tag_Color_Frame, tag_Button_Frame);
@@ -377,10 +400,17 @@ public class SettingsUI{
 	private static VBox create_Format_Card(){
 		Label format_Label = Factory.custom_Label("Format Presets",width_Large, height_Standard);
 
-		List<TableColumn<Format, String>> columns = new ArrayList<>();		
-		TableColumn<Format, String> column = new TableColumn<>();
-		columns.add(column);
-		TableView<Format> format_List_TableView = Factory.custom_TableView(columns, width_Large, width_Large);
+		List<TableColumn<Format, ?>> columns = new ArrayList<>();		
+		TableColumn<Format, String> title = new TableColumn<>("Title");
+		TableColumn<Format, String> format = new TableColumn<>("Format");
+		title.setCellFactory(Factory.cellFactory());
+		title.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTitle()));
+		format.setCellFactory(Factory.cellFactory());
+		format.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFormat()));
+		columns.add(title);
+		columns.add(format);
+		TableView<Format> format_List_TableView = Factory.custom_TableView(columns, width_Large, height_Large);
+		format_List_TableView.setRowFactory(Factory.createRowFactory());
 		format_List_TableView.setItems(FormatManager.getFormatList());
 			
 		Label format_Title_Label = Factory.custom_Label("Title",width_Standard, height_Standard);
@@ -389,7 +419,7 @@ public class SettingsUI{
 		HBox format_Title_Frame = Factory.custom_HBox();
 		format_Title_Frame.getChildren().addAll(format_Title_Label,format_Title_TextField);
 
-		Label format_Descripiton_Label = Factory.custom_Label("",width_Standard, height_Standard);
+		Label format_Descripiton_Label = Factory.custom_Label("Format",width_Standard, height_Standard);
 		TextField format_Descripiton_TextField = Factory.custom_TextField(width_Standard, height_Standard);
 		format_Descripiton_TextField.textProperty().bindBidirectional(tempFormat.getFormatProperty());
 		HBox format_Descripiton_Frame = Factory.custom_HBox();
@@ -401,14 +431,14 @@ public class SettingsUI{
 		format_Delete_Button.setOnAction(event -> handle_Format("Delete", tempFormat)); 
 		HBox format_Button_Frame = Factory.custom_HBox();
 		format_Button_Frame.getChildren().addAll(format_Add_Button,format_Delete_Button);
-
+		format_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
+		
 		VBox format_Card = Factory.custom_VBox();
 		format_Card.getChildren().addAll(format_Label,format_List_TableView,format_Title_Frame,format_Descripiton_Frame,format_Button_Frame);
 		
 		return format_Card;
 	}
 	private static VBox create_Profile_Card(){
-		
 		Label profile_Label = Factory.custom_Label("Profile Creation",width_Large, height_Standard);
 		
 		Label profile_Selection_Label = Factory.custom_Label("Edit Profile",width_Standard, height_Standard);
@@ -483,6 +513,8 @@ public class SettingsUI{
 		profile_Delete_Button.setOnAction(evet -> handle_Profile("Delete",tempProfile,profile_Selection_ComboBox.getValue()));
 		HBox profile_Button_Frame = Factory.custom_HBox();
 		profile_Button_Frame.getChildren().addAll(profile_Add_Button,profile_Edit_Button,profile_Delete_Button);
+		profile_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
+		
 		VBox profile_Card = Factory.custom_VBox();
 		profile_Card.getChildren().addAll(
 			profile_Label, profile_Selection_Frame, profile_Name_Frame, 
@@ -497,7 +529,7 @@ public class SettingsUI{
 	private static void handle_Parent(String action, Parent tempParent, Parent selectedParent){
 		switch (action) {
 			case "Add":
-				ParentManager.delete(tempParent);
+				ParentManager.add(tempParent);
 				break;
 			case "Delete":
 				ParentManager.delete(tempParent);
@@ -511,7 +543,7 @@ public class SettingsUI{
 	private static void handle_Child(String action, Child tempChild, Child selectedChild){
 		switch (action) {
 			case "Add":
-				ChildManager.delete(tempChild);
+				ChildManager.add(tempChild);
 				break;
 			case "Delete":
 				ChildManager.delete(tempChild);
@@ -567,7 +599,7 @@ public class SettingsUI{
 	private static void handle_Tag(String action, Tag tempTag){
 		switch (action) {
 			case "Add":
-				TagManager.delete(tempTag);
+				TagManager.add(tempTag);
 				break;
 			case "Delete":
 				TagManager.delete(tempTag);

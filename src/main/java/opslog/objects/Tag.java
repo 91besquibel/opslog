@@ -24,5 +24,8 @@ public class Tag {
 
 	@Override
 	public String toString() {return title.get();}
-	public String[] toStringArray() {return new String[]{getTitle(),Utilities.toHex(getColor())};}
+	
+	public String[] toStringArray() {
+		return new String[]{getTitle(),Utilities.toHex(getColor())};
+	}
 }

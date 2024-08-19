@@ -1,5 +1,7 @@
 package opslog.ui;
 
+import java.util.logging.Logger;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,6 +20,10 @@ import opslog.interfaces.UpdateListener;
 import opslog.interfaces.*;
 
 public class PopupUI{
+	private static final Logger logger = Logger.getLogger(SettingsUI.class.getName());
+	private static final String classTag = "PopupUI";
+	static {Logging.config(logger);}
+	
 	private Label messageLabel;
 	private VBox layout;
 	private Stage popupWindow;

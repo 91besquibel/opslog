@@ -44,9 +44,7 @@ public class Update {
 			}
 
 			if (!isListEqual(observableList, newItems)) {
-				//Update.notifyBeforeUpdate(observableList.getClass().getSimpleName());
 				observableList.setAll(newItems);
-				//Update.notifyAfterUpdate(observableList.getClass().getSimpleName());
 			}
 		} catch (IOException e) {e.printStackTrace();}
 	}

@@ -13,11 +13,12 @@ import javafx.scene.layout.GridPane;
 import javafx.geometry.Orientation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import opslog.util.*;
 
 public class CalendarUI{
 	private static final Logger logger = Logger.getLogger(CalendarUI.class.getName());
-	private static final String classTag = "CalendarController";
-
+	private static final String classTag = "CalendarUI";
+	static {Logging.config(logger);}
 
 	private AnchorPane leftTop;
 	private AnchorPane leftBottom;

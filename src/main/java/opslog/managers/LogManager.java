@@ -24,7 +24,7 @@ public class LogManager {
 
 	public static void add(Log log){
 		try {String[] newRow = log.toStringArray();
-			CSV.write(Directory.Log_Dir.get(), newRow);
+			CSV.write(Directory.newLog(), newRow);
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
@@ -51,19 +51,13 @@ public class LogManager {
 	}
 
 	public static void updateLogs(Path path) {
-		//Update.notifyBeforeUpdate("LogList");
-		try{List<String[]> rows = CSV.read(path);
-			for (String[] row : rows) {
-				Type type = TypeManager.valueOf(row[2]);
-				Tag tag = TagManager.valueOf(row[3]);
-				Log log = new Log(LocalDate.parse(row[0]), row[1], type, tag, row[4], row[5]);
-				addToList(log);
+		try{		
+			List<Log> logs = Search.searchLogs(null,null,null,null,null,null,null,null);
+			for (Log log : logs) {
+				logList.add(log);
 			}
-		} catch(IOException e){e.printStackTrace();}
-		//Update.notifyAfterUpdate("LogList");
+		} catch(Exception e){e.printStackTrace();}
 	}
-
-	private static void addToList(Log log) {logList.add(log);}
 
 	public static ObservableList<Log> getLogList() {return logList;}
 	public static ObservableList<Log> getPinList() {return pinList;}

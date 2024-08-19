@@ -28,6 +28,10 @@ public class Log{
 	public void setDate(LocalDate newDate) { date.set(newDate); }
 	public LocalDate getDate() { return date.get(); }
 	public ObjectProperty<LocalDate> getDateProperty() {return date;}
+	public StringProperty getDateStringPoperty(){
+		StringProperty string = new SimpleStringProperty(date.get().toString());
+		return string;
+	}
 
 	public void setTime(String newTime) { time.set(newTime); }
 	public String getTime() { return time.get(); }

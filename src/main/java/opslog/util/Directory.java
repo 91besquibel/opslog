@@ -24,7 +24,8 @@ import opslog.ui.*;
 public class Directory{
 
 	private static final Logger logger = Logger.getLogger(Directory.class.getName());
-	private static String classTag = "CSV";
+	private static String classTag = "Directory";
+	static {Logging.config(logger);}
 
 	public static ObservableList<String> mainPathList = FXCollections.observableArrayList();
 	public static ObservableList<String> backupPathList = FXCollections.observableArrayList();
@@ -43,22 +44,67 @@ public class Directory{
 	public static ObjectProperty<Path> Import_Dir = new SimpleObjectProperty<>();
 	public static ObjectProperty<Path> Export_Dir = new SimpleObjectProperty<>();
 
-	public static Path [] paths = {
-		Log_Dir.get(), Pin_Board_Dir.get(), Calendar_Dir.get(),
-		Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(), 
-		Format_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
-	};
+	public static Path [] paths;
 
-	// Initializes the file directories
 	public static void initialize(String newPath){
 		updatePaths(newPath);
 		buildTree();
-		add(Main_Path_Dir.get(), newPath);
+	}
+
+	private static void updatePaths(String newPath) {
+		Path baseDir = Paths.get(newPath);
+
+		Log_Dir.set(baseDir.resolve("opslog/logs"));
+		Pin_Board_Dir.set(baseDir.resolve("opslog/pinboard/pinboard.csv"));
+		Calendar_Dir.set(baseDir.resolve("opslog/calendar/calendar.csv"));
+		Parent_Dir.set(baseDir.resolve("opslog/checklist/parent.csv"));
+		Child_Dir.set(baseDir.resolve("opslog/checklist/child.csv"));
+		Type_Dir.set(baseDir.resolve("opslog/setting/type.csv"));
+		Tag_Dir.set(baseDir.resolve("opslog/setting/tag.csv"));
+		Format_Dir.set(baseDir.resolve("opslog/setting/format.csv"));
+		Profile_Dir.set(baseDir.resolve("opslog/setting/profile.csv"));
+		Main_Path_Dir.set(baseDir.resolve("opslog/setting/mainpath.csv"));
+		Backup_Path_Dir.set(baseDir.resolve("opslog/setting/backuppath.csv"));
+		Import_Dir.set(baseDir.resolve("opslog/import/import.csv"));
+		Export_Dir.set(baseDir.resolve("opslog/export/export.csv"));
+
+		paths = new Path[]{
+			Log_Dir.get(), Pin_Board_Dir.get(), Calendar_Dir.get(),
+			Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(),
+			Format_Dir.get(),Profile_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
+		};
+	}
+
+	private static void buildTree(){
+		for(Path path : paths){
+			build(path);
+		}
+	}
+
+	private static void build(Path path) {
+		try {
+			logger.log(Level.INFO, classTag + ".build: Attempting to build file tree");
+
+			Path dayDir = path.getParent();
+			if (Files.notExists(dayDir)) {
+				Files.createDirectories(dayDir);
+			}
+			if (Files.notExists(path)) {
+				Files.createFile(path);
+			}
+
+			logger.log(Level.CONFIG, classTag + ".build: File tree created successfully at: " + "\n"+ path.toString()+"\n");
+		} catch (FileAlreadyExistsException e) {
+			logger.log(Level.WARNING, classTag + ".build: File already exists", e);
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, classTag + ".build: Error occurred while creating the file tree", e);
+		}
 	}
 	
 	public static void add(Path path, String newPath){
 		try{String [] data = {newPath};
-			if(checkPath(newPath)){CSV.write(path,data);}
+			if(checkPath(newPath))
+			{CSV.write(path,data);}
 		}catch(IOException e){e.printStackTrace();}
 	}
 
@@ -69,9 +115,16 @@ public class Directory{
 	}
 
 	public static void swap(String newPath){updatePaths(newPath);}
+
+	public static Path newLog() {
+		String currentDate = DateTime.convertDate(DateTime.getDate()).replace("-", "/");
+		String currentTime = DateTime.getTime().replace(":", "_");
+		String fileName = "log_" + currentTime + ".csv";
+		Path path = Log_Dir.get().resolve(currentDate).resolve(fileName);
+		return path;
+	}
 	
 	private static Boolean checkPath(String newPath){
-		// Check if the main directory exists
 		Path basePath = Paths.get(newPath);
 		if (Files.notExists(basePath)) {
 			Platform.runLater(() -> showPopup("File Tree Builder", "Specified file path: \n" + basePath.toString() + "\nDoes not exist."));
@@ -81,129 +134,10 @@ public class Directory{
 		return true;
 	}
 
-	// Updates the paths
-	private static void updatePaths(String newPath) {
-		Path baseDir = Paths.get(newPath);
-
-		Path logDir = baseDir.resolve("opslog/logs");
-		Path pinBoardDir = baseDir.resolve("opslog/pinboard/pinboard.csv");
-		Path calendarDir = baseDir.resolve("opslog/calendar/calendar.csv");
-		Path parentDir = baseDir.resolve("opslog/checklist/parent.csv");
-		Path childDir = baseDir.resolve("opslog/checklist/child.csv");
-		Path typeDir = baseDir.resolve("opslog/setting/type.csv");
-		Path tagDir = baseDir.resolve("opslog/setting/tag.csv");
-		Path formatDir = baseDir.resolve("opslog/setting/format.csv");
-		Path mainPathDir = baseDir.resolve("opslog/setting/mainpath.csv");
-		Path backupPathDir = baseDir.resolve("opslog/setting/backuppath.csv");
-		Path importDir = baseDir.resolve("opslog/import/import.csv");
-		Path exportDir = baseDir.resolve("opslog/export/export.csv");
-
-		Log_Dir.set(logDir);
-		Pin_Board_Dir.set(pinBoardDir);
-		Calendar_Dir.set(calendarDir);
-		Parent_Dir.set(parentDir);
-		Child_Dir.set(childDir);
-		Type_Dir.set(typeDir);
-		Tag_Dir.set(tagDir);
-		Format_Dir.set(formatDir);
-		Main_Path_Dir.set(mainPathDir);
-		Backup_Path_Dir.set(backupPathDir);
-		Import_Dir.set(importDir);
-		Export_Dir.set(exportDir);
-
-		paths = new Path[] {
-			Pin_Board_Dir.get(), Calendar_Dir.get(),
-			Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(), 
-			Format_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
-		};
-	}
 	
-	// Builds the file tree or any missing components
-	public static void buildTree(){
-		for(Path path : paths){
-			build(path);
-		}
-		Path log = newLog();
-		build(log);
-	}
-	// Directory and file creation
-	public static void build(Path path) {
-		try {
-			logger.log(Level.INFO, classTag + ".build: Attempting to build file tree \n");
-			
-			Path dayDir = path.getParent();
-			try {
-				if(!Files.exists(dayDir)){
-					Files.createDirectories(dayDir);
-					if(!Files.exists(path)){
-						Files.createFile(path);
-					}
-				}
-			}catch(FileAlreadyExistsException e){
-				e.printStackTrace();
-			}catch(IOException e ){
-				e.printStackTrace();
-			}
-		
-			logger.log(Level.CONFIG, classTag + ".build: File tree created successfully. \n");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, classTag + ".build: Error occurred while creating the file tree \n", e);
-		}
-	}
 
-	// Returns the file name and location based on the current date
-	public static Path newLog() {
-		// Retrieves the current date "yyyy/MMM/dd"
-		String currentDate = DateTime.convertDate(DateTime.getDate()).replace("-", "/");
-		// Retrieves the current time "HH_mm_ss"
-		String currentTime = DateTime.getTime().replace(":", "_");
-		// Combine into "/yyyy/MMM/dd/log_HH_mm_ss.csv"
-		String fileName = "log_" + currentTime + ".csv";
-		// Combine into "/user/input/opslog/log/yyyy/MMM/dd/log_HH_mm_ss.csv"
-		Path path = Log_Dir.get().resolve(currentDate).resolve(fileName);
-		// Return the file name and location
-		return path;
-	}
 	
-	// Search logs by date and time range
-	public static List<Path> search(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
-		List<Path> files = new ArrayList<>();
-
-		LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime != null ? startTime : LocalTime.MIN);
-		LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime != null ? endTime : LocalTime.MAX);
-
-		try {
-			Files.walk(Log_Dir.get())
-				.filter(Files::isRegularFile)
-				.filter(path -> {
-					String fileName = path.getFileName().toString();
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd/log_HH_mm_ss.csv");
-					try {
-						String dayDir = path.getParent().getFileName().toString(); // Extract 'dd' from path
-						String monthDir = path.getParent().getParent().getFileName().toString(); // Extract 'mm' from path
-						String yearDir = path.getParent().getParent().getParent().getFileName().toString(); // Extract 'yyyy' from path
-
-						String[] parts = fileName.split("_|\\.|\\-");
-						LocalDateTime fileDateTime = LocalDateTime.parse(
-							String.format("%s/%s/%s/%s_%s_%s",
-								yearDir, monthDir, dayDir,
-								parts[1], parts[2], parts[3]), formatter);
-
-						return !fileDateTime.isBefore(startDateTime) && !fileDateTime.isAfter(endDateTime);
-					} catch (Exception e) {
-						return false;
-					}
-				})
-				.forEach(files::add);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return files;
-	}
-	
-	// Utility method 
-	public static void showPopup(String title, String message ){
+	private static void showPopup(String title, String message ){
 		PopupUI popup = new PopupUI();
 		popup.display(title, message);
 	}

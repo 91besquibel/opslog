@@ -6,10 +6,17 @@ import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import opslog.objects.*;
 import opslog.util.*;
 
 public class TagManager {
+	
+	private static final Logger logger = Logger.getLogger(TagManager.class.getName());
+	private static final String classTag = "TagManager";
+	static {Logging.config(logger);}
 
 	private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
 	
@@ -24,10 +31,18 @@ public class TagManager {
 
 	public static ObservableList<Tag> getTagList() {return tagList;}
 
-	public static void add(Tag Tag){
-		try {String[] newRow = Tag.toStringArray();
-			CSV.write(Directory.Tag_Dir.get(), newRow);} 
-		catch (IOException e) {e.printStackTrace();}
+	public static void add(Tag newTag){
+		try {
+			logger.log(Level.INFO, classTag + ".add: Writing tag to CSV: " + newTag.toString());
+
+			String[] newRow = newTag.toStringArray();
+			CSV.write(Directory.Tag_Dir.get(), newRow);
+
+			logger.log(Level.INFO, classTag + ".add: Tag added to CSV: " + newTag.toString());
+		} catch (IOException e) {
+			logger.log(Level.INFO, classTag + ".add: Failed to add tag to CSV: " + newTag.toString());
+			e.printStackTrace();
+		}
 	}
 
 	public static void delete(Tag Tag) {

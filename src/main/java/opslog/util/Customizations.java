@@ -49,7 +49,7 @@ public class Customizations{
 	public static ObjectProperty<Background> root_Background_Property = new SimpleObjectProperty<>( new Background(root_Background_Fill.get()));
 
 	// Background Primary
-	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.DARKGRAY); // Set by: primary_background_Color_Profile
+	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.DIMGREY); // Set by: primary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), cornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property = new SimpleObjectProperty<>( new Background(primary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), zero_CornerRadii, insets));
@@ -73,12 +73,12 @@ public class Customizations{
 	public static ObjectProperty<Background> selected_Background_Property = new SimpleObjectProperty<>( new Background(selected_Background_Fill.get()));
 	
 	// Border Standard
-	public static ObjectProperty<Color> standard_Border_Color = new SimpleObjectProperty<>(Color.DIMGREY); 
+	public static ObjectProperty<Color> standard_Border_Color = new SimpleObjectProperty<>(Color.WHITESMOKE); 
 	public static ObjectProperty<BorderStroke> standard_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 	public static ObjectProperty<Border> standard_Border_Property = new SimpleObjectProperty<>( new Border(standard_Border_Stroke.get()));
 
 	// Border Focus
-	public static ObjectProperty<Color> focus_Border_Color = new SimpleObjectProperty<>(Color.BLUE);
+	public static ObjectProperty<Color> focus_Border_Color = new SimpleObjectProperty<>(Color.DARKORANGE);
 	public static ObjectProperty<BorderStroke> focus_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(focus_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 	public static ObjectProperty<Border> focus_Border_Property = new SimpleObjectProperty<>( new Border(focus_Border_Stroke.get()));
 
@@ -91,7 +91,6 @@ public class Customizations{
 	public static ObjectProperty<Color> text_Color = new SimpleObjectProperty<Color>(Color.WHITESMOKE); //.textFillProperty().bind(text_Color);
 	public static ObjectProperty<Integer> text_Size = new SimpleObjectProperty<Integer>(14);
 	public static ObjectProperty<String> text_Font = new SimpleObjectProperty<String>("Arial");
-	
 	public static ObjectProperty<Font> text_Property = new SimpleObjectProperty<>(Font.font(text_Font.get(), text_Size.get())); //.fontProperty().bind(text_Font);
 	public static ObjectProperty<Font> text_Property_Bold = new SimpleObjectProperty<>(Font.font(text_Font.get(), FontWeight.BOLD, text_Size.get()));
 

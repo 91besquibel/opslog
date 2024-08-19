@@ -56,7 +56,7 @@ public class App extends Application {
 	
 	@Override
 	public void start(Stage stage) throws IOException {
-		configureLogging();
+		Logging.config(logger);
 		DateTime.timeListPopulate();
 		this.eventUI = new EventUI();
 		try{logUI = new LogUI();
@@ -112,15 +112,12 @@ public class App extends Application {
 	private void createUI(){
 		Button exit_Button = Factory.custom_Button("/IconLib/closeIW.png", "/IconLib/closeIG.png");
 		exit_Button.setOnAction(event -> {Platform.exit();});
-		exit_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Button minimize_Button = Factory.custom_Button("/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
 		minimize_Button.setOnAction(event -> ((Stage) minimize_Button.getScene().getWindow()).setIconified(true));
-		minimize_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Button maximize_Button = Factory.custom_Button("/IconLib/maximizeIW.png", "/IconLib/maximizeIG.png");
 		maximize_Button.setOnAction(this::maximize);
-		maximize_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Region left_Menu_Spacer = new Region();
 		HBox.setHgrow(left_Menu_Spacer, Priority.ALWAYS);
@@ -141,27 +138,24 @@ public class App extends Application {
 
 		Button log_Button = Factory.custom_Button("/IconLib/logIW.png", "/IconLib/logIG.png");
 		log_Button.setOnAction(this::goToLog);
-		log_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Button calendar_Button = Factory.custom_Button("/IconLib/calendarIW.png", "/IconLib/calendarIG.png");
 		calendar_Button.setOnAction(this::goToCalendar);
-		calendar_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Button checklist_Button = Factory.custom_Button("/IconLib/checklistIW.png", "/IconLib/checklistIG.png");
 		checklist_Button.setOnAction(this::goToChecklist);
-		checklist_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Button settings_Button = Factory.custom_Button("/IconLib/settingsIW.png", "/IconLib/settingsIG.png");
 		settings_Button.setOnAction(this::goToSettings);
-		settings_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		Separator separator = new Separator();
 		separator.setOrientation(Orientation.VERTICAL);
-		separator.backgroundProperty().bind(Customizations.root_Background_Property);
+		separator.backgroundProperty().bind(Customizations.transparent_Background_Property);
+		separator.setPrefHeight(10);
+		separator.setPrefWidth(2);
 
 		Button event_Button = Factory.custom_Button("/IconLib/editIW.png", "/IconLib/editIG.png");
 		event_Button.setOnAction(this::goToEvent);
-		event_Button.backgroundProperty().bind(Customizations.root_Background_Property);
 		
 		HBox windowBar = Factory.custom_HBox();
 		windowBar.getChildren().addAll(
@@ -170,13 +164,15 @@ public class App extends Application {
 			log_Button,calendar_Button,checklist_Button,
 			settings_Button,separator,event_Button
 		);
-		windowBar.backgroundProperty().bind(Customizations.root_Background_Property);
-		
+		windowBar.backgroundProperty().bind(Customizations.primary_Background_Property);
+		windowBar.setPadding(new Insets(0,5,0,5));
+		windowBar.borderProperty().bind(Customizations.standard_Border_Property);
 		viewArea = new AnchorPane();
+		viewArea.setPadding(new Insets(5, 5, 5, 5));
+		
 		root = new BorderPane(); 
 		root.backgroundProperty().bind(Customizations.root_Background_Property);
 		root.borderProperty().bind(Customizations.standard_Border_Property);
-		root.setPadding(new Insets(5, 5, 5, 5));
 		root.setTop(windowBar);
 		root.setCenter(viewArea);
 		root.setBottom(null);
@@ -247,62 +243,7 @@ public class App extends Application {
 		PopupUI popupUI = new PopupUI();
 		popupUI.display(title, message);
 	}
-	private void configureLogging() {
-		// Define ANSI escape codes for colors
-		final String ANSI_RESET = "\u001B[0m";
-		final String ANSI_RED = "\u001B[31m";
-		final String ANSI_GREEN = "\u001B[32m";
-		final String ANSI_YELLOW = "\u001B[33m";
-		final String ANSI_BLUE = "\u001B[34m";
-		final String ANSI_PURPLE = "\u001B[35m";
-		final String ANSI_WHITE = "\u001B[37m";
-
-		// Create console handler
-		ConsoleHandler consoleHandler = new ConsoleHandler();
-
-		// Create custom formatter
-		Formatter formatter = new Formatter() {
-			@Override
-			public String format(LogRecord record) {
-				StringBuilder builder = new StringBuilder();
-
-				// Choose color based on log level
-				Level level = record.getLevel();
-				if (level == Level.SEVERE) {
-					builder.append(ANSI_RED);
-				} else if (level == Level.INFO) {
-					builder.append(ANSI_GREEN);
-				} else if (level == Level.CONFIG) {
-					builder.append(ANSI_PURPLE);
-				} else if (level == Level.FINE || level == Level.FINER || level == Level.FINEST) {
-					builder.append(ANSI_BLUE);
-				} else if (level == Level.WARNING) {
-					builder.append(ANSI_YELLOW);
-				} else {
-					builder.append(ANSI_WHITE);
-				}
-
-				// Append log message
-				builder.append("[")
-						.append(record.getLevel().getName())
-						.append("] ")
-						.append(formatMessage(record))
-						.append(ANSI_RESET) // Reset color
-						.append("\n");
-
-				return builder.toString();
-			}
-		};
-
-		// Set custom formatter to console handler
-		consoleHandler.setFormatter(formatter);
-		consoleHandler.setLevel(Level.ALL);
-
-		// Configure logger
-		logger.addHandler(consoleHandler);
-		logger.setLevel(Level.ALL);
-		logger.setUseParentHandlers(false);
-	}
+	
 	public static void main(String[] args) {
 		launch(args);
 	}

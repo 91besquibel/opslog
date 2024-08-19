@@ -4,10 +4,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableObjectValue;
@@ -45,10 +46,13 @@ import opslog.objects.Type;
 import opslog.util.Customizations;
 import opslog.util.DateTime;
 import opslog.util.Factory;
-import opslog.util.Search;
+import opslog.util.Logging;
 
 public class EventUI{
-
+	private static final Logger logger = Logger.getLogger(EventUI.class.getName());
+	private static final String classTag = "EventUI";
+	static {Logging.config(logger);}
+	
 	private Stage popupWindow;
 	private VBox root;
 	private double lastX, lastY;
@@ -110,21 +114,29 @@ public class EventUI{
 	}
 
 	private synchronized void initialize(){
-		HBox windowBar = buildWindowCard();
-		HBox logCard = buildLogCard();
-		VBox optionsCard = buildOptionsCard();
-		HBox hbox = new HBox(logCard,optionsCard);
-		root = Factory.custom_VBox();
-		root.getChildren().addAll(windowBar,hbox);
-		root.borderProperty().bind(Customizations.standard_Border_Property);
-		root.backgroundProperty().bind(Customizations.root_Background_Property);
-		HBox.setHgrow(logCard, Priority.ALWAYS);
-		HBox.setHgrow(optionsCard, Priority.ALWAYS);
-		VBox.setVgrow(logCard, Priority.ALWAYS);
-		VBox.setVgrow(optionsCard, Priority.ALWAYS);
-		root.backgroundProperty().bind(Customizations.root_Background_Property);
-		
-		latch.countDown();
+		try{
+		logger.log(Level.INFO, classTag + ".initialize: Creating user interface ");
+
+			HBox windowBar = buildWindowCard();
+			HBox logCard = buildLogCard();
+			VBox optionsCard = buildOptionsCard();
+			HBox hbox = new HBox(logCard,optionsCard);
+			root = Factory.custom_VBox();
+			root.getChildren().addAll(windowBar,hbox);
+			root.borderProperty().bind(Customizations.standard_Border_Property);
+			root.backgroundProperty().bind(Customizations.root_Background_Property);
+			HBox.setHgrow(logCard, Priority.ALWAYS);
+			HBox.setHgrow(optionsCard, Priority.ALWAYS);
+			VBox.setVgrow(logCard, Priority.ALWAYS);
+			VBox.setVgrow(optionsCard, Priority.ALWAYS);
+			root.backgroundProperty().bind(Customizations.root_Background_Property);
+			latch.countDown();
+
+		logger.log(Level.CONFIG, classTag + ".initialize: User interface created\n");
+		}catch(Exception e){
+		e.printStackTrace();
+		logger.log(Level.SEVERE, classTag + ".initialize: Failed to create user interface: \n");
+		} ;
 	}
 
 	private HBox buildWindowCard(){
@@ -266,7 +278,6 @@ public class EventUI{
 			}
 		} catch (Exception e) {e.printStackTrace();}
 	}
-
 
 	public static void showPopup(String title, String message ){
 		PopupUI popup = new PopupUI();
