@@ -77,4 +77,31 @@ public class Profile {
 			getTextFont()
 		};
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Profile otherProfile = (Profile) other;
+		return title.get().equals(otherProfile.getTitle()) &&
+			   root.get().equals(otherProfile.getRoot()) &&
+			   primary.get().equals(otherProfile.getPrimary()) &&
+			   secondary.get().equals(otherProfile.getSecondary()) &&
+			   border.get().equals(otherProfile.getBorder()) &&
+			   textColor.get().equals(otherProfile.getTextColor()) &&
+			   textSize.get().equals(otherProfile.getTextSize()) &&
+			   textFont.get().equals(otherProfile.getTextFont());
+	}
+
+	@Override
+	public int hashCode() {
+		return title.hashCode() +
+			   root.hashCode() +
+			   primary.hashCode() +
+			   secondary.hashCode() +
+			   border.hashCode() +
+			   textColor.hashCode() +
+			   textSize.hashCode() +
+			   textFont.hashCode();
+	}
 }

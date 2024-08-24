@@ -2,11 +2,15 @@ package opslog.managers;
 
 import opslog.objects.Format;
 import opslog.util.CSV;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import opslog.util.*;
 
 
@@ -56,7 +60,18 @@ public class FormatManager {
 	}
 
 	public static void updateFormats(Path path) {
-		Update.updateList(path, formatList, row -> new Format(row[0],row[1]));
+		try {
+			List<String[]> rows = CSV.read(path);
+			List<Format> newList = new ArrayList<>();
+
+			for (String[] row : rows) {newList.add(new Format(row[0],row[1]));}
+
+			synchronized (formatList) {
+				if (!Update.compare(formatList, newList)) 
+					Platform.runLater(() -> {formatList.setAll(newList);
+				});
+			}
+		} catch (IOException e) {e.printStackTrace();}
 	}
 
 }

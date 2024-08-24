@@ -64,4 +64,30 @@ public class Log{
 			getDescription()
 		};
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Log otherLog = (Log) other;
+		return date.get().equals(otherLog.getDate()) &&
+			   time.get().equals(otherLog.getTime()) &&
+			   ((type.get() == null && otherLog.getType() == null) || 
+				(type.get() != null && type.get().equals(otherLog.getType()))) &&
+			   ((tag.get() == null && otherLog.getTag() == null) || 
+				(tag.get() != null && tag.get().equals(otherLog.getTag()))) &&
+			   initials.get().equals(otherLog.getInitials()) &&
+			   description.get().equals(otherLog.getDescription());
+	}
+
+	@Override
+	public int hashCode() {
+		int result = date.hashCode();
+		result = 31 * result + time.hashCode();
+		result = 31 * result + (type.get() != null ? type.hashCode() : 0);
+		result = 31 * result + (tag.get() != null ? tag.hashCode() : 0);
+		result = 31 * result + initials.hashCode();
+		result = 31 * result + description.hashCode();
+		return result;
+	}
 }

@@ -24,6 +24,19 @@ public class Tag {
 
 	@Override
 	public String toString() {return title.get();}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Tag otherTag = (Tag) other;
+		return title.get().equals(otherTag.getTitle()) && color.get().equals(otherTag.getColor());
+	}
+
+	@Override
+	public int hashCode() {
+		return title.hashCode() + color.hashCode();
+	}
 	
 	public String[] toStringArray() {
 		return new String[]{getTitle(),Utilities.toHex(getColor())};

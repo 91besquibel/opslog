@@ -80,9 +80,7 @@ public class Search {
 				 .filter(Files::isRegularFile)
 				 .filter(path -> isFileWithinRange(path, startDateTime, endDateTime))
 				 .forEach(files::add);
-		} catch (IOException e) {
-			e.printStackTrace(); // Replace with proper logging in production
-		}
+		} catch (IOException e) {e.printStackTrace();}
 		return files;
 	}
 

@@ -57,7 +57,7 @@ public class SettingsUI{
 			logger.log(Level.INFO, classTag + ".initialize: Creating user interface" );
 
 			// Register for updates to prevent ui interuption
-			//Update.registerListener("ParentList", this);
+			// Update.registerListener("ParentList", this);
 			
 			VBox parent_Card = create_Parent_Card();
 			VBox child_Card = create_Child_Card();
@@ -280,7 +280,7 @@ public class SettingsUI{
 		mpath_Delete_Button.setOnAction(event -> handle_MPath("Delete",mpath_Creation_TextField.getText(),mpath_Selection_ComboBox.getValue()));
 		HBox mpath_Button_Frame = Factory.custom_HBox();
 		mpath_Button_Frame.getChildren().addAll(mpath_Switch_Button, mpath_Add_Button, mpath_Delete_Button);
-
+		mpath_Button_Frame.setAlignment(Pos.BASELINE_RIGHT);
 		Label bpath_Label = Factory.custom_Label("Backup Path",width_Large, height_Standard);
 
 		Label bpath_Selection_Label = Factory.custom_Label("Change",width_Standard, height_Standard);

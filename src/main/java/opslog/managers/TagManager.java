@@ -1,11 +1,15 @@
 package opslog.managers;
 
+import java.util.Arrays;
 import opslog.util.CSV;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,6 +71,35 @@ public class TagManager {
 	}
 
 	public static void updateTags(Path path) {
-		Update.updateList(path, tagList, row -> new Tag(row[0], Color.web(row[1])));
+		try {
+			List<String[]> rows = CSV.read(path);
+			List<Tag> newItems = new ArrayList<>();
+
+			for (String[] row : rows) {newItems.add(new Tag(row[0],Color.web(row[1])));}
+			
+			synchronized (tagList) {
+				if (!isListEqual(tagList, newItems)) {
+					logger.log(Level.CONFIG, classTag + ".updateList: Updating List: \n" + tagList.toString() + "\n with \n" + newItems.toString() + "\n");
+					Platform.runLater(() -> {tagList.setAll(newItems);});
+				}
+			}
+
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
+	private static boolean isListEqual(List<Tag> tagListStorage, List<Tag> newItems) {
+		logger.log(Level.INFO, classTag + ".isListEqual: checking for difference between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString() );
+		if (tagListStorage.size() != newItems.size()) {
+			logger.log(Level.WARNING, classTag + ".isListEqual: Size difference found between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString() );
+			return false;
+		}
+		for (int i = 0; i < tagListStorage.size(); i++) {
+			if (!tagListStorage.get(i).equals(newItems.get(i))) {
+				logger.log(Level.WARNING, classTag + ".isListEqual: Item Difference found between: \n"+ Arrays.toString(tagListStorage.get(i).toStringArray())+ "\n and \n"+ Arrays.toString(newItems.get(i).toStringArray()));
+				return false;
+			}
+		}
+		logger.log(Level.CONFIG, classTag + ".isListEqual: No difference found between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString()+"\n");
+		return true;
 	}
 }

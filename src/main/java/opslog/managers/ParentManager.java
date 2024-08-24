@@ -1,5 +1,6 @@
 package opslog.managers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -7,6 +8,8 @@ import javafx.scene.paint.Color;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 // My Imports
 import opslog.objects.*;
@@ -50,12 +53,22 @@ public class ParentManager {
 			CSV.edit(Directory.Parent_Dir.get(), oldValue, newValue);
 		}catch(IOException e){e.printStackTrace();}
 	}
-
 	public static void updateParents(Path path) {
-		Update.updateList(path, parentList, row -> new Parent(
-			row[0], LocalDate.parse(row[1]), LocalDate.parse(row[2]), 
-			row[3], row[4], new Type("",""), 
-			new Tag("",Color.BLUE), row[7]
-		));
+		try {
+			List<String[]> rows = CSV.read(path);
+			List<Parent> newList = new ArrayList<>();
+
+			for (String[] row : rows) {newList.add(new Parent(
+			   row[0], LocalDate.parse(row[1]), LocalDate.parse(row[2]), 
+			   row[3], row[4], new Type("",""), 
+			   new Tag("",Color.BLUE), row[7]
+			));}
+
+			synchronized (parentList) {
+				if (!Update.compare(parentList, newList)) 
+					Platform.runLater(() -> {parentList.setAll(newList);
+				});
+			}
+		} catch (IOException e) {e.printStackTrace();}
 	}
 }

@@ -3,20 +3,26 @@ package opslog.util;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Function;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+ 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -24,6 +30,10 @@ import javafx.util.Callback;
 import opslog.objects.*;
 
 public class Factory{
+
+	private static final Logger logger = Logger.getLogger(Factory.class.getName());
+	private static final String classTag = "Factory";
+	static {Logging.config(logger);}
 
 	private static double spacing = 5.0;
 	private static double padding = 5.0;
@@ -61,90 +71,58 @@ public class Factory{
 	}
 	
 	public static <T> Callback<TableView<T>, TableRow<T>> createRowFactory() {
-		return new Callback<TableView<T>, TableRow<T>>() {
+		return new Callback<>() {
 			@Override
 			public TableRow<T> call(TableView<T> tableView) {
-				return new TableRow<T>() {
-					{
-						fontProperty().bind(Customizations.text_Property);
-						setPrefWidth(USE_COMPUTED_SIZE - 5);
-					}	
-					
+				return new TableRow<>() {
 					@Override
 					protected void updateItem(T item, boolean empty) {
 						super.updateItem(item, empty);
 
 						if (empty || item == null) {
-							setBackground(Customizations.secondary_Background_Property.get());
-							setLineSpacing(2);
-							setPadding(new Insets(2));
-						} else {
-							textFillProperty().bind(Customizations.text_Color);
-							setBackground(Customizations.secondary_Background_Property.get());
-							setLineSpacing(2);
-							setPadding(new Insets(2));
+							setText(null);
+							setGraphic(null);
+							setStyle(""); 
 						}
-
+					}
+					{
+						fontProperty().bind(Customizations.text_Property);
+						setPrefWidth(USE_COMPUTED_SIZE - 5);
+						setLineSpacing(2);
+						setBackground(Customizations.transparent_Background_Property.get());
 						focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
 							if (isNowFocused) {
-								setBorder(Customizations.focus_Border_Property.get());
 								setBackground(Customizations.selected_Background_Property.get());
-								setLineSpacing(2);
-								setPadding(new Insets(2));
 							} else {
-								setBorder(Customizations.transparent_Border_Property.get());
 								setBackground(Customizations.secondary_Background_Property.get());
-								setLineSpacing(2);
-								setPadding(new Insets(2));
 							}
-						});
+						});	
 					}
 				};
 			}
 		};
 	}
-
 	
 	public static <T> Callback<TableColumn<T, String>, TableCell<T, String>> cellFactory() {
-		return new Callback<TableColumn<T, String>, TableCell<T, String>>() {
+		return new Callback<>() {
 			@Override
 			public TableCell<T, String> call(TableColumn<T, String> param) {
-				return new TableCell<T, String>() {
+				return new TableCell<>() {
 					@Override
 					protected void updateItem(String text, boolean empty) {
 						super.updateItem(text, empty);
 						if (text == null || empty) {
 							setText(null);
+							setGraphic(null);
+							setStyle(""); 
 						} else {
-						 	setText(text);
-						 	setFont(Customizations.text_Property.get());
-							setBackground(Customizations.secondary_Background_Property.get());
-							textFillProperty().bind(Customizations.text_Color);
-							setLineSpacing(2);
-							setPadding(new Insets(2));
+							setText(text);
+							setAlignment(Pos.CENTER);
+							setFont(Customizations.text_Property.get());
+							textFillProperty().bind(Customizations.text_Color);		
 						}
-
-						focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-							if (isNowFocused) {
-								setBackground(Customizations.selected_Background_Property.get());
-								setLineSpacing(2);
-								setPadding(new Insets(2));
-							} else {
-								setBackground(Customizations.secondary_Background_Property.get());
-								setLineSpacing(2);
-								setPadding(new Insets(2));
-							}
-						});
 					}
 				};
-			}
-		};
-	}
-	public static <T> Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>> cellValueFactory(Function<T, String> stringExtractor) {
-		return new Callback<TableColumn.CellDataFeatures<T, String>, ObservableValue<String>>() {
-			@Override
-			public ObservableValue<String> call(TableColumn.CellDataFeatures<T, String> param) {
-				return new SimpleStringProperty(stringExtractor.apply(param.getValue()));
 			}
 		};
 	}
@@ -162,12 +140,8 @@ public class Factory{
 						if (color == null || empty) {
 							setGraphic(null);
 						} else {
-							setBackground(Customizations.secondary_Background_Property.get());
+
 							rectangle.setFill(color);
-							//VBox wrapper = new VBox(rectangle);
-							//wrapper.setAlignment(Pos.CENTER);
-							//wrapper.setBorder(Customizations.standard_Border_Property.get());
-							//wrapper.setPrefSize(rectangle.getWidth() + 4, rectangle.getHeight() + 4);
 							setGraphic(rectangle);
 							setAlignment(Pos.CENTER);
 						}
@@ -176,6 +150,7 @@ public class Factory{
 			}
 		};
 	}
+	
 	public static Callback<TableColumn.CellDataFeatures<Tag, Color>, ObservableValue<Color>> createColorCellValueFactory() {
 		return new Callback<TableColumn.CellDataFeatures<Tag, Color>, ObservableValue<Color>>() {
 			@Override
@@ -194,18 +169,28 @@ public class Factory{
 		listView.setFocusTraversable(true);
 		listView.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		listView.borderProperty().bind(Customizations.standard_Border_Property);
-		listView.getSelectionModel().setSelectionMode(selectionMode);//SelectionMode.MULTIPLE or SelectionMode.SINGLE
+		listView.getSelectionModel().setSelectionMode(selectionMode);
 
 		listView.setCellFactory(lv -> {
 			ListCell<T> cell = new ListCell<>() {
 				private final Text text = new Text();
 
 				{
-					text.fillProperty().bind(Customizations.text_Color);
-					text.fontProperty().bind(Customizations.text_Property);
-					text.setTextAlignment(TextAlignment.CENTER);
-					text.wrappingWidthProperty().bind(listView.widthProperty());
+					setBackground(Customizations.secondary_Background_Property_Zero.get());
+					textFillProperty().bind(Customizations.text_Color);
+					fontProperty().bind(Customizations.text_Property);
+					setAlignment(Pos.CENTER);
+					setWrapText(true);
 					setGraphic(text);
+
+					focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+						if(isFocused){
+							setBackground(Customizations.selected_Background_Property.get());
+						}else{
+							setBackground(Customizations.secondary_Background_Property_Zero.get());
+						}
+					});
+					
 				}
 
 				@Override
@@ -214,24 +199,14 @@ public class Factory{
 					if (empty || item == null) {
 						setText(null);
 						setGraphic(null);
-						setBackground(null);
 					} else {
 						setText(item.toString());
 						text.setText(item.toString());
-						if (listView.getSelectionModel().isSelected(getIndex())) {
-							backgroundProperty().bind(Customizations.selected_Background_Property);
-						} else {	
-							backgroundProperty().bind(Customizations.secondary_Background_Property);				
-						}
-						if (listView.getFocusModel().isFocused(getIndex())){
-							borderProperty().bind(Customizations.focus_Border_Property);
-						} else {
-							borderProperty().bind(Customizations.standard_Border_Property);
-						}
 					}
 				}
 			};
-
+			
+			
 			cell.setAlignment(Pos.CENTER);
 			cell.minWidthProperty().bind(listView.widthProperty());
 			cell.prefWidthProperty().bind(listView.widthProperty());
@@ -248,7 +223,6 @@ public class Factory{
 		
 		combo_Box.setPrefWidth(width);
 		combo_Box.setPrefHeight(height);
-		//combo_Box.setPadding(insets);
 		combo_Box.setEditable(false);
 		combo_Box.setFocusTraversable(true);
 		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
@@ -258,7 +232,17 @@ public class Factory{
 
 		combo_Box.setCellFactory(lv -> new ListCell<T>() {
 			{
-				backgroundProperty().bind(Customizations.secondary_Background_Property);
+				backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);
+				focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+					if(isFocused){backgroundProperty().bind(Customizations.selected_Background_Property);}
+					else{backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);}
+				});
+				onMouseEnteredProperty().set(event -> {
+					setBorder(Customizations.focus_Border_Property.get());
+				});
+				onMouseExitedProperty().set(event -> {
+					setBorder(Customizations.transparent_Border_Property.get());
+				});
 			}
 			@Override
 			protected void updateItem(T item, boolean empty) {
@@ -272,6 +256,8 @@ public class Factory{
 					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
+					
+				
 				}
 			}
 		});
@@ -296,6 +282,27 @@ public class Factory{
 			}
 		});
 
+		/*
+		combo_Box.showingProperty().addListener((obs, wasShowing, isNowShowing) -> {
+			if (isNowShowing) {
+				Node node = combo_Box.lookup(".list-view");
+				if (node instanceof ListView<?>) {
+					@SuppressWarnings("unchecked")
+					ListView<T> listView = (ListView<T>) node;
+					listView.setBackground(Customizations.secondary_Background_Property_Zero.get());
+				}
+			}
+		});
+		
+		Platform.runLater(() -> {
+			Node node = combo_Box.lookup(".list-view");
+			if (node instanceof ListView<?>) {
+				@SuppressWarnings("unchecked")
+				ListView<T> listView = (ListView<T>) node;
+				listView.setBackground(Customizations.secondary_Background_Property_Zero.get());
+			}
+		});
+		*/
 		return combo_Box;
 	}
 
@@ -304,7 +311,6 @@ public class Factory{
 
 		combo_Box.setPrefWidth(width);
 		combo_Box.setPrefHeight(height);
-		//combo_Box.setPadding(insets);
 		combo_Box.setEditable(false);
 		combo_Box.setFocusTraversable(true);
 		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
@@ -351,7 +357,6 @@ public class Factory{
 				}
 			}
 		});
-
 		return combo_Box;
 	}
 	
@@ -424,6 +429,13 @@ public class Factory{
 
 	public static TextField custom_TextField(double width, double height){
 		TextField text_Field = new TextField();
+
+		Customizations.text_Color.addListener((Observable, oldColor, newColor) -> {
+			String hexColor = Utilities.toHex(newColor);
+			String style = "-fx-text-fill: " + hexColor + ";";
+			logger.log(Level.INFO, classTag + ".initialize: " + style);
+			text_Field.setStyle(style);
+		});
 		
 		text_Field.setPrefWidth(width);
 		text_Field.setPrefHeight(height);
@@ -439,15 +451,20 @@ public class Factory{
 
 	public static TextArea custom_TextArea(double width, double height){
 		TextArea textArea = new TextArea();
-		
+
+		textArea.setEditable(true);
 		textArea.setPrefWidth(width);
 		textArea.setPrefHeight(height);
 		textArea.fontProperty().bind(Customizations.text_Property);
 		textArea.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		textArea.borderProperty().bind(Customizations.standard_Border_Property);
-		
 		textArea.setWrapText(true);
-
+		textArea.setStyle("-fx-text-fill: " + Customizations.secondary_Background_Property.get());
+		Customizations.secondary_Background_Property.addListener(new ChangeListener<Background>() {
+        @Override
+        public void changed(ObservableValue<? extends Background> observable, Background oldValue, Background newValue) {
+            textArea.setStyle("-fx-text-fill: " + newValue.toString());
+        }});
 		return textArea;
 	}
 
@@ -459,7 +476,7 @@ public class Factory{
 		button.setPadding(new Insets(padding_Zero, padding_Zero, padding_Zero, padding_Zero));
 		button.backgroundProperty().bind(Customizations.primary_Background_Property);
 		try {
-			// Load standard image
+			
 			InputStream standardStream = Factory.class.getResourceAsStream(image_Standard);
 			if (standardStream == null) {
 				throw new NullPointerException("Standard image not found: " + image_Standard);
@@ -467,7 +484,7 @@ public class Factory{
 				button.setGraphic(new ImageView(new Image(standardStream, button_Width, button_Height, true, true)));
 			}
 
-			// Set hover event
+			
 			button.setOnMouseEntered(e -> {
 				try {
 					InputStream hoverStream = Factory.class.getResourceAsStream(image_Hover);
@@ -477,11 +494,11 @@ public class Factory{
 						button.setGraphic(new ImageView(new Image(hoverStream, button_Width, button_Height, true, true)));
 					}
 				} catch (Exception ex) {
-					ex.printStackTrace(); // Print stack trace for hover event errors
+					ex.printStackTrace(); 
 				}
 			});
 
-			// Reset to standard image on mouse exit
+			
 			button.setOnMouseExited(e -> {
 				try {
 					InputStream exitStream = Factory.class.getResourceAsStream(image_Standard);
@@ -489,11 +506,11 @@ public class Factory{
 						button.setGraphic(new ImageView(new Image(exitStream, button_Width, button_Height, true, true)));
 					}
 				} catch (Exception ex) {
-					ex.printStackTrace(); // Print stack trace for exit event errors
+					ex.printStackTrace();
 				}
 			});
 		} catch (Exception e) {
-			e.printStackTrace(); // Print stack trace for standard image load errors
+			e.printStackTrace(); 
 		}
 
 		return button;

@@ -78,4 +78,32 @@ public class Child {
 			getDescription()
 		};
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Child otherChild = (Child) other;
+		return title.get().equals(otherChild.getTitle()) &&
+			   startdate.get().equals(otherChild.getStartDate()) &&
+			   stopdate.get().equals(otherChild.getStopDate()) &&
+			   starttime.get().equals(otherChild.getStartTime()) &&
+			   stoptime.get().equals(otherChild.getStopTime()) &&
+			   (type.get() != null ? type.get().equals(otherChild.getType()) : otherChild.getType() == null) &&
+			   (tag.get() != null ? tag.get().equals(otherChild.getTag()) : otherChild.getTag() == null) &&
+			   description.get().equals(otherChild.getDescription());
+	}
+
+	@Override
+	public int hashCode() {
+		int result = title.hashCode();
+		result = 31 * result + startdate.hashCode();
+		result = 31 * result + stopdate.hashCode();
+		result = 31 * result + starttime.hashCode();
+		result = 31 * result + stoptime.hashCode();
+		result = 31 * result + (type.get() != null ? type.hashCode() : 0);
+		result = 31 * result + (tag.get() != null ? tag.hashCode() : 0);
+		result = 31 * result + description.hashCode();
+		return result;
+	}
 }

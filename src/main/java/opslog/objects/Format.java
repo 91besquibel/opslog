@@ -22,4 +22,22 @@ public class Format{
 
 	@Override
 	public String toString(){return title.get();}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Format otherFormat = (Format) other;
+		return title.get().equals(otherFormat.getTitle()) &&
+			   format.get().equals(otherFormat.getFormat());
+	}
+
+	@Override
+	public int hashCode() {
+		int result = title.hashCode();
+		result = 31 * result + format.hashCode();
+		return result;
+	}
+
+
 }

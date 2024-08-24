@@ -4,6 +4,7 @@ import opslog.objects.Child;
 import opslog.objects.Type;
 import opslog.objects.Tag;
 import opslog.util.CSV;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -11,6 +12,7 @@ import javafx.scene.paint.Color;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 // My imports
@@ -66,10 +68,21 @@ public class ChildManager {
 	}
 	
 	public static void updateChildren(Path path) {
-		Update.updateList(path, childList, row -> new Child(
-			row[0], LocalDate.parse(row[1]), LocalDate.parse(row[2]), 
-			row[3], row[4], new Type("",""), 
-			new Tag("",Color.BLUE), row[7]
-		));
-	}	
+		try {
+			List<String[]> rows = CSV.read(path);
+			List<Child> newList = new ArrayList<>();
+
+			for (String[] row : rows) {newList.add(new Child(
+			   row[0], LocalDate.parse(row[1]), LocalDate.parse(row[2]), 
+			   row[3], row[4], new Type("",""), 
+			   new Tag("",Color.BLUE), row[7]));
+			}
+			
+			synchronized (childList) {
+				if (!Update.compare(childList, newList)) 
+					Platform.runLater(() -> {childList.setAll(newList);
+				});
+			}
+		} catch (IOException e) {e.printStackTrace();}
+	}
 }

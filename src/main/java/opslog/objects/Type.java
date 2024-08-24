@@ -21,4 +21,17 @@ public class Type{
 	@Override
 	public String toString() {return title.get();}
 	public String[] toStringArray() {return new String[]{getTitle(),getPattern(),};}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		Type otherType = (Type) other;
+		return title.get().equals(otherType.getTitle()) && pattern.get().equals(otherType.getPattern());
+	}
+
+	@Override
+	public int hashCode() {
+		return title.hashCode() + pattern.hashCode();
+	}
 }

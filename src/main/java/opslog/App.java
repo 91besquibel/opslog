@@ -164,9 +164,9 @@ public class App extends Application {
 			log_Button,calendar_Button,checklist_Button,
 			settings_Button,separator,event_Button
 		);
-		windowBar.backgroundProperty().bind(Customizations.primary_Background_Property);
+		windowBar.backgroundProperty().bind(Customizations.primary_Background_Property_WB);
 		windowBar.setPadding(new Insets(0,5,0,5));
-		windowBar.borderProperty().bind(Customizations.standard_Border_Property);
+		windowBar.borderProperty().bind(Customizations.standard_Border_Property_WB);
 		viewArea = new AnchorPane();
 		viewArea.setPadding(new Insets(5, 5, 5, 5));
 		

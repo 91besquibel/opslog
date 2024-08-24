@@ -2,6 +2,12 @@ package opslog.managers;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -9,7 +15,6 @@ import opslog.objects.Profile;
 import opslog.util.*;
 
 public class ProfileManager{
-
 	private static ProfileManager instance;
 	public static final ObservableList<Profile> profileList = FXCollections.observableArrayList();
 
@@ -40,13 +45,24 @@ public class ProfileManager{
 			CSV.edit(Directory.Profile_Dir.get(), oldValue, newValue);}
 		catch(IOException e){e.printStackTrace();}
 	}
-
+	
 	public static void updateProfiles(Path path) {
-		Update.updateList(path, profileList, row -> new Profile(
-			row[0], Color.web(row[1]), Color.web(row[2]),
-			Color.web(row[3]), Color.web(row[4]),
-			Color.web(row[5]), Integer.valueOf(row[6]), row[7]
-		));
+		try {
+			List<String[]> rows = CSV.read(path);
+			List<Profile> newList = new ArrayList<>();
+
+			for (String[] row : rows) {newList.add(new Profile(
+				row[0], Color.web(row[1]), Color.web(row[2]),								  
+				Color.web(row[3]), Color.web(row[4]),						  
+				Color.web(row[5]), Integer.valueOf(row[6]), row[7]));
+			}
+
+			synchronized (profileList) {
+				if (!Update.compare(profileList, newList)) 
+					Platform.runLater(() -> {profileList.setAll(newList);
+				});
+			}
+		} catch (IOException e) {e.printStackTrace();}
 	}
 
 }

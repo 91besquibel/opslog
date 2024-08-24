@@ -38,6 +38,9 @@ public class Customizations{
 	);
 	
 	// Property Components
+	// Corrected CornerRadii Initialization
+	public static BorderWidths border_Width_WB = new BorderWidths(0.0,0.0,1.0,0.0);
+	public static CornerRadii cornerRadii_WB = new CornerRadii(4.0, 4.0, 0.0, 0.0, false); // topleft, topright, bottomright , bottomleft, boolean asPercent?
 	public static CornerRadii cornerRadii = new CornerRadii(4.0);// corner radius
 	public static CornerRadii zero_CornerRadii = new CornerRadii(0.0);// corner radius
 	public static Insets insets = new Insets(0, 0, 0, 0); // padding and margins
@@ -54,7 +57,8 @@ public class Customizations{
 	public static ObjectProperty<Background> primary_Background_Property = new SimpleObjectProperty<>( new Background(primary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), zero_CornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property_Zero = new SimpleObjectProperty<>( new Background(primary_Background_Fill_Zero.get()));
-
+	public static ObjectProperty<BackgroundFill> primary_Background_Fill_WB = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), cornerRadii_WB, insets));
+	public static ObjectProperty<Background> primary_Background_Property_WB = new SimpleObjectProperty<>( new Background(primary_Background_Fill_WB.get()));
 	// Background Secondary
 	public static ObjectProperty<Color> secondary_Background_Color = new SimpleObjectProperty<>(Color.GREY); // Set by: secondary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> secondary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(secondary_Background_Color.get(), cornerRadii, insets));
@@ -76,12 +80,14 @@ public class Customizations{
 	public static ObjectProperty<Color> standard_Border_Color = new SimpleObjectProperty<>(Color.WHITESMOKE); 
 	public static ObjectProperty<BorderStroke> standard_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 	public static ObjectProperty<Border> standard_Border_Property = new SimpleObjectProperty<>( new Border(standard_Border_Stroke.get()));
+	public static ObjectProperty<BorderStroke> standard_Border_Stroke_WB = new SimpleObjectProperty<>( new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii_WB, border_Width_WB));
+	public static ObjectProperty<Border> standard_Border_Property_WB = new SimpleObjectProperty<>( new Border(standard_Border_Stroke_WB.get()));
 
 	// Border Focus
 	public static ObjectProperty<Color> focus_Border_Color = new SimpleObjectProperty<>(Color.DARKORANGE);
 	public static ObjectProperty<BorderStroke> focus_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(focus_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 	public static ObjectProperty<Border> focus_Border_Property = new SimpleObjectProperty<>( new Border(focus_Border_Stroke.get()));
-
+	
 	// Border Transparent
 	public static ObjectProperty<Color> transparent_Border_Color = new SimpleObjectProperty<>(Color.TRANSPARENT);
 	public static ObjectProperty<BorderStroke> transparent_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(transparent_Border_Color.get(), BorderStrokeStyle.SOLID, zero_CornerRadii, border_Width));
@@ -115,6 +121,8 @@ public class Customizations{
 		primary_Background_Property.set(new Background(primary_Background_Fill.get()));
 		primary_Background_Fill_Zero.set(new BackgroundFill(primary_Background_Color.get(), zero_CornerRadii, insets));
 		primary_Background_Property_Zero.set(new Background(primary_Background_Fill_Zero.get()));
+		primary_Background_Fill_WB.set(new BackgroundFill(primary_Background_Color.get(), cornerRadii_WB, insets));
+		primary_Background_Property_WB.set(new Background(primary_Background_Fill_WB.get()));
 	}
 	public static void updateSecondaryBackground(){
 		secondary_Background_Fill.set(new BackgroundFill(secondary_Background_Color.get(), cornerRadii, insets));
@@ -125,6 +133,8 @@ public class Customizations{
 	public static void updateBorder(){
 		standard_Border_Stroke.set(new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 		standard_Border_Property.set(new Border(standard_Border_Stroke.get()));
+		standard_Border_Stroke_WB.set(new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii_WB, border_Width_WB));
+		standard_Border_Property_WB.set(new Border(standard_Border_Stroke_WB.get()));
 	}
 	public static void updateBorderFocus(){
 		focus_Border_Stroke.set(new BorderStroke(focus_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
