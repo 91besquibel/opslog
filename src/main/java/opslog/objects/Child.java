@@ -1,30 +1,32 @@
 package opslog.objects;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
+import opslog.util.DateTime;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Child {
 
 	private final StringProperty title = new SimpleStringProperty();
-	private final ObjectProperty<LocalDate> startdate = new SimpleObjectProperty<>();
-	private final ObjectProperty<LocalDate> stopdate = new SimpleObjectProperty<>();
-	private final StringProperty starttime = new SimpleStringProperty();
-	private final StringProperty stoptime = new SimpleStringProperty();
+	private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalTime> startTime = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
 	private final ObjectProperty<Type> type = new SimpleObjectProperty<>();
 	private final ObjectProperty<Tag> tag = new SimpleObjectProperty<>();
 	private final StringProperty description = new SimpleStringProperty();
 
-	// Child child = new Child(String string, LocalDate startdate, LocalDate stopdate, String starttime, String stoptime, Type type, Tag tag, String description);
-	public Child(String title, LocalDate startdate, LocalDate stopdate, String starttime, String stoptime, Type type, Tag tag, String description) {
+	// Child child = new Child(String string, LocalDate startDate, LocalDate stopDate, String startTime, String stopTime, Type type, Tag tag, String description);
+	public Child(String title, LocalDate startDate, LocalDate stopDate, LocalTime startTime, LocalTime stopTime, Type type, Tag tag, String description) {
 		this.title.set(title);
-		this.startdate.set(startdate);
-		this.stopdate.set(stopdate);
-		this.starttime.set(starttime);
-		this.stoptime.set(stoptime);
+		this.startDate.set(startDate);
+		this.stopDate.set(stopDate);
+		this.startTime.set(startTime);
+		this.stopTime.set(stopTime);
 		this.type.set(type);
 		this.tag.set(tag);
 		this.description.set(description);
@@ -34,21 +36,21 @@ public class Child {
 	public String getTitle(){return title.get();}
 	public StringProperty getTitleProperty(){ return title; }
 
-	public void setStartDate(LocalDate newStartDate) { startdate.set(newStartDate); }
-	public LocalDate getStartDate() { return startdate.get(); }
-	public ObjectProperty<LocalDate> getStartDateProperty() { return startdate; }
+	public void setStartDate(LocalDate newStartDate) { startDate.set(newStartDate); }
+	public LocalDate getStartDate() { return startDate.get(); }
+	public ObjectProperty<LocalDate> getStartDateProperty() { return startDate; }
 
-	public void setStopDate(LocalDate newStopDate) { stopdate.set(newStopDate); }
-	public LocalDate getStopDate() { return stopdate.get(); }
-	public ObjectProperty<LocalDate> getStopDateProperty() { return stopdate; }
+	public void setStopDate(LocalDate newStopDate) { stopDate.set(newStopDate); }
+	public LocalDate getStopDate() { return stopDate.get(); }
+	public ObjectProperty<LocalDate> getStopDateProperty() { return stopDate; }
 
-	public void setStartTime(String newStartTime) { starttime.set(newStartTime); }
-	public String getStartTime() { return starttime.get(); }
-	public StringProperty getStartTimeProperty() { return starttime; }
+	public void setStartTime(LocalTime newStartTime) { startTime.set(newStartTime); }
+	public LocalTime getStartTime() { return startTime.get(); }
+	public ObjectProperty<LocalTime> getStartTimeProperty() { return startTime; }
 
-	public void setStopTime(String newStopTime) { stoptime.set(newStopTime); }
-	public String getStopTime() { return stoptime.get(); }
-	public StringProperty getStopTimeProperty() { return stoptime; }
+	public void setStopTime(LocalTime newStopTime) { stopTime.set(newStopTime); }
+	public LocalTime getStopTime() { return stopTime.get(); }
+	public ObjectProperty<LocalTime> getStopTimeProperty() { return stopTime; }
 
 	public void setType(Type newType) { type.set(newType); }
 	public Type getType() { return type.get(); }
@@ -66,13 +68,12 @@ public class Child {
 	public String toString(){return title.get();}
 	
 	public String[] toStringArray() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd");
 		return new String[]{
 			getTitle(),
-			getStartDate().format(formatter),
-			getStopDate().format(formatter),
-			getStartTime(),
-			getStopTime(),
+			getStartDate().format(DateTime.DATE_FORMAT),
+			getStopDate().format(DateTime.DATE_FORMAT),
+			getStartTime().format(DateTime.TIME_FORMAT),
+			getStopTime().format(DateTime.TIME_FORMAT),
 			getType() != null ? getType().toString() : "",
 			getTag() != null ? getTag().toString() : "",
 			getDescription()
@@ -84,23 +85,24 @@ public class Child {
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		Child otherChild = (Child) other;
-		return title.get().equals(otherChild.getTitle()) &&
-			   startdate.get().equals(otherChild.getStartDate()) &&
-			   stopdate.get().equals(otherChild.getStopDate()) &&
-			   starttime.get().equals(otherChild.getStartTime()) &&
-			   stoptime.get().equals(otherChild.getStopTime()) &&
-			   (type.get() != null ? type.get().equals(otherChild.getType()) : otherChild.getType() == null) &&
-			   (tag.get() != null ? tag.get().equals(otherChild.getTag()) : otherChild.getTag() == null) &&
-			   description.get().equals(otherChild.getDescription());
+		return 
+			title.get().equals(otherChild.getTitle()) && 
+			startDate.get().equals(otherChild.getStartDate()) &&
+			stopDate.get().equals(otherChild.getStopDate()) &&
+			startTime.get().equals(otherChild.getStartTime()) &&
+			stopTime.get().equals(otherChild.getStopTime()) &&
+			type.get().equals(otherChild.getType()) &&
+			tag.get().equals(otherChild.getTag()) &&
+			description.get().equals(otherChild.getDescription());
 	}
 
 	@Override
 	public int hashCode() {
 		int result = title.hashCode();
-		result = 31 * result + startdate.hashCode();
-		result = 31 * result + stopdate.hashCode();
-		result = 31 * result + starttime.hashCode();
-		result = 31 * result + stoptime.hashCode();
+		result = 31 * result + startDate.hashCode();
+		result = 31 * result + stopDate.hashCode();
+		result = 31 * result + startTime.hashCode();
+		result = 31 * result + stopTime.hashCode();
 		result = 31 * result + (type.get() != null ? type.hashCode() : 0);
 		result = 31 * result + (tag.get() != null ? tag.hashCode() : 0);
 		result = 31 * result + description.hashCode();

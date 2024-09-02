@@ -1,35 +1,7 @@
-/*
-Oracle CSS Guide
-https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html
+.root{
+    -fx-background-color: transparent;
+}
 
-color scheme:
-Root Background: -fx-background-color:  #0D0D0D;
-primary: -fx-Border-color:  #2c2c44;
-secondary: -fx-background-color:  #5A5A5A;
-
-text: -fx-text-fill:  #FFFFFF;
-font: -fx-font-family: 'sans-serif';
-size: -fx-font-size: 14px;
-style: -fx-font-style: normal;
-
-
-focus: -fx-border-color:  #0080FF;
-selected: -fx-background-color:  #2c2c44;
-hover: -fx-background-color:  #;
-
-Image: -fx-image: url('path/to/image.png');
-Image: color #FFFFFF
-*/
-
-/*Main screen -----------------------------------------------------------------------------*/
-
-/*Global font setting
-    *, * > * {
-    -fx-text-fill: #FFFFFF;
-    -fx-font-family: 'sans-serif';
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-}*/
 .split-pane:horizontal > .split-pane-divider {
     -fx-background-color: transparent;
 }
@@ -42,52 +14,43 @@ Image: color #FFFFFF
     -fx-pref-height: 0;
     -fx-max-height: 0;
 }
-
 .table-view .scroll-bar:vertical {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
 }
-
 .table-view .scroll-bar:vertical .increment-button,
 .table-view .scroll-bar:vertical .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .table-view .scroll-bar:horizontal .increment-button,
 .table-view .scroll-bar:horizontal .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .table-view .scroll-bar:vertical .increment-arrow,
 .table-view .scroll-bar:vertical .decrement-arrow {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .table-view .scroll-bar:horizontal .increment-arrow,
 .table-view .scroll-bar:horizontal .decrement-arrow {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .table-view .column-header {
     -fx-background-color: transparent;
 }
-
 .table-view .column-header-background {
     -fx-background-color: transparent; 
 }
-
 .table-view .column-header {
     -fx-background-color: transparent; 
 }
 .table-view .filler {
     -fx-background-color: transparent;
 }
-
 .table-view .column-resize-line {
     -fx-background-color: transparent; /* Gray color for resize line */
     -fx-border-color: transparent; /* Darker border color */
@@ -104,7 +67,6 @@ Image: color #FFFFFF
     -fx-max-width: 0;
     -fx-padding:0;
 }
-
 .table-view .table-column {
     -fx-padding: 0; /* Adjust padding around columns */
     -fx-margin: 0;  /* Adjust margin around columns, if applicable */
@@ -116,31 +78,26 @@ Image: color #FFFFFF
     -fx-pref-height: 0;
     -fx-max-height: 0;
 }
-
 .combo-box .scroll-bar:vertical {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
 }
-
 .combo-box.scroll-bar:vertical .increment-button,
 .combo-box .scroll-bar:vertical .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .combo-box .scroll-bar:horizontal .increment-button,
 .combo-box .scroll-bar:horizontal .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .combo-box .scroll-bar:vertical .increment-arrow,
 .combo-box .scroll-bar:vertical .decrement-arrow {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .combo-box .scroll-bar:horizontal .increment-arrow,
 .combo-box .scroll-bar:horizontal .decrement-arrow {
     -fx-background-color: transparent;
@@ -152,69 +109,87 @@ Image: color #FFFFFF
     -fx-pref-height: 0;
     -fx-max-height: 0;
 }
-
 .list-view .scroll-bar:vertical {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
 }
-
 .list-view .scroll-bar:vertical .increment-button,
 .list-view .scroll-bar:vertical .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .list-view .scroll-bar:horizontal .increment-button,
 .list-view .scroll-bar:horizontal .decrement-button {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .list-view .scroll-bar:vertical .increment-arrow,
 .list-view .scroll-bar:vertical .decrement-arrow {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .list-view .scroll-bar:horizontal .increment-arrow,
 .list-view .scroll-bar:horizontal .decrement-arrow {
     -fx-background-color: transparent;
     -fx-shape: " ";
 }
-
 .list-view .scroll-bar:horizontal {
     -fx-min-height: 0;
     -fx-pref-height: 0;
     -fx-max-height: 0;
 }
 
+/* Makes the content area of TextArea transparent */
+
+.text-area .content {
+    -fx-background-color: transparent;
+}
+.text-area .scroll-pane .viewport{
+    -fx-background-color: transparent;
+}
+
+
+.text-area .scroll-pane .content{
+    -fx-background-color: transparent;
+}
+
+/* Hides vertical scroll bar */
 .text-area .scroll-bar:vertical {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
 }
 
-.text-area .scroll-bar:vertical .increment-button,
-.list-view .scroll-bar:vertical .decrement-button {
-    -fx-background-color: transparent;
-    -fx-shape: " ";
+/* Hides horizontal scroll bar */
+.text-area .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
 }
 
+/* Hides buttons on vertical scroll bar */
+.text-area .scroll-bar:vertical .increment-button,
+.text-area .scroll-bar:vertical .decrement-button,
+/* Hides buttons on horizontal scroll bar */
 .text-area .scroll-bar:horizontal .increment-button,
 .text-area .scroll-bar:horizontal .decrement-button {
     -fx-background-color: transparent;
-    -fx-shape: " ";
 }
 
+/* Hides arrows on vertical scroll bar */
 .text-area .scroll-bar:vertical .increment-arrow,
-.text-area .scroll-bar:vertical .decrement-arrow {
-    -fx-background-color: transparent;
-    -fx-shape: " ";
-}
-
+.text-area .scroll-bar:vertical .decrement-arrow,
+/* Hides arrows on horizontal scroll bar */
 .text-area .scroll-bar:horizontal .increment-arrow,
 .text-area .scroll-bar:horizontal .decrement-arrow {
     -fx-background-color: transparent;
-    -fx-shape: " ";
+}
+
+.tooltip{
+ -fx-text-fill:              black;
+ -fx-background-radius:      0px;
+ -fx-background-color:       white;
+ -fx-background-insets:      0, 1, 2;
+ -fx-effect:                 null;
 }

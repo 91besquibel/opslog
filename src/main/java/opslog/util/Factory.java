@@ -57,6 +57,16 @@ public class Factory{
 			column.setGraphic(headerLabel);
 			column.setText("");
 			column.prefWidthProperty().bind(tableView.widthProperty().divide(columns.size()).subtract(10));
+			
+			Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+				headerLabel.setStyle(getTextStyleBold());
+			});
+			Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+				headerLabel.setStyle(getTextStyleBold());			
+			});
+			Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+				headerLabel.setStyle(getTextStyleBold());			
+			});
 		};
 
 		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -64,8 +74,8 @@ public class Factory{
 		tableView.setPadding(new Insets(5));
 		tableView.setPrefHeight(height);
 		tableView.setPrefWidth(width);
-		tableView.setBackground(Customizations.secondary_Background_Property.get());
-		tableView.setBorder(Customizations.standard_Border_Property.get());
+		tableView.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		tableView.borderProperty().bind(Customizations.standard_Border_Property);
 
 		return tableView;
 	}
@@ -176,20 +186,17 @@ public class Factory{
 				private final Text text = new Text();
 
 				{
-					setBackground(Customizations.secondary_Background_Property_Zero.get());
+					backgroundProperty().bind(
+						Bindings.when(focusedProperty())
+							.then(Customizations.selected_Background_Property)
+							.otherwise(Customizations.secondary_Background_Property_Zero)
+					);
+
 					textFillProperty().bind(Customizations.text_Color);
 					fontProperty().bind(Customizations.text_Property);
 					setAlignment(Pos.CENTER);
 					setWrapText(true);
 					setGraphic(text);
-
-					focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-						if(isFocused){
-							setBackground(Customizations.selected_Background_Property.get());
-						}else{
-							setBackground(Customizations.secondary_Background_Property_Zero.get());
-						}
-					});
 					
 				}
 
@@ -215,27 +222,34 @@ public class Factory{
 			return cell;
 		});
 
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			listView.setStyle(getTextStyle());
+		});
+
 		return listView;
 	}
 	
-	public static <T> ComboBox<T> custom_ComboBox(double width, double height){
+	public static <T> ComboBox<T> custom_ComboBox(String prompt, double width, double height) {
 		ComboBox<T> combo_Box = new ComboBox<>();
-		
-		combo_Box.setPrefWidth(width);
-		combo_Box.setPrefHeight(height);
-		combo_Box.setEditable(false);
-		combo_Box.setFocusTraversable(true);
-		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
-		combo_Box.borderProperty().bind(Customizations.standard_Border_Property);
-		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Customizations.focus_Border_Property);});
-		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Customizations.standard_Border_Property);});
-
+		combo_Box.setStyle(getTextStyle());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			combo_Box.setStyle(getTextStyle());
+		});
+		Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+			combo_Box.setStyle(getTextStyle());
+		});
+		Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+			combo_Box.setStyle(getTextStyle());
+		});
 		combo_Box.setCellFactory(lv -> new ListCell<T>() {
 			{
 				backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);
 				focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-					if(isFocused){backgroundProperty().bind(Customizations.selected_Background_Property);}
-					else{backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);}
+					if (isFocused) {
+						backgroundProperty().bind(Customizations.selected_Background_Property);
+					} else {
+						backgroundProperty().bind(Customizations.secondary_Background_Property_Zero);
+					}
 				});
 				onMouseEnteredProperty().set(event -> {
 					setBorder(Customizations.focus_Border_Property.get());
@@ -244,70 +258,49 @@ public class Factory{
 					setBorder(Customizations.transparent_Border_Property.get());
 				});
 			}
+
 			@Override
 			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
-					setStyle("");
+					setGraphic(null);
 				} else {
 					Text text = new Text(item.toString());
 					text.setFill(Customizations.text_Color.get());
 					text.setFont(Customizations.text_Property.get());
 					setGraphic(text);
 					setAlignment(Pos.CENTER);
-					
-				
 				}
 			}
 		});
 
 		combo_Box.setButtonCell(new ListCell<T>() {
 			{
-				backgroundProperty().bind(Customizations.secondary_Background_Property);
+				setStyle(getTextStyle());
+				Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+					setStyle(getTextStyle());
+				});
+				Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+					setStyle(getTextStyle());
+				});
+				Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+					setStyle(getTextStyle());
+				});
 			}
+
 			@Override
 			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
-					setStyle("");
+					setGraphic(null);
 				} else {
-					Text text = new Text(item.toString());
-					text.setFill(Customizations.text_Color.get());
-					text.setFont(Customizations.text_Property.get());
-					setGraphic(text);
-					setAlignment(Pos.CENTER);
+					setText(item.toString());
+					setStyle(getTextStyle());
 				}
 			}
 		});
-
-		/*
-		combo_Box.showingProperty().addListener((obs, wasShowing, isNowShowing) -> {
-			if (isNowShowing) {
-				Node node = combo_Box.lookup(".list-view");
-				if (node instanceof ListView<?>) {
-					@SuppressWarnings("unchecked")
-					ListView<T> listView = (ListView<T>) node;
-					listView.setBackground(Customizations.secondary_Background_Property_Zero.get());
-				}
-			}
-		});
-		
-		Platform.runLater(() -> {
-			Node node = combo_Box.lookup(".list-view");
-			if (node instanceof ListView<?>) {
-				@SuppressWarnings("unchecked")
-				ListView<T> listView = (ListView<T>) node;
-				listView.setBackground(Customizations.secondary_Background_Property_Zero.get());
-			}
-		});
-		*/
-		return combo_Box;
-	}
-
-	public static ComboBox<Integer> custom_ComboBox_Integer(double width, double height){
-		ComboBox<Integer> combo_Box = new ComboBox<>();
 
 		combo_Box.setPrefWidth(width);
 		combo_Box.setPrefHeight(height);
@@ -315,156 +308,126 @@ public class Factory{
 		combo_Box.setFocusTraversable(true);
 		combo_Box.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		combo_Box.borderProperty().bind(Customizations.standard_Border_Property);
-		combo_Box.setOnMouseEntered(event -> {combo_Box.borderProperty().bind(Customizations.focus_Border_Property);});
-		combo_Box.setOnMouseExited(event -> {combo_Box.borderProperty().bind(Customizations.standard_Border_Property);});
-
-		combo_Box.setCellFactory(lv -> new ListCell<Integer>() {
-			{
-				backgroundProperty().bind(Customizations.secondary_Background_Property);
-			}
-			@Override
-			protected void updateItem(Integer item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setText(null);
-					setStyle("");
-				} else {
-					Text text = new Text(item.toString());
-					text.setFill(Customizations.text_Color.get());
-					text.setFont(Customizations.text_Property.get());
-					setGraphic(text);
-					setAlignment(Pos.CENTER);
-				}
-			}
+		combo_Box.setOnMouseEntered(event -> {
+			combo_Box.borderProperty().bind(Customizations.focus_Border_Property);
 		});
-
-		combo_Box.setButtonCell(new ListCell<Integer>() {
-			{
-				backgroundProperty().bind(Customizations.secondary_Background_Property);
-			}
-			@Override
-			protected void updateItem(Integer item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setText(null);
-					setStyle("");
-				} else {
-					Text text = new Text(item.toString());
-					text.setFill(Customizations.text_Color.get());
-					text.setFont(Customizations.text_Property.get());
-					setGraphic(text);
-					setAlignment(Pos.CENTER);
-				}
-			}
+		combo_Box.setOnMouseExited(event -> {
+			combo_Box.borderProperty().bind(Customizations.standard_Border_Property);
 		});
+		combo_Box.setPromptText(prompt);
+
 		return combo_Box;
 	}
-	
-	public static DatePicker custom_DatePicker(double width, double height){
+
+	public static DatePicker custom_DatePicker(String prompt, double width, double height) {
 		DatePicker date_Picker = new DatePicker();
-		
+		date_Picker.setPromptText(prompt);
 		date_Picker.setPrefWidth(width);
 		date_Picker.setPrefHeight(height);
 		date_Picker.setEditable(false);
-		date_Picker.setFocusTraversable(false);
+		date_Picker.setFocusTraversable(true);
 		date_Picker.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		date_Picker.borderProperty().bind(Customizations.standard_Border_Property);
-		date_Picker.setOnMouseEntered(event -> {date_Picker.borderProperty().bind(Customizations.focus_Border_Property);});
-		date_Picker.setOnMouseExited(event -> {date_Picker.borderProperty().bind(Customizations.standard_Border_Property);});
-		date_Picker.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-			// date_Picker.getEditor().setFill(text_Color.get());
-			date_Picker.getEditor().setFont(Customizations.text_Property.get());
+		date_Picker.setOnMouseEntered(event -> date_Picker.borderProperty().bind(Customizations.focus_Border_Property));
+		date_Picker.setOnMouseExited(event -> date_Picker.borderProperty().bind(Customizations.standard_Border_Property));
+		
+		date_Picker.setStyle(getTextStyle());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			date_Picker.setStyle(getTextStyle());
+			date_Picker.getEditor().setStyle(getTextStyle());
 		});
+		Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+			date_Picker.setStyle(getTextStyle());
+			date_Picker.getEditor().setStyle(getTextStyle());
+		});
+		Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+			date_Picker.setStyle(getTextStyle());
+			date_Picker.getEditor().setStyle(getTextStyle());
+		});
+		
+		date_Picker.getEditor().setStyle(getTextStyle());
 		date_Picker.getEditor().backgroundProperty().bind(Customizations.secondary_Background_Property);
 		date_Picker.getEditor().borderProperty().bind(Customizations.transparent_Border_Property);
-
-		Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
-			public DateCell call(DatePicker date_Picker){
-				return new DateCell(){
-					@Override
-					public void updateItem(LocalDate item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty || item == null) {
-							setText(null);
-							setStyle("");
-						} else {
-							//Text text = new Text(item.toString());
-							//text.setFill(text_Color.get());
-							//text.setFont(text_Property.get());
-							//setGraphic(text);
-						}
-					}
-				};
-			}
-		};
-		date_Picker.setDayCellFactory(dayCellFactory);
-
 		return date_Picker;
 	}
 
-	public static ColorPicker custom_ColorPicker(double width, double height){
+	public static ColorPicker custom_ColorPicker(double width, double height) {
 		ColorPicker color_Picker = new ColorPicker();
-		
-		color_Picker.backgroundProperty().bind(Customizations.secondary_Background_Property);
-		color_Picker.borderProperty().bind(Customizations.standard_Border_Property);
 		color_Picker.setPrefWidth(width);
 		color_Picker.setPrefHeight(height);
-		color_Picker.setOnMouseEntered(event -> {color_Picker.borderProperty().bind(Customizations.focus_Border_Property);});
-		color_Picker.setOnMouseExited(event -> {color_Picker.borderProperty().bind(Customizations.standard_Border_Property);});
-		
+		color_Picker.backgroundProperty().bind(Customizations.secondary_Background_Property);
+		color_Picker.borderProperty().bind(Customizations.standard_Border_Property);
+		color_Picker.setOnMouseEntered(event -> color_Picker.borderProperty().bind(Customizations.focus_Border_Property));
+		color_Picker.setOnMouseExited(event -> color_Picker.borderProperty().bind(Customizations.standard_Border_Property));
+		color_Picker.setStyle(getTextStyle());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			color_Picker.setStyle(getTextStyle());
+		});
+		Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+			color_Picker.setStyle(getTextStyle());
+		});
+		Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+			color_Picker.setStyle(getTextStyle());
+		});
 		return color_Picker;
 	}
-	
-	public static Label custom_Label(String text, double width, double height){
+
+	public static Label custom_Label(String text, double width, double height) {
 		Label label = new Label(text);
-		
 		label.setPrefWidth(width);
 		label.setPrefHeight(height);
-		label.textFillProperty().bind(Customizations.text_Color);
-		label.fontProperty().bind(Customizations.text_Property_Bold);
 		label.setAlignment(Pos.CENTER);
-
+		label.fontProperty().bind(Customizations.text_Property_Bold);
+		label.setStyle(getTextStyleBold());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			label.setStyle(getTextStyleBold());
+		});
 		return label;
 	}
 
-	public static TextField custom_TextField(double width, double height){
+	public static TextField custom_TextField(String prompt, double width, double height) {
 		TextField text_Field = new TextField();
-
-		Customizations.text_Color.addListener((Observable, oldColor, newColor) -> {
-			String hexColor = Utilities.toHex(newColor);
-			String style = "-fx-text-fill: " + hexColor + ";";
-			logger.log(Level.INFO, classTag + ".initialize: " + style);
-			text_Field.setStyle(style);
-		});
-		
 		text_Field.setPrefWidth(width);
+		text_Field.setMaxWidth(width);
 		text_Field.setPrefHeight(height);
 		text_Field.fontProperty().bind(Customizations.text_Property);
-		// can't use text_Field.fillProperty().bind(text_Color); becuase it doesn't work with the text field
 		text_Field.borderProperty().bind(Customizations.standard_Border_Property);
 		text_Field.backgroundProperty().bind(Customizations.secondary_Background_Property);
-		text_Field.setOnMouseEntered(event -> {text_Field.borderProperty().bind(Customizations.focus_Border_Property);});	
-		text_Field.setOnMouseExited(event -> {text_Field.borderProperty().bind(Customizations.standard_Border_Property);});
-
+		text_Field.setOnMouseEntered(event -> text_Field.borderProperty().bind(Customizations.focus_Border_Property));
+		text_Field.setOnMouseExited(event -> text_Field.borderProperty().bind(Customizations.standard_Border_Property));
+		text_Field.setPromptText(prompt);
+		text_Field.setStyle(getTextStyle());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			text_Field.setStyle(getTextStyle());
+		});
+		Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+			text_Field.setStyle(getTextStyle());
+		});
+		Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+			text_Field.setStyle(getTextStyle());
+		});
 		return text_Field;
 	}
 
-	public static TextArea custom_TextArea(double width, double height){
+	public static TextArea custom_TextArea(double width, double height) {
 		TextArea textArea = new TextArea();
-
 		textArea.setEditable(true);
 		textArea.setPrefWidth(width);
 		textArea.setPrefHeight(height);
+		textArea.setWrapText(true);
 		textArea.fontProperty().bind(Customizations.text_Property);
 		textArea.backgroundProperty().bind(Customizations.secondary_Background_Property);
 		textArea.borderProperty().bind(Customizations.standard_Border_Property);
-		textArea.setWrapText(true);
-		textArea.setStyle("-fx-text-fill: " + Customizations.secondary_Background_Property.get());
-		Customizations.secondary_Background_Property.addListener(new ChangeListener<Background>() {
-        @Override
-        public void changed(ObservableValue<? extends Background> observable, Background oldValue, Background newValue) {
-            textArea.setStyle("-fx-text-fill: " + newValue.toString());
-        }});
+		textArea.setStyle(getTextStyle());
+		Customizations.text_Color.addListener((obs, oldColor, newColor) -> {
+			textArea.setStyle(getTextStyle());
+		});
+		Customizations.text_Size.addListener((obs, oldSize, newSize) -> {
+			textArea.setStyle(getTextStyle());
+		});
+		Customizations.text_Font.addListener((obs, oldSize, newSize) -> {
+			textArea.setStyle(getTextStyle());
+		});
 		return textArea;
 	}
 
@@ -533,5 +496,21 @@ public class Factory{
 		vbox.backgroundProperty().bind(Customizations.primary_Background_Property);
 		return vbox;
 	}
-	
+
+	public static String getTextStyle() {
+		String hexColor = Utilities.toHex(Customizations.text_Color.get());
+		return "-fx-text-fill: " + hexColor + ";" +
+			   "-fx-font-family: " + Customizations.text_Font.get() + ";" +
+			   "-fx-font-size: " + Customizations.text_Size.get() + ";" +
+			   "-fx-prompt-text-fill: " + hexColor + ";" ;
+	}
+
+	public static String getTextStyleBold() {
+		String hexColor = Utilities.toHex(Customizations.text_Color.get());
+		return "-fx-text-fill: " + hexColor + ";" +
+			   "-fx-font-weight: bold;" +
+			   "-fx-font-family: " + Customizations.text_Font.get() + ";" +
+			   "-fx-font-size: " + Customizations.text_Size.get() + ";" +
+			   "-fx-prompt-text-fill: " + hexColor + ";" ;
+	}
 }

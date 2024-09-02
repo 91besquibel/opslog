@@ -16,7 +16,6 @@ import opslog.objects.*;
 import opslog.managers.*;
 import opslog.ui.*;
 import opslog.util.*;
-import opslog.interfaces.UpdateListener;
 import opslog.interfaces.*;
 
 public class PopupUI{

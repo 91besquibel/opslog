@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -15,18 +12,19 @@ import opslog.objects.Profile;
 import opslog.util.*;
 
 public class ProfileManager{
-	private static ProfileManager instance;
+
+	private static final Logger logger = Logger.getLogger(ProfileManager.class.getName());
+	private static final String classTag = "ProfileManager";
+	static {Logging.config(logger);}
+	
 	public static final ObservableList<Profile> profileList = FXCollections.observableArrayList();
+	private static ProfileManager instance;
 
 	public static ProfileManager getInstance() {
 		if (instance == null) {instance = new ProfileManager();}
 		return instance;
 	}
 	
-	public void addToList(Profile profile) {profileList.add(profile);}
-
-	public static ObservableList<Profile> getProfileList() {return profileList;}
-
 	public static void add(Profile profile){
 		try {String[] newRow = profile.toStringArray();
 			CSV.write(Directory.Profile_Dir.get(), newRow);} 
@@ -46,23 +44,41 @@ public class ProfileManager{
 		catch(IOException e){e.printStackTrace();}
 	}
 	
-	public static void updateProfiles(Path path) {
+	public static List<Profile> getCSVData(Path path) {
 		try {
-			List<String[]> rows = CSV.read(path);
-			List<Profile> newList = new ArrayList<>();
+			List<String[]> csvList = CSV.read(path);
+			List<Profile> csvProfileList = new ArrayList<>();
 
-			for (String[] row : rows) {newList.add(new Profile(
-				row[0], Color.web(row[1]), Color.web(row[2]),								  
-				Color.web(row[3]), Color.web(row[4]),						  
-				Color.web(row[5]), Integer.valueOf(row[6]), row[7]));
+			for (String[] row : csvList) {
+				String title = row[0]; 
+				Color root = Color.web(row[1]);
+				Color primary = Color.web(row[2]);								  
+				Color secondary = Color.web(row[3]);
+				Color border = Color.web(row[4]);						  
+				Color textColor = Color.web(row[5]);
+				int textSize = Integer.valueOf(row[6]);
+				String textStyle = row[7];
+				Profile profile = new Profile(title, root, primary, secondary, border, textColor, textSize, textStyle);
+				csvProfileList.add(profile);
 			}
-
-			synchronized (profileList) {
-				if (!Update.compare(profileList, newList)) 
-					Platform.runLater(() -> {profileList.setAll(newList);
-				});
-			}
-		} catch (IOException e) {e.printStackTrace();}
+			return csvProfileList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
 	}
 
+	public static Boolean isNull(Profile profile){
+		return 
+			profile.getTitle() == null ||
+			profile.getRoot() == null ||
+			profile.getPrimary() == null ||
+			profile.getSecondary() == null ||
+			profile.getBorder() == null ||
+			profile.getTextColor() == null ||
+			profile.getTextSize() <= 0 ||
+			profile.getTextFont() == null;
+	}
+
+	public static ObservableList<Profile> getList() {return profileList;}
 }

@@ -73,7 +73,6 @@ public class Profile {
 			Utilities.toHex(getBorder()),
 			Utilities.toHex(getTextColor()),
 			String.valueOf(getTextSize()),
-			String.valueOf(getBorder()),
 			getTextFont()
 		};
 	}
@@ -83,14 +82,15 @@ public class Profile {
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		Profile otherProfile = (Profile) other;
-		return title.get().equals(otherProfile.getTitle()) &&
-			   root.get().equals(otherProfile.getRoot()) &&
-			   primary.get().equals(otherProfile.getPrimary()) &&
-			   secondary.get().equals(otherProfile.getSecondary()) &&
-			   border.get().equals(otherProfile.getBorder()) &&
-			   textColor.get().equals(otherProfile.getTextColor()) &&
-			   textSize.get().equals(otherProfile.getTextSize()) &&
-			   textFont.get().equals(otherProfile.getTextFont());
+		return 
+		   title.get().equals(otherProfile.getTitle()) &&
+		   root.get().equals(otherProfile.getRoot()) &&
+		   primary.get().equals(otherProfile.getPrimary()) &&
+		   secondary.get().equals(otherProfile.getSecondary()) &&
+		   border.get().equals(otherProfile.getBorder()) &&
+		   textColor.get().equals(otherProfile.getTextColor()) &&
+		   textSize.get().equals(otherProfile.getTextSize()) &&
+		   textFont.get().equals(otherProfile.getTextFont());
 	}
 
 	@Override

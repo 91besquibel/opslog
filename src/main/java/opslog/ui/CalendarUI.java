@@ -2,6 +2,7 @@ package opslog.ui;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -46,12 +47,15 @@ public class CalendarUI{
 				for (int col = 0; col < 7; col++) {
 					String date = Integer.toString(count);
 					Label dateLabel = new Label(date);
+					dateLabel.fontProperty().bind(Customizations.text_Property);
+					dateLabel.textFillProperty().bind(Customizations.text_Color);
 					VBox dayCell = new VBox(dateLabel);
 					VBox.setVgrow(dayCell, Priority.ALWAYS);
 					// Customize dayCell (add event labels, styling, etc.)
 					calendarGrid.add(dayCell, col, row);
 					GridPane.setHgrow(dayCell, Priority.ALWAYS);
 					GridPane.setVgrow(dayCell, Priority.ALWAYS);
+					calendarGrid.backgroundProperty().bind(Customizations.primary_Background_Property);
 					count++;
 				}
 			}
@@ -67,6 +71,8 @@ public class CalendarUI{
 		// Add Day labels to row 1 
 		for(int col= 0; col<7;col++){
 			Label day = new Label(dayNames[col]);
+			day.fontProperty().bind(Customizations.text_Property);
+			day.textFillProperty().bind(Customizations.text_Color);
 			day.setMaxWidth(Double.MAX_VALUE);
 			day.setMaxHeight(Double.MAX_VALUE);
 			day.setAlignment(Pos.CENTER);
@@ -75,24 +81,27 @@ public class CalendarUI{
 		}
 	}
 	private void initializeTopLeft(){
-		ListView<String> calendarEvents= new ListView<String>();
+		ListView<String> calendarEvents = Factory.custom_ListView(200, 200, SelectionMode.SINGLE);
 		leftTop= new AnchorPane(calendarEvents);
+		leftTop.backgroundProperty().bind(Customizations.primary_Background_Property);
 		AnchorPane.setTopAnchor(calendarEvents, 0.0);
 		AnchorPane.setBottomAnchor(calendarEvents, 0.0);
 		AnchorPane.setLeftAnchor(calendarEvents, 0.0);
 		AnchorPane.setRightAnchor(calendarEvents, 0.0);
 	}
 	private void initializeBottomLeft(){
-		ListView<String> calendarChecklist= new ListView<String>();
+		ListView<String> calendarChecklist = Factory.custom_ListView(200, 200, SelectionMode.SINGLE);
 		leftBottom = new AnchorPane(calendarChecklist);
+		leftBottom.backgroundProperty().bind(Customizations.primary_Background_Property);
 		AnchorPane.setTopAnchor(calendarChecklist, 0.0);
 		AnchorPane.setBottomAnchor(calendarChecklist, 0.0);
 		AnchorPane.setLeftAnchor(calendarChecklist, 0.0);
 		AnchorPane.setRightAnchor(calendarChecklist, 0.0);
 	}
 	private void initializeLeftSide(){
-		left= new SplitPane(leftTop, leftBottom);
+		left = new SplitPane(leftTop, leftBottom);
 		left.setOrientation(Orientation.VERTICAL);
+		left.backgroundProperty().bind(Customizations.root_Background_Property);
 	}
 	private void initializeRightSide(){
 		calendarGrid = new GridPane();
@@ -135,6 +144,7 @@ public class CalendarUI{
 	private void initializeWholeScreen(){
 		wholeScreen = new SplitPane(left, right);
 		wholeScreen.setDividerPositions(0.25f, 0.75f);
+		wholeScreen.backgroundProperty().bind(Customizations.root_Background_Property);
 	}
 	
 	// Load the UI into App.java

@@ -1,29 +1,32 @@
 package opslog.objects;
+
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
+import opslog.util.DateTime;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Calendar {
 
 	private final StringProperty title = new SimpleStringProperty();
-	private final ObjectProperty<LocalDate> startdate = new SimpleObjectProperty<>();
-	private final ObjectProperty<LocalDate> stopdate = new SimpleObjectProperty<>();
-	private final StringProperty starttime = new SimpleStringProperty();
-	private final StringProperty stoptime = new SimpleStringProperty();
+	private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalTime> startTime = new SimpleObjectProperty<>();
+	private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
 	private final ObjectProperty<Type> type = new SimpleObjectProperty<>();
 	private final ObjectProperty<Tag> tag = new SimpleObjectProperty<>();
 	private final StringProperty initials = new SimpleStringProperty();
 	private final StringProperty description = new SimpleStringProperty();
 
-	public Calendar(String title, LocalDate startdate, LocalDate stopdate, String starttime, String stoptime, Type type, Tag tag, String initials, String description) {
+	public Calendar(String title, LocalDate startDate, LocalDate stopDate, LocalTime startTime, LocalTime stopTime, Type type, Tag tag, String initials, String description) {
 		this.title.set(title);
-		this.startdate.set(startdate);
-		this.stopdate.set(stopdate);
-		this.starttime.set(starttime);
-		this.stoptime.set(stoptime);
+		this.startDate.set(startDate);
+		this.stopDate.set(stopDate);
+		this.startTime.set(startTime);
+		this.stopTime.set(stopTime);
 		this.type.set(type);
 		this.tag.set(tag);
 		this.initials.set(initials);
@@ -34,29 +37,29 @@ public class Calendar {
 	public String getTitle(){return title.get();}
 	public StringProperty getTitleProperty(){ return title; }
 		
-	public void setStartDate(LocalDate newStartDate) { startdate.set(newStartDate); }
-	public LocalDate getStartDate() { return startdate.get(); }
-	public ObjectProperty<LocalDate> getStartDateProperty() {return startdate;}
+	public void setStartDate(LocalDate newStartDate) { startDate.set(newStartDate); }
+	public LocalDate getStartDate() { return startDate.get(); }
+	public ObjectProperty<LocalDate> getStartDateProperty() {return startDate;}
 	public StringProperty getStartDateStringProperty(){
-		StringProperty string = new SimpleStringProperty(startdate.get().toString());
+		StringProperty string = new SimpleStringProperty(startDate.get().toString());
 		return string;
 	}
 
-	public void setStopDate(LocalDate newStopDate) { stopdate.set(newStopDate); }
-	public LocalDate getStopDate() { return stopdate.get(); }
-	public ObjectProperty<LocalDate> getStopDateProperty() {return stopdate;}
+	public void setStopDate(LocalDate newStopDate) { stopDate.set(newStopDate); }
+	public LocalDate getStopDate() { return stopDate.get(); }
+	public ObjectProperty<LocalDate> getStopDateProperty() {return stopDate;}
 	public StringProperty getStopDateStringProperty(){
-		StringProperty string = new SimpleStringProperty(stopdate.get().toString());
+		StringProperty string = new SimpleStringProperty(stopDate.get().toString());
 		return string;
 	}
 
-	public void setStartTime(String newStartTime) { starttime.set(newStartTime); }
-	public String getStartTime() { return starttime.get(); }
-	public StringProperty getStartTimeProperty() { return starttime; }
+	public void setStartTime(LocalTime newStartTime) { startTime.set(newStartTime); }
+	public LocalTime getStartTime() { return startTime.get(); }
+	public ObjectProperty<LocalTime> getStartTimeProperty() { return startTime; }
 	
-	public void setStopTime(String newStopTime) { stoptime.set(newStopTime); }
-	public String getStopTime() { return stoptime.get(); }
-	public StringProperty getStopTimeProperty() { return stoptime; }
+	public void setStopTime(LocalTime newStopTime) { stopTime.set(newStopTime); }
+	public LocalTime getStopTime() { return stopTime.get(); }
+	public ObjectProperty<LocalTime> getStopTimeProperty() { return stopTime; }
 
 	public void setType(Type newType) { type.set(newType); }
 	public Type getType() { return type.get(); }
@@ -78,15 +81,15 @@ public class Calendar {
 	public String toString(){return title.get();}
 
 	public String[] toStringArray() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		return new String[]{
 			getTitle(),
-			getStartDate().format(formatter),
-			getStopDate().format(formatter),
-			getStartTime(),
-			getStopTime(),
+			getStartDate().format(DateTime.DATE_FORMAT),
+			getStopDate().format(DateTime.DATE_FORMAT),
+			getStartTime().format(DateTime.TIME_FORMAT),
+			getStopTime().format(DateTime.TIME_FORMAT),
 			getType() != null ? getType().toString() : "",
 			getTag() != null ? getTag().toString() : "",
+			getInitials(),
 			getDescription()
 		};
 	}
@@ -96,28 +99,15 @@ public class Calendar {
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		Calendar otherCalendar = (Calendar) other;
-		return title.get().equals(otherCalendar.getTitle()) &&
-			   startdate.get().equals(otherCalendar.getStartDate()) &&
-			   stopdate.get().equals(otherCalendar.getStopDate()) &&
-			   starttime.get().equals(otherCalendar.getStartTime()) &&
-			   stoptime.get().equals(otherCalendar.getStopTime()) &&
-			   (type.get() != null ? type.get().equals(otherCalendar.getType()) : otherCalendar.getType() == null) &&
-			   (tag.get() != null ? tag.get().equals(otherCalendar.getTag()) : otherCalendar.getTag() == null) &&
-			   initials.get().equals(otherCalendar.getInitials()) &&
-			   description.get().equals(otherCalendar.getDescription());
-	}
-
-	@Override
-	public int hashCode() {
-		int result = title.hashCode();
-		result = 31 * result + startdate.hashCode();
-		result = 31 * result + stopdate.hashCode();
-		result = 31 * result + starttime.hashCode();
-		result = 31 * result + stoptime.hashCode();
-		result = 31 * result + (type.get() != null ? type.hashCode() : 0);
-		result = 31 * result + (tag.get() != null ? tag.hashCode() : 0);
-		result = 31 * result + initials.hashCode();
-		result = 31 * result + description.hashCode();
-		return result;
+		return 
+			title.get().equals(otherCalendar.getTitle()) && 
+			startDate.get().equals(otherCalendar.getStartDate()) &&
+			stopDate.get().equals(otherCalendar.getStopDate()) &&
+			startTime.get().equals(otherCalendar.getStartTime()) &&
+			stopTime.get().equals(otherCalendar.getStopTime()) &&
+			type.get().equals(otherCalendar.getType()) &&
+			tag.get().equals(otherCalendar.getTag()) &&
+			initials.get().equals(otherCalendar.getInitials()) &&
+			description.get().equals(otherCalendar.getDescription());
 	}
 }

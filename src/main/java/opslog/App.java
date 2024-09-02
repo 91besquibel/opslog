@@ -5,10 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -23,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -39,6 +37,7 @@ public class App extends Application {
 
 	private static final Logger logger = Logger.getLogger(App.class.getName());
 	private static final String classTag = "App";
+	public static ClipboardContent content = new ClipboardContent();
 
 	private double lastX, lastY;
 	private double originalWidth;
@@ -47,7 +46,6 @@ public class App extends Application {
 	private static LogUI logUI;
 	private static CalendarUI calendarUI;
 	private static SettingsUI settingsUI;
-	private  EventUI eventUI;
 	
 	private AnchorPane viewArea;
 	private BorderPane root;
@@ -58,17 +56,23 @@ public class App extends Application {
 	public void start(Stage stage) throws IOException {
 		Logging.config(logger);
 		DateTime.timeListPopulate();
-		this.eventUI = new EventUI();
-		try{logUI = new LogUI();
+		
+		try{
+			logUI = new LogUI();
 			logUI.initialize();
 			calendarUI = new CalendarUI();
 			calendarUI.initialize();
 			settingsUI = new SettingsUI();
 			settingsUI.initialize();
 			createUI();
+			
 			Directory.initialize("/home/runner/opslog");
+			Customizations.getLightMode();
+			Customizations.getDarkMode();
 			Update.startPeriodicUpdates(15, TimeUnit.SECONDS);
+			
 			display(stage);
+			
 		}catch(Exception e){e.printStackTrace();}
 	}
 
@@ -110,10 +114,10 @@ public class App extends Application {
 	}
 	
 	private void createUI(){
-		Button exit_Button = Factory.custom_Button("/IconLib/closeIW.png", "/IconLib/closeIG.png");
+		Button exit_Button = Factory.custom_Button("/IconLib/closeIW.png", "/IconLib/closeIR.png");
 		exit_Button.setOnAction(event -> {Platform.exit();});
 		
-		Button minimize_Button = Factory.custom_Button("/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
+		Button minimize_Button = Factory.custom_Button("/IconLib/minimizeIW.png", "/IconLib/minimizeIY.png");
 		minimize_Button.setOnAction(event -> ((Stage) minimize_Button.getScene().getWindow()).setIconified(true));
 		
 		Button maximize_Button = Factory.custom_Button("/IconLib/maximizeIW.png", "/IconLib/maximizeIG.png");
@@ -122,19 +126,16 @@ public class App extends Application {
 		Region left_Menu_Spacer = new Region();
 		HBox.setHgrow(left_Menu_Spacer, Priority.ALWAYS);
 
-		Label clock = Factory.custom_Label("Clock", 300, 30);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy | HH:mm:ss");
-		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-			LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-			clock.setText(now.format(formatter));
-			clock.textFillProperty().bind(Customizations.text_Color);
-			clock.fontProperty().bind(Customizations.text_Property);
-		}));
-		timeline.setCycleCount(Timeline.INDEFINITE);
-		timeline.play();
-
+		AppClock clock = AppClock.getInstance();
+		Label clockLabel = Factory.custom_Label("Clock", 300, 30);
+		clock.setClockLabel(clockLabel);
+		
 		Region right_Menu_Spacer = new Region();
 		HBox.setHgrow(right_Menu_Spacer, Priority.ALWAYS);
+
+		Button search = Factory.custom_Button("/IconLib/searchIW.png","/IconLib/searchIG.png");
+		search.setOnAction(this::goToSearch);
+		search.backgroundProperty().bind(Customizations.primary_Background_Property);
 
 		Button log_Button = Factory.custom_Button("/IconLib/logIW.png", "/IconLib/logIG.png");
 		log_Button.setOnAction(this::goToLog);
@@ -160,7 +161,7 @@ public class App extends Application {
 		HBox windowBar = Factory.custom_HBox();
 		windowBar.getChildren().addAll(
 			exit_Button,minimize_Button,maximize_Button,
-			left_Menu_Spacer,clock,right_Menu_Spacer,
+			left_Menu_Spacer,clockLabel,right_Menu_Spacer,search,
 			log_Button,calendar_Button,checklist_Button,
 			settings_Button,separator,event_Button
 		);
@@ -205,6 +206,10 @@ public class App extends Application {
 		}
 	}
 
+	private void goToSearch(ActionEvent event){
+		SearchUI searchUI = SearchUI.getInstance();
+		searchUI.display();
+	}
 	private void goToLog(ActionEvent event) {
 		logger.log(Level.INFO, classTag + ".goToLog: Switching to Log");
 		viewArea.getChildren().clear();
@@ -236,6 +241,7 @@ public class App extends Application {
 		AnchorPane.setBottomAnchor(settingsUI.getRootNode(), 0.0);
 	}
 	private void goToEvent(ActionEvent event){
+		EventUI eventUI = EventUI.getInstance();
 		eventUI.display();
 	}
 

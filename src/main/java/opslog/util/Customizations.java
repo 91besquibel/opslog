@@ -47,20 +47,21 @@ public class Customizations{
 	public static BorderWidths border_Width = new BorderWidths(1.0); // border width
 
 	// Background root
-	public static ObjectProperty<Color> root_Background_Color = new SimpleObjectProperty<>(Color.BLACK); // Set by: root_Background_Color_Profile
+	public static ObjectProperty<Color> root_Background_Color = new SimpleObjectProperty<>(Color.web("#040F0F")); // Set by: root_Background_Color_Profile
 	public static ObjectProperty<BackgroundFill> root_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(root_Background_Color.get(), zero_CornerRadii, insets));
 	public static ObjectProperty<Background> root_Background_Property = new SimpleObjectProperty<>( new Background(root_Background_Fill.get()));
 
 	// Background Primary
-	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.DIMGREY); // Set by: primary_background_Color_Profile
+	public static ObjectProperty<Color> primary_Background_Color = new SimpleObjectProperty<>(Color.web("#0F2D40")); // Set by: primary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), cornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property = new SimpleObjectProperty<>( new Background(primary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), zero_CornerRadii, insets));
 	public static ObjectProperty<Background> primary_Background_Property_Zero = new SimpleObjectProperty<>( new Background(primary_Background_Fill_Zero.get()));
 	public static ObjectProperty<BackgroundFill> primary_Background_Fill_WB = new SimpleObjectProperty<>( new BackgroundFill(primary_Background_Color.get(), cornerRadii_WB, insets));
 	public static ObjectProperty<Background> primary_Background_Property_WB = new SimpleObjectProperty<>( new Background(primary_Background_Fill_WB.get()));
+	
 	// Background Secondary
-	public static ObjectProperty<Color> secondary_Background_Color = new SimpleObjectProperty<>(Color.GREY); // Set by: secondary_background_Color_Profile
+	public static ObjectProperty<Color> secondary_Background_Color = new SimpleObjectProperty<>(Color.web("#445C6A")); // Set by: secondary_background_Color_Profile
 	public static ObjectProperty<BackgroundFill> secondary_Background_Fill = new SimpleObjectProperty<>( new BackgroundFill(secondary_Background_Color.get(), cornerRadii, insets));
 	public static ObjectProperty<Background> secondary_Background_Property = new SimpleObjectProperty<>( new Background(secondary_Background_Fill.get()));
 	public static ObjectProperty<BackgroundFill> secondary_Background_Fill_Zero = new SimpleObjectProperty<>( new BackgroundFill(secondary_Background_Color.get(), zero_CornerRadii, insets));
@@ -77,7 +78,7 @@ public class Customizations{
 	public static ObjectProperty<Background> selected_Background_Property = new SimpleObjectProperty<>( new Background(selected_Background_Fill.get()));
 	
 	// Border Standard
-	public static ObjectProperty<Color> standard_Border_Color = new SimpleObjectProperty<>(Color.WHITESMOKE); 
+	public static ObjectProperty<Color> standard_Border_Color = new SimpleObjectProperty<>(Color.web("#2D4858")); 
 	public static ObjectProperty<BorderStroke> standard_Border_Stroke = new SimpleObjectProperty<>( new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii, border_Width));
 	public static ObjectProperty<Border> standard_Border_Property = new SimpleObjectProperty<>( new Border(standard_Border_Stroke.get()));
 	public static ObjectProperty<BorderStroke> standard_Border_Stroke_WB = new SimpleObjectProperty<>( new BorderStroke(standard_Border_Color.get(), BorderStrokeStyle.SOLID, cornerRadii_WB, border_Width_WB));
@@ -94,10 +95,10 @@ public class Customizations{
 	public static ObjectProperty<Border> transparent_Border_Property = new SimpleObjectProperty<>( new Border(transparent_Border_Stroke.get()));
 	
 	// Text settings: set in the SettingsController
-	public static ObjectProperty<Color> text_Color = new SimpleObjectProperty<Color>(Color.WHITESMOKE); //.textFillProperty().bind(text_Color);
+	public static ObjectProperty<Color> text_Color = new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
 	public static ObjectProperty<Integer> text_Size = new SimpleObjectProperty<Integer>(14);
 	public static ObjectProperty<String> text_Font = new SimpleObjectProperty<String>("Arial");
-	public static ObjectProperty<Font> text_Property = new SimpleObjectProperty<>(Font.font(text_Font.get(), text_Size.get())); //.fontProperty().bind(text_Font);
+	public static ObjectProperty<Font> text_Property = new SimpleObjectProperty<>(Font.font(text_Font.get(), text_Size.get()));
 	public static ObjectProperty<Font> text_Property_Bold = new SimpleObjectProperty<>(Font.font(text_Font.get(), FontWeight.BOLD, text_Size.get()));
 
 	// Listners for color updates
@@ -107,6 +108,7 @@ public class Customizations{
 		root_Background_Color.addListener((obs, oldColor, newColor) -> {updateRootBackground();});
 		primary_Background_Color.addListener((obs, oldColor, newColor) -> {updatePrimaryBackground();});
 		secondary_Background_Color.addListener((obs, oldColor, newColor) -> {updateSecondaryBackground();});
+		text_Color.addListener((obs, oldSize, newSize) -> updateFont());
 		text_Size.addListener((obs, oldSize, newSize) -> updateFont());
 		text_Font.addListener((obs, oldFont, newFont) -> updateFont());
 	}   
@@ -145,6 +147,38 @@ public class Customizations{
 		text_Property_Bold.set(Font.font(text_Font.get(), FontWeight.BOLD, text_Size.get()));
 	}
 
+	public static void getLightMode(){
+		String title = "Light Mode";
+		Color rootColor = Color.web("#121212");      // Very light gray
+		Color primaryColor = Color.web("#D0D0D0");   // Darker light gray (adjusted)
+		Color secondaryColor = Color.web("#C0C0C0"); // Slightly darker gray
+		Color borderColor = Color.web("#A0A0A0");    // Medium gray for borders
+		Color textColor = Color.web("#333333");       // Dark gray for text
+		Integer textSize = 14;
+		String textFont = "Arial";
+		Profile lightMode = new Profile(title,rootColor,primaryColor,secondaryColor,borderColor,textColor,textSize,textFont);
+		try{CSV.write(Directory.Profile_Dir.get(), lightMode.toStringArray());}
+		catch(Exception e){e.printStackTrace();}
+	}
+	public static void getDarkMode(){
+		String title = "Dark Mode";
+		Color rootColor = Color.web("#121212");       // Very dark gray
+		Color primaryColor = Color.web("#1D1D1D");    // Darker gray
+		Color secondaryColor = Color.web("#2A2A2A");  // Slightly lighter dark gray
+		Color borderColor = Color.web("#333333");     // Medium dark gray for borders
+		Color textColor = Color.web("#E0E0E0");       // Light gray for text (ensures readability)
+		Integer textSize = 14;
+		String textFont = "Arial";
+		Profile darkMode = new Profile(
+			title,rootColor,primaryColor,secondaryColor,
+			borderColor,textColor,textSize,textFont
+		);
+		darkMode.toStringArray();
+		try{CSV.write(Directory.Profile_Dir.get(), darkMode.toStringArray());}
+		catch(Exception e){e.printStackTrace();}
+		
+	}
+	
 	// Shadding for highlighting
 	private static Color darkenColor(Color color, double factor) {
 		return new Color(
@@ -154,5 +188,4 @@ public class Customizations{
 			color.getOpacity()
 		);
 	}
-
 }

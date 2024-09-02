@@ -12,7 +12,10 @@ public class Tag {
 	private final StringProperty title = new SimpleStringProperty();
 	private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
 
-	public Tag(String title, Color color) {this.title.set(title);this.color.set(color);}
+	public Tag(String title, Color color) {
+		this.title.set(title);
+		this.color.set(color);
+	}
 
 	public void setTitle(String newTitle) { title.set(newTitle); }
 	public String getTitle() { return title.get(); }
@@ -27,10 +30,15 @@ public class Tag {
 
 	@Override
 	public boolean equals(Object other) {
-		if (this == other) return true;
-		if (other == null || getClass() != other.getClass()) return false;
+		if (this == other)return true;
+		
+		if (other == null || getClass() != other.getClass())
+		return false;
+		
 		Tag otherTag = (Tag) other;
-		return title.get().equals(otherTag.getTitle()) && color.get().equals(otherTag.getColor());
+		return 
+			title.get().equals(otherTag.getTitle()) && 
+			color.get().equals(otherTag.getColor());
 	}
 
 	@Override

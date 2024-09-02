@@ -1,29 +1,22 @@
 package opslog.managers;
 
-import opslog.objects.Format;
-import opslog.util.CSV;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.logging.Logger;
 import opslog.util.*;
+import opslog.objects.*;
 
-
-/* 
-Usage Example
-FormatManager manager = FormatManager.getInstance();
-manager.add(new Format("Title", "StartDate", "StopDate", "StartTime", "StopTime", new Type("Type"), new Tag("Tag"), "Description"));
-*/
 public class FormatManager {
+	private static final Logger logger = Logger.getLogger(FormatManager.class.getName());
+	private static final String classTag = "FormatManager";
+	static {Logging.config(logger);}
 
-	private static FormatManager instance;
-	
 	private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
+	private static FormatManager instance;
 
 	private FormatManager() {}
 
@@ -31,14 +24,6 @@ public class FormatManager {
 		if (instance == null) {instance = new FormatManager();}
 		return instance;
 	}
-
-	public ObservableList<String> getFormatTitles() {
-		ObservableList<String> titles = FXCollections.observableArrayList();
-		for (Format format : formatList) {titles.add(format.getTitle());}
-		return titles;
-	}
-
-	public static ObservableList<Format> getFormatList() {return formatList;}
 
 	public static void add(Format format){
 		try {String[] newRow = format.toStringArray();
@@ -59,19 +44,24 @@ public class FormatManager {
 		}catch(IOException e){e.printStackTrace();}
 	}
 
-	public static void updateFormats(Path path) {
+	public static List<Format> getCSVData(Path path) {
 		try {
-			List<String[]> rows = CSV.read(path);
-			List<Format> newList = new ArrayList<>();
+			List<String[]> csvList = CSV.read(path);
+			List<Format> csvFormatList = new ArrayList<>();
 
-			for (String[] row : rows) {newList.add(new Format(row[0],row[1]));}
-
-			synchronized (formatList) {
-				if (!Update.compare(formatList, newList)) 
-					Platform.runLater(() -> {formatList.setAll(newList);
-				});
+			for (String[] row : csvList) {
+				String title = row[0];
+				String description = row[1];
+				Format format = new Format(title,description);
+				csvFormatList.add(format);
 			}
-		} catch (IOException e) {e.printStackTrace();}
-	}
 
+			return csvFormatList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
+	}
+	
+	public static ObservableList<Format> getList() {return formatList;}
 }

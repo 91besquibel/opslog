@@ -1,8 +1,5 @@
 package opslog.managers;
 
-import java.util.Arrays;
-import opslog.util.CSV;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -23,7 +20,6 @@ public class TagManager {
 	static {Logging.config(logger);}
 
 	private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
-	
 	private static TagManager instance;
 
 	private TagManager() {}
@@ -32,8 +28,6 @@ public class TagManager {
 		if (instance == null) {instance = new TagManager();}
 		return instance;
 	}
-
-	public static ObservableList<Tag> getTagList() {return tagList;}
 
 	public static void add(Tag newTag){
 		try {
@@ -70,36 +64,24 @@ public class TagManager {
 		);
 	}
 
-	public static void updateTags(Path path) {
+	public static List<Tag> getCSVData(Path path) {
 		try {
-			List<String[]> rows = CSV.read(path);
-			List<Tag> newItems = new ArrayList<>();
+			List<String[]> csvList = CSV.read(path);
+			List<Tag> csvTagList = new ArrayList<>();
 
-			for (String[] row : rows) {newItems.add(new Tag(row[0],Color.web(row[1])));}
-			
-			synchronized (tagList) {
-				if (!isListEqual(tagList, newItems)) {
-					logger.log(Level.CONFIG, classTag + ".updateList: Updating List: \n" + tagList.toString() + "\n with \n" + newItems.toString() + "\n");
-					Platform.runLater(() -> {tagList.setAll(newItems);});
-				}
+			for (String[] row : csvList) {
+				String title = row[0];
+				Color color = Color.web(row[1]);
+				Tag format = new Tag(title,color);
+				csvTagList.add(format);
 			}
 
-		} catch (IOException e) {e.printStackTrace();}
+			return csvTagList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
 	}
 
-	private static boolean isListEqual(List<Tag> tagListStorage, List<Tag> newItems) {
-		logger.log(Level.INFO, classTag + ".isListEqual: checking for difference between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString() );
-		if (tagListStorage.size() != newItems.size()) {
-			logger.log(Level.WARNING, classTag + ".isListEqual: Size difference found between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString() );
-			return false;
-		}
-		for (int i = 0; i < tagListStorage.size(); i++) {
-			if (!tagListStorage.get(i).equals(newItems.get(i))) {
-				logger.log(Level.WARNING, classTag + ".isListEqual: Item Difference found between: \n"+ Arrays.toString(tagListStorage.get(i).toStringArray())+ "\n and \n"+ Arrays.toString(newItems.get(i).toStringArray()));
-				return false;
-			}
-		}
-		logger.log(Level.CONFIG, classTag + ".isListEqual: No difference found between: \n"+ tagListStorage.toString()+ "\n and \n"+ newItems.toString()+"\n");
-		return true;
-	}
+	public static ObservableList<Tag> getList() {return tagList;}
 }

@@ -7,9 +7,17 @@ import java.io.FileWriter;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import opslog.util.*;
 
 public class CSV {
+
+	private static final Logger logger = Logger.getLogger(CSV.class.getName());
+	private static final String classTag = "ParentManager";
+	static {Logging.config(logger);}
 
 	// Method to read a CSV file and return a list of all rows in file
 	public static List<String[]> read(Path path) throws IOException {
@@ -23,25 +31,32 @@ public class CSV {
 		}
 		return data;
 	}
+	
 	// Method to write a String array to a CSV file
 	public static void write(Path path, String[] data) throws IOException {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toString(), true))) {
 			bw.write(String.join(",", data));
 			bw.newLine();
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
-	// can edit all but log for now
+	
 	public static void edit(Path path, String[] oldValue, String[] newValue) throws IOException {
-		List<String[]> data = readAll(path);  // Read all data from the file
-		// for each row in data 
-		for(String[] row:data){
-			// if row is equal to 
-			if(compareRows(row, oldValue)){
-				row = newValue;
+		List<String[]> data = readAll(path);
+		for (int i = 0; i < data.size(); i++) {
+			String[] row = data.get(i);
+			if (compareRows(row, oldValue)) {
+				logger.log(Level.WARNING, classTag + ".edit: Match found: \n" + 
+						   Arrays.toString(oldValue) + 
+						   "\n editing row to \n" + 
+						   Arrays.toString(newValue));
+				data.set(i, newValue);
 			}
 		}
-		writeAll(path, data, false);  // Overwrite the file with the updated data
+		writeAll(path, data, false);
 	}
+
 	// Overloaded method - uses single filter value for each row ie Keyword search
 	public static List<String[]> find(Path path, String value) throws IOException {
 		List<String[]> foundRows = new ArrayList<>();
@@ -128,12 +143,8 @@ public class CSV {
 	}
 	// Method to compare two rows
 	private static boolean compareRows(String[] row, String[] rowFilters) {
-		if (row.length != rowFilters.length) {
-			return false;
-		}
-		
+		if (row.length != rowFilters.length) {return false;}
 		for (int i = 0; i < rowFilters.length; i++) {
-			// Skip comparison if the filter value is null or empty, acting as a wildcard
 			if (rowFilters[i] != null && !rowFilters[i].isEmpty() && !row[i].equals(rowFilters[i])) {
 				return false;
 			}
@@ -155,6 +166,8 @@ public class CSV {
 	// Supporting method to write a list of String arrays to a CSV file
 	private static void writeAll(Path path, List<String[]> data, boolean append) throws IOException {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toString(), append))) {
+			Utilities.printArrays(data);
+
 			for (String[] row : data) {
 				bw.write(String.join(",", row));
 				bw.newLine();

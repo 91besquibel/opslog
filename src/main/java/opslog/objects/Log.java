@@ -1,22 +1,26 @@
 package opslog.objects;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import opslog.util.DateTime;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class Log{
 
 	private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
-	private final StringProperty time = new SimpleStringProperty();
+	private final ObjectProperty<LocalTime> time = new SimpleObjectProperty<>();
 	private final ObjectProperty<Type> type = new SimpleObjectProperty<>();
 	private final ObjectProperty<Tag> tag = new SimpleObjectProperty<>();
 	private final StringProperty initials = new SimpleStringProperty();
 	private final StringProperty description = new SimpleStringProperty();
 
-	public Log(LocalDate date, String time, Type type, Tag tag, String initials, String description) {
+	public Log(LocalDate date, LocalTime time, Type type, Tag tag, String initials, String description) {
 		this.date.set(date);
 		this.time.set(time);
 		this.type.set(type);
@@ -33,9 +37,9 @@ public class Log{
 		return string;
 	}
 
-	public void setTime(String newTime) { time.set(newTime); }
-	public String getTime() { return time.get(); }
-	public StringProperty getTimeProperty() {return time;}
+	public void setTime(LocalTime newTime) { time.set(newTime); }
+	public LocalTime getTime() { return time.get(); }
+	public ObjectProperty<LocalTime> getTimeProperty() {return time;}
 
 	public void setType(Type newType) { type.set(newType); }
 	public Type getType() { return type.get(); }
@@ -54,10 +58,9 @@ public class Log{
 	public StringProperty getDescriptionProperty() {return description;}
 	
 	public String[] toStringArray() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		return new String[]{
-			getDate().format(formatter),
-			getTime(),
+			getDate().format(DateTime.DATE_FORMAT),
+			getTime().format(DateTime.TIME_FORMAT),
 			getType() != null ? getType().toString() : "",
 			getTag() != null ? getTag().toString() : "",
 			getInitials(),
@@ -70,14 +73,13 @@ public class Log{
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		Log otherLog = (Log) other;
-		return date.get().equals(otherLog.getDate()) &&
-			   time.get().equals(otherLog.getTime()) &&
-			   ((type.get() == null && otherLog.getType() == null) || 
-				(type.get() != null && type.get().equals(otherLog.getType()))) &&
-			   ((tag.get() == null && otherLog.getTag() == null) || 
-				(tag.get() != null && tag.get().equals(otherLog.getTag()))) &&
-			   initials.get().equals(otherLog.getInitials()) &&
-			   description.get().equals(otherLog.getDescription());
+		return 
+			date.get().equals(otherLog.getDate()) &&
+			time.get().equals(otherLog.getTime()) &&
+			type.get().equals(otherLog.getType()) &&
+			tag.get().equals(otherLog.getTag()) &&
+			initials.get().equals(otherLog.getInitials()) &&
+			description.get().equals(otherLog.getDescription());
 	}
 
 	@Override

@@ -1,0 +1,13 @@
+
+6. MOVE ON TO THE CHECKLIST!!!!
+
+
+Backlog not important
+1. Figure out why the datepicker resize once they have content it may have to do with the content area try css
+2. Set up listeners for css styleing on the text for the datepicker and colorpicker.
+3. figure out how to color the text area content area css is not working something must be inter fearing.
+4. add borders to all cards it does look better
+5. add gradients to the primary and drop shadows to to the secondarys
+6. figure out how to add patterns to the Type's
+7. find better icons for the application they look all over the place
+8. Create a default dark mode, light mode, and a mode base around #0c161c or #172c38

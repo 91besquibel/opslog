@@ -1,19 +1,18 @@
 package opslog.managers;
 
-import opslog.objects.Child;
-import opslog.objects.Type;
-import opslog.objects.Tag;
-import opslog.util.CSV;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.paint.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalTime;
 
 // My imports
 import opslog.objects.*;
@@ -24,10 +23,12 @@ import opslog.interfaces.*;
 
 // Manager class for Child objects
 public class ChildManager {
+	private static final Logger logger = Logger.getLogger(ChildManager.class.getName());
+	private static final String classTag = "ChildManager";
+	static {Logging.config(logger);}
 	
 	private static ChildManager instance;
 	private static final ObservableList<Child> childList = FXCollections.observableArrayList();
-
 	private ChildManager() {}
 
 	public static ChildManager getInstance() {
@@ -35,10 +36,6 @@ public class ChildManager {
 		return instance;
 	}
 
-	public void addToList(Child child) {childList.add(child);}
-
-	public static ObservableList<Child> getChildList() {return childList;}
-	
 	public static void add(Child child){
 		try {
 			String[] newRow = child.toStringArray();
@@ -67,22 +64,42 @@ public class ChildManager {
 		}
 	}
 	
-	public static void updateChildren(Path path) {
+	public static List<Child> getCSVData(Path path) {
 		try {
-			List<String[]> rows = CSV.read(path);
-			List<Child> newList = new ArrayList<>();
-
-			for (String[] row : rows) {newList.add(new Child(
-			   row[0], LocalDate.parse(row[1]), LocalDate.parse(row[2]), 
-			   row[3], row[4], new Type("",""), 
-			   new Tag("",Color.BLUE), row[7]));
+			List<String[]> csvList = CSV.read(path);
+			List<Child> csvChildList = new ArrayList<>();
+			
+			for (String[] row : csvList) {
+				String title = row[0];
+				LocalDate startDate = LocalDate.parse(row[1]);
+				LocalDate stopDate = LocalDate.parse(row[2]);
+				LocalTime startTime = LocalTime.parse(row[3]);
+				LocalTime stopTime = LocalTime.parse(row[4]);
+				Type type = TypeManager.valueOf(row[5]);
+				Tag tag = TagManager.valueOf(row[6]);
+				String description = row[7];
+				Child child = new Child(title,startDate,stopDate,startTime,stopTime,type,tag,description);
+				csvChildList.add(child);
 			}
 			
-			synchronized (childList) {
-				if (!Update.compare(childList, newList)) 
-					Platform.runLater(() -> {childList.setAll(newList);
-				});
-			}
-		} catch (IOException e) {e.printStackTrace();}
+			return csvChildList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
 	}
+
+	public static Boolean isNull(Child child){
+		return 
+			child.getTitle() == null || child.getTitle().isEmpty() ||
+			child.getStartDate() == null ||
+			child.getStopDate() == null ||
+			child.getStartTime() == null ||
+			child.getStopTime() == null ||
+			child.getType() == null ||
+			child.getTag() == null ||
+			child.getDescription() == null || child.getDescription().isEmpty();
+	}
+	
+	public static ObservableList<Child> getList() {return childList;}
 }

@@ -66,12 +66,12 @@ public class Directory{
 		Main_Path_Dir.set(baseDir.resolve("opslog/setting/mainpath.csv"));
 		Backup_Path_Dir.set(baseDir.resolve("opslog/setting/backuppath.csv"));
 		Import_Dir.set(baseDir.resolve("opslog/import/import.csv"));
-		Export_Dir.set(baseDir.resolve("opslog/export/export.csv"));
+		Export_Dir.set(baseDir.resolve("opslog/export/"));
 
 		paths = new Path[]{
 			Log_Dir.get(), Pin_Board_Dir.get(), Calendar_Dir.get(),
 			Parent_Dir.get(), Child_Dir.get(), Type_Dir.get(), Tag_Dir.get(),
-			Format_Dir.get(),Profile_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get()
+			Format_Dir.get(),Profile_Dir.get(), Main_Path_Dir.get(), Backup_Path_Dir.get(),Export_Dir.get()
 		};
 	}
 
@@ -81,14 +81,16 @@ public class Directory{
 		}
 	}
 
-	private static void build(Path path) {
+	public static void build(Path path) {
 		try {
 			logger.log(Level.INFO, classTag + ".build: Attempting to build file tree");
 
 			Path dayDir = path.getParent();
+			
 			if (Files.notExists(dayDir)) {
 				Files.createDirectories(dayDir);
 			}
+			
 			if (Files.notExists(path)) {
 				Files.createFile(path);
 			}
@@ -117,10 +119,11 @@ public class Directory{
 	public static void swap(String newPath){updatePaths(newPath);}
 
 	public static Path newLog() {
-		String currentDate = DateTime.convertDate(DateTime.getDate()).replace("-", "/");
-		String currentTime = DateTime.getTime().replace(":", "_");
-		String fileName = "log_" + currentTime + ".csv";
-		Path path = Log_Dir.get().resolve(currentDate).resolve(fileName);
+		String currentDate = DateTime.getDate().format(DateTime.DATE_FORMAT);
+		String currentTime = DateTime.getTime().format(DateTime.TIME_FORMAT);
+		String formatedDate = currentDate.replace("-", "/");
+		String formatedTime = currentTime.replace(":", "_");
+		Path path = Log_Dir.get().resolve(formatedDate).resolve(formatedTime + ".csv");
 		return path;
 	}
 	
@@ -133,9 +136,6 @@ public class Directory{
 
 		return true;
 	}
-
-	
-
 	
 	private static void showPopup(String title, String message ){
 		PopupUI popup = new PopupUI();

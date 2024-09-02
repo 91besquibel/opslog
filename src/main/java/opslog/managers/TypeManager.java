@@ -1,28 +1,22 @@
 package opslog.managers;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import opslog.objects.*;
 import opslog.util.*;
 
 public class TypeManager {
-
 	private static final Logger logger = Logger.getLogger(TypeManager.class.getName());
-	private static final String classTag = "TagManager";
+	private static final String classType = "TypeManager";
 	static {Logging.config(logger);}
 
-	private static TypeManager instance;
 	private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
+	private static TypeManager instance;
 
 	private TypeManager() {}
 
@@ -30,8 +24,6 @@ public class TypeManager {
 		if (instance == null) {instance = new TypeManager();}
 		return instance;
 	}
-	
-	public static ObservableList<Type> getTypeList() {return typeList;}
 
 	public static void add(Type type){
 		try {String[] newRow = type.toStringArray();
@@ -60,19 +52,24 @@ public class TypeManager {
 		);
 	}
 
-	public static void updateTypes(Path path) {
+	public static List<Type> getCSVData(Path path) {
 		try {
-			List<String[]> rows = CSV.read(path);
-			List<Type> newList = new ArrayList<>();
+			List<String[]> csvList = CSV.read(path);
+			List<Type> csvTypeList = new ArrayList<>();
 
-			for (String[] row : rows) {newList.add(new Type(row[0],row[1]));}
-
-			synchronized (typeList) {
-				if (!Update.compare(typeList, newList)) {
-					logger.log(Level.CONFIG, classTag + ".updateList: Updating List: " + typeList.toString() + " with " + newList.toString() + "\n");
-					Platform.runLater(() -> {typeList.setAll(newList);});
-				}
+			for (String[] row : csvList) {
+				String title = row[0];
+				String pattern = row[1];
+				Type format = new Type(title,pattern);
+				csvTypeList.add(format);
 			}
-		} catch (IOException e) {e.printStackTrace();}
+
+			return csvTypeList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
 	}
+
+	public static ObservableList<Type> getList() {return typeList;}
 }

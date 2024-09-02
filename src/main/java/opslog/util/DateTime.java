@@ -13,8 +13,9 @@ public class DateTime {
 	public static int days = 3;
 	public static int hrs= 72;
 	public static String zoneID = "UTC";
-	
-	public static final ObservableList<String> timeList = FXCollections.observableArrayList();
+	public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
+	public static final ObservableList<LocalTime> timeList = FXCollections.observableArrayList();
 
 	public static LocalDate getDate() {
 		LocalDate currentDate = LocalDate.now(ZoneId.of(zoneID));
@@ -26,27 +27,30 @@ public class DateTime {
 		return pastDate;
 	}
 
-	public static String getTime(){
-		String currentTime = LocalDateTime.now(ZoneId.of(zoneID)).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+	public static LocalTime getTime(){
+		LocalTime currentTime = LocalTime.now(ZoneId.of(zoneID));
 		return currentTime;
 	}
 
-	public static String getPastTime(){
-		String pastTime = LocalDateTime.now(ZoneId.of(zoneID)).minusHours(hrs).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+	public static LocalTime getPastTime(){
+		LocalTime pastTime = LocalTime.now(ZoneId.of(zoneID)).minusHours(hrs);
 		return pastTime;
 	}
 
 	public static String convertDate(LocalDate oldDate){
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MMM-dd");
-		String newDate = oldDate.format(dateTimeFormatter);
+		String newDate = oldDate.format(DATE_FORMAT);
 		return newDate;
 	}
 
+	public static String convertTime(LocalTime oldTime){
+		String newTime = oldTime.format(TIME_FORMAT);
+		return newTime;
+	}
+
 	public static void timeListPopulate(){
-		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 		LocalTime time = LocalTime.of(0, 0);
 		while (!time.equals(LocalTime.of(23, 55))) {
-			timeList.add(time.format(timeFormatter));
+			timeList.add(time);
 			time = time.plusMinutes(5);
 		}
 	}

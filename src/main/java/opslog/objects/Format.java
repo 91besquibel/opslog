@@ -28,8 +28,9 @@ public class Format{
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		Format otherFormat = (Format) other;
-		return title.get().equals(otherFormat.getTitle()) &&
-			   format.get().equals(otherFormat.getFormat());
+		return 
+			title.get().equals(otherFormat.getTitle()) &&
+			format.get().equals(otherFormat.getFormat());
 	}
 
 	@Override

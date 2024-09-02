@@ -1,5 +1,7 @@
 package opslog.objects;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -25,8 +27,11 @@ public class Type{
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true;
-		if (other == null || getClass() != other.getClass()) return false;
+		
+		if (other == null || getClass() != other.getClass()) return false; 
+		
 		Type otherType = (Type) other;
+		
 		return title.get().equals(otherType.getTitle()) && pattern.get().equals(otherType.getPattern());
 	}
 

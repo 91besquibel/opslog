@@ -1,20 +1,25 @@
-package src.opslog.managers;
+package opslog.managers;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import opslog.objects.*;
 import opslog.util.*;
 
 public class LogManager {
+	private static final Logger logger = Logger.getLogger(LogManager.class.getName());
+	private static final String classTag = "LogManager";
+	static {Logging.config(logger);}
 
-	private static LogManager instance;
 	private static final ObservableList<Log> logList = FXCollections.observableArrayList();
 	private static final ObservableList<Log> pinList = FXCollections.observableArrayList();
+	private static LogManager instance;
 
 	private LogManager() {}
 
@@ -24,8 +29,11 @@ public class LogManager {
 	}
 
 	public static void add(Log log){
-		try {String[] newRow = log.toStringArray();
-			CSV.write(Directory.newLog(), newRow);
+		try {
+			String[] newRow = log.toStringArray();
+			Path path = Directory.newLog();
+			Directory.build(path);
+			CSV.write(path, newRow);
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
@@ -51,28 +59,46 @@ public class LogManager {
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
-	public static void updateLogs(Path path) {
+	public static List<Log> getCSVData(Path path) {
 		try {
-			List<Log> newList = Search.searchLogs(
-				null,null,null,null,null,null,null,null
-			); 
+			Search search = new Search(null,null,null,null,null,null,null,null);
+			List<Log> csvList = SearchManager.searchLogs(search); 
+			return csvList; 
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
+	}
+	public static List<Log> getCSVData_Pin(Path path) {
+		try {
+			List<String[]> csvList = CSV.read(path);
+			List<Log> csvLogList = new ArrayList<>();
 
-			synchronized (logList) {
-				if (!Update.compare(logList, newList)) 
-					Platform.runLater(() -> {logList.setAll(newList);
-				});
+			for (String[] row : csvList) {
+				LocalDate date = LocalDate.parse(row[0]);
+				LocalTime time = LocalTime.parse(row[1]);
+				Type type = TypeManager.valueOf(row[2]);
+				Tag tag = TagManager.valueOf(row[3]);
+				String initials = row[4];
+				String description = row[5];
+				Log log = new Log(date,time,type,tag,initials,description);
+				csvLogList.add(log);
 			}
-		} catch (Exception e) {e.printStackTrace();}
+
+			return csvLogList;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new ArrayList<>();
+		}
 	}
 
-	public static Boolean isNullEmpty(Log log){
-		if(log.getDate() == null || log.getDate().equals("")){return true;};
-		if(log.getTime() == null || log.getTime().equals("")){return true;};
-		if(log.getType() == null || log.getType().equals("")){return true;};
-		if(log.getTag() == null || log.getTag().equals("")){return true;};
-		if(log.getInitials() == null || log.getInitials().equals("")){return true;}
-		if(log.getDescription() == null || log.getDescription().equals("")){return true;}
-		return false;
+	public static boolean isNull(Log log) {
+		return log.getDate() == null ||
+			   log.getTime() == null ||
+			   log.getType() == null ||
+			   log.getTag() == null ||
+			   log.getInitials() == null || log.getInitials().isEmpty() ||
+			   log.getDescription() == null || log.getDescription().isEmpty();
 	}
 	
 	public static ObservableList<Log> getLogList() {return logList;}
