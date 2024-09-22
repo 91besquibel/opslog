@@ -1,0 +1,5 @@
+GT Handover,Sat1,GT,SOP 1.0.0
+GT Handover,Sat1,GT,SOP 1.0.0
+Turn Off HPA ,Sat1,HPA,SOP 1.0.3
+Turn On HPA,Sat1,HPA,SOP 1.0.1
+Verify  TLM & CMD,Sat1,GT,SOP 1.0.2
