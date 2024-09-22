@@ -1,86 +1,85 @@
 package opslog.ui;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import opslog.managers.*;
+import opslog.objects.*;
+import opslog.util.*;
+
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableObjectValue;
-import javafx.event.ActionEvent;
-import javafx.geometry.Rectangle2D;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
-import opslog.managers.FormatManager;
-import opslog.managers.LogManager;
-import opslog.managers.TagManager;
-import opslog.managers.TypeManager;
-import opslog.objects.Format;
-import opslog.objects.Log;
-import opslog.objects.Tag;
-import opslog.objects.Type;
-import opslog.util.Customizations;
-import opslog.util.DateTime;
-import opslog.util.Factory;
-import opslog.util.Search;
+import opslog.ui.controls.*;
+	
 
-public class EventUI{
+public class EventUI {
+	
+	private static Stage stage;
+	private static BorderPane root;
+	private static double lastX, lastY;
+	private static double originalWidth;
+	private static double originalHeight;
+	private static CountDownLatch latch = new CountDownLatch(1);
 
-	private Stage popupWindow;
-	private VBox root;
-	private double lastX, lastY;
-	private double originalWidth;
-	private double originalHeight;
-	private CountDownLatch latch = new CountDownLatch(1);
+	private static LocalDate currentDate;
+	private static LocalTime currentTime;
 
-	private double widthLabel = 100;
-	private double heightLabel = 30;
-	private double widthSmall = 100;
-	private double heightSmall = 200;
-	private double widthLarge = 200;
-	private double heightLarge = 240;
+	private static Calendar tempCalendar = new Calendar();
+	private static Search tempSearch = new Search(); 
+	private static Log tempLog = new Log();
 
-	Button maximize;
-	SelectionMode single = SelectionMode.SINGLE;
-	SelectionMode multiple = SelectionMode.MULTIPLE;
-	ObservableObjectValue<String> formatSelection = new SimpleObjectProperty<>(); 
+	private static DatePicker startDatePicker;
+	private static ComboBox<LocalTime> startTimeSelection;
+	private static DatePicker stopDatePicker;
+	private static ComboBox<LocalTime> stopTimeSelection;
+	private static CustomTextArea descriptionTextArea;
 
-	private static Log tempLog = new Log(DateTime.getDate(),DateTime.getTime(),new Type("",""),new Tag("",Color.YELLOW),"","");
+	private static volatile EventUI instance;
+	private EventUI() {}
+	public static EventUI getInstance() {
+		if (instance == null) {
+			synchronized (EventUI.class) {
+				if (instance == null) {
+					instance = new EventUI();
+				}
+			}
+		}
+		return instance;
+	}
 	
 	public void display(){
+		
+		if (stage != null && stage.isShowing()) {
+			stage.toFront();
+			return;
+		}
+		
 		try{
-			popupWindow = new Stage();
-			popupWindow.initModality(Modality.APPLICATION_MODAL);
+			
 			initialize();
 			latch.await();
-			Scene scene = new Scene(root);		
-
-			String cssPath = getClass().getResource("/style.css").toExternalForm();
+			
+			stage = new Stage();
+			stage.initModality(Modality.WINDOW_MODAL);
+			stage.initStyle(StageStyle.TRANSPARENT);
+			
+			Scene scene = new Scene(root,Color.TRANSPARENT);		
+			String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
 			scene.getStylesheets().add(cssPath);
-			popupWindow.initStyle(StageStyle.TRANSPARENT);  
+			scene.setFill(Color.TRANSPARENT);
 			
 			root.setOnMousePressed(event -> {
 				if (event.getY() <= 30) {
@@ -94,182 +93,263 @@ public class EventUI{
 				if (root.getCursor() == Cursor.MOVE) {
 					double deltaX = event.getScreenX() - lastX;
 					double deltaY = event.getScreenY() - lastY;
-					popupWindow.setX(popupWindow.getX() + deltaX);
-					popupWindow.setY(popupWindow.getY() + deltaY);
+					stage.setX(stage.getX() + deltaX);
+					stage.setY(stage.getY() + deltaY);
 					lastX = event.getScreenX();
 					lastY = event.getScreenY();
 				}
 			});
 
 			root.setOnMouseReleased(event -> {root.setCursor(Cursor.DEFAULT);});
-			popupWindow.setScene(scene);
-			popupWindow.setResizable(false);
-			popupWindow.showAndWait();
+			stage.setScene(scene);
+			stage.setResizable(false);
+			stage.showAndWait();
 
 		}catch(InterruptedException e){e.printStackTrace();}
 	}
 
 	private synchronized void initialize(){
-		HBox windowBar = buildWindowCard();
-		HBox logCard = buildLogCard();
-		VBox optionsCard = buildOptionsCard();
-		HBox hbox = new HBox(logCard,optionsCard);
-		root = Factory.custom_VBox();
-		root.getChildren().addAll(windowBar,hbox);
-		root.borderProperty().bind(Customizations.standard_Border_Property);
-		root.backgroundProperty().bind(Customizations.root_Background_Property);
-		HBox.setHgrow(logCard, Priority.ALWAYS);
-		HBox.setHgrow(optionsCard, Priority.ALWAYS);
-		VBox.setVgrow(logCard, Priority.ALWAYS);
-		VBox.setVgrow(optionsCard, Priority.ALWAYS);
-		root.backgroundProperty().bind(Customizations.root_Background_Property);
+		try{			
+			HBox windowBar = buildWindowCard();
+			
+			VBox logCard = buildLogCard();
+			VBox optionsCard = buildOptionsCard();
+			HBox hbox = new HBox(logCard,optionsCard);
+			hbox.setSpacing(Settings.SPACING);
+			HBox.setHgrow(logCard, Priority.ALWAYS);
+			HBox.setHgrow(optionsCard, Priority.ALWAYS);
+			VBox.setVgrow(logCard, Priority.ALWAYS);
+			VBox.setVgrow(optionsCard, Priority.ALWAYS);
+			
+			AnchorPane viewArea = new AnchorPane(hbox);
+			AnchorPane.setTopAnchor(hbox, 0.0);
+			AnchorPane.setRightAnchor(hbox, 0.0);
+			AnchorPane.setLeftAnchor(hbox, 0.0);
+			AnchorPane.setBottomAnchor(hbox, 0.0);
+			viewArea.setPadding(Settings.INSETS);
+
+			root = new BorderPane(); 
+			root.backgroundProperty().bind(Settings.rootBackground);
+			root.borderProperty().bind(Settings.borderWindow);
+			root.setTop(windowBar);
+			root.setCenter(viewArea);
+			root.setBottom(null);
+			root.setLeft(null);
+			root.setRight(null);
+			latch.countDown();
 		
-		latch.countDown();
+		}catch(Exception e){
+			e.printStackTrace();
+		};
 	}
 
-	private HBox buildWindowCard(){
-		Button exit = Factory.custom_Button("/IconLib/closeIW.png", "/IconLib/closeIG.png");
-		exit.setOnAction(event -> {popupWindow.close();});
-		exit.backgroundProperty().bind(Customizations.root_Background_Property);
+	private static HBox buildWindowCard(){
+		Button exit = Buttons.exitWinBtn();
 
-		Button minimize = Factory.custom_Button("/IconLib/minimizeIW.png", "/IconLib/minimizeIG.png");
-		minimize.setOnAction(event -> ((Stage) minimize.getScene().getWindow()).setIconified(true));
-		minimize.backgroundProperty().bind(Customizations.root_Background_Property);
+		Button minimize = Buttons.minBtn();
 
-		maximize = Factory.custom_Button("/IconLib/maximizeIW.png", "/IconLib/maximizeIG.png");
-		maximize.setOnAction(this::maximize);
-		maximize.backgroundProperty().bind(Customizations.root_Background_Property);
-
+		Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
+	
 		Region leftSpacer = new Region();
 		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
 
-		Label clock = Factory.custom_Label("Clock", 300, 30);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy | HH:mm:ss");
-		Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-			LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-			clock.setText(now.format(formatter));
-			clock.textFillProperty().bind(Customizations.text_Color);
-			clock.fontProperty().bind(Customizations.text_Property);
-		}));
-		timeline.setCycleCount(Timeline.INDEFINITE);
-		timeline.play();
+		CustomLabel statusLabel = new CustomLabel("Status", Settings.WIDTH_LARGE, 40);
 
 		Region rightSpacer = new Region();
 		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-		Button search = Factory.custom_Button("/IconLib/searchIW.png","/IconLib/searchIG.png");
-		//search.setOnAction(event -> {Search.searchLogs();});
-		search.backgroundProperty().bind(Customizations.root_Background_Property);
+		CustomButton search = new CustomButton(Directory.SEARCH_WHITE,Directory.SEARCH_GREY,"Search");
+		search.setOnAction(event -> {
+			List<Log> searchResults = SearchManager.searchLogs(tempSearch);
+			SearchManager.setList(searchResults);
+		});
 		
-		Button calendar = Factory.custom_Button("/IconLib/calendarIW.png", "/IconLib/calendarIG.png");
-		//calendar.setOnAction(event -> {CalendarManager.add();});
-		calendar.backgroundProperty().bind(Customizations.root_Background_Property);
+		CustomButton calendar = new CustomButton(Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY,"Calendar");
+		calendar.setOnAction(event -> {
+			if(tempCalendar.hasValue()){
+				CSV.write(Directory.Calendar_Dir.get(),tempCalendar.toStringArray(),true);
+				handleClearParam();
+			}else{
+				showPopup("Error", "Ensure all field are filled for the calendar");
+			}
+		});
 		
-		Button log = Factory.custom_Button("/IconLib/logIW.png", "/IconLib/logIG.png");
-		log.setOnAction(event -> {LogManager.add(tempLog);});	
-		log.backgroundProperty().bind(Customizations.root_Background_Property);
+		CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY,"Log");
+		log.setOnAction(event -> {
+			currentDate = DateTime.getDate();
+			currentTime = DateTime.getTime();
+			tempLog.setDate(currentDate);
+			tempLog.setTime(currentTime);
+			if(tempLog.hasValue()){
+				String[] newRow = tempLog.toStringArray();
+				Path path = Directory.newLog(currentDate,currentTime);
+				Directory.build(path);
+				CSV.write(path, newRow,true);
+				Update.add(LogManager.getLogList(),tempLog);
+				descriptionTextArea.clear();
+			}else {
+				showPopup("Error", "Ensure all field are filled for the log");
+			}
+		});	
 		
-		HBox windowBar = Factory.custom_HBox();
+		CustomHBox windowBar = new CustomHBox();
 		windowBar.getChildren().addAll(
 			exit,minimize,maximize,
-			leftSpacer,clock,rightSpacer,
-			search,calendar,log
+			leftSpacer,statusLabel,rightSpacer,
+			search,log,calendar
 		);
-		windowBar.backgroundProperty().bind(Customizations.root_Background_Property);
+		windowBar.backgroundProperty().bind(Settings.backgroundWindow);
+		windowBar.borderProperty().bind(Settings.borderBar);
+		windowBar.setPadding(Settings.INSETS_WB);
+		
 		return windowBar;
 	}
 
-	private HBox buildLogCard(){
-		Label dateTimeLabel = Factory.custom_Label(DateTime.convertDate(DateTime.getDate()) + " " + DateTime.getTime(), widthLarge, heightLabel);
+	private static VBox buildLogCard(){
 		
-		Label typeLabel = Factory.custom_Label("Type", widthLabel, heightLabel);
-		ListView<Type> typeList = Factory.custom_ListView(widthSmall, heightSmall, single);
-		typeList.setItems(TypeManager.getTypeList());
-		VBox typeVBox = Factory.custom_VBox();
+		CustomButton clearParam = new CustomButton(Directory.CLEAR_WHITE,Directory.CLEAR_GREY,"Clear Values");
+		clearParam.setOnAction(e -> {handleClearParam();});
+		CustomLabel logLabel = new CustomLabel("Event Information", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+		HBox titleHBox = new HBox();
+		titleHBox.setAlignment(Pos.CENTER);
+		titleHBox.getChildren().addAll(clearParam,logLabel);
+		
+		CustomLabel typeLabel = new CustomLabel("Type", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Type> typeList = new CustomListView<>(TypeManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
+		typeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			tempLog.setType(newValue);
+			tempCalendar.setType(newValue);
+			tempSearch.setType(newValue);
+		});
+		VBox typeVBox = new VBox();
+		typeVBox.minWidth(100);
+		typeVBox.minHeight(200);
 		typeVBox.getChildren().addAll(typeLabel,typeList);
-		
-		Label tagLabel = Factory.custom_Label("Tag", widthLabel, heightLabel);
-		ListView<Tag> tagList = Factory.custom_ListView(widthSmall, heightSmall, multiple);
-		tagList.setItems(TagManager.getTagList());
-		VBox tagVBox = Factory.custom_VBox();
+		typeVBox.setSpacing(Settings.SPACING);
+
+		CustomLabel tagLabel = new CustomLabel("Tag", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Tag> tagList = new CustomListView<>(TagManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.MULTIPLE);
+		tagList.setItems(TagManager.getList());
+		tagList.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Tag>) change -> {
+			tempLog.setTags(FXCollections.observableArrayList(change.getList()));
+			tempCalendar.setTags(FXCollections.observableArrayList(change.getList()));
+			tempSearch.setTags(FXCollections.observableArrayList(change.getList()));
+		});
+		VBox tagVBox = new VBox();
+		tagVBox.minWidth(100);
+		tagVBox.minHeight(200);
 		tagVBox.getChildren().addAll(tagLabel,tagList);
-		
-		Label formatLabel = Factory.custom_Label("Format", widthLabel, heightLabel);
-		ListView<Format> formatList = Factory.custom_ListView(widthSmall, heightSmall, single);
-		formatList.setItems(FormatManager.getFormatList());
-		VBox formatVBox = Factory.custom_VBox();
+		tagVBox.setSpacing(Settings.SPACING);
+
+		CustomLabel formatLabel = new CustomLabel("Format", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Format> formatList = new CustomListView<>(FormatManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
+		VBox formatVBox = new VBox();
+		formatVBox.minWidth(100);
+		formatVBox.minHeight(200);
 		formatVBox.getChildren().addAll(formatLabel,formatList);
-		HBox groupHBox = Factory.custom_HBox();
-		groupHBox.getChildren().addAll(typeVBox, tagVBox, formatVBox);
-		VBox datetimeSelecVBox = Factory.custom_VBox();
-		datetimeSelecVBox.getChildren().addAll(dateTimeLabel,groupHBox);
-		
-		TextField initialsTextField = Factory.custom_TextField(widthLarge, heightLabel);
+		formatVBox.setSpacing(Settings.SPACING);
+
+		CustomTextField initialsTextField = new CustomTextField("Initials",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 		initialsTextField.setPromptText("Initials");
-		TextArea descriptionTextArea = Factory.custom_TextArea(widthLarge, heightLarge);
-		descriptionTextArea.textProperty().bind(formatSelection);
+		initialsTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+			tempLog.setInitials(newValue);
+			tempCalendar.setInitials(newValue);
+			tempSearch.setInitials(newValue);
+		});
+		descriptionTextArea = new CustomTextArea(Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE);
+		descriptionTextArea.textProperty().addListener((observable, oldValue, newValue) -> {
+			tempLog.setDescription(newValue);
+			tempCalendar.setDescription(newValue);
+			tempSearch.setDescription(newValue);
+		});
+		VBox initDescVBox = new VBox();
+		initDescVBox.minWidth(100);
+		initDescVBox.minHeight(200);
+		initDescVBox.setSpacing(Settings.SPACING);
+		initDescVBox.getChildren().addAll(initialsTextField,descriptionTextArea);
+
 		SelectionModel<Format> selectionModel = formatList.getSelectionModel();
 		selectionModel.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			descriptionTextArea.textProperty().unbind();
-			descriptionTextArea.textProperty().bind(newValue != null ? newValue.getFormatProperty() : new SimpleStringProperty(""));
+			descriptionTextArea.setText(newValue != null ? newValue.getFormatProperty().get() : "");
 		});
-
-		VBox initDescVBox = Factory.custom_VBox();
-		initDescVBox.getChildren().addAll(initialsTextField,descriptionTextArea);
-		HBox logCard = new HBox(datetimeSelecVBox,initDescVBox);
+		
+		HBox groupHBox = new HBox();
+		groupHBox.getChildren().addAll(typeVBox, tagVBox, formatVBox, initDescVBox);
+		groupHBox.backgroundProperty().bind(Settings.primaryBackground);
+		groupHBox.borderProperty().bind(Settings.primaryBorder);
+		groupHBox.setPadding(Settings.INSETS_ZERO);
+		groupHBox.setSpacing(Settings.SPACING);
+		
+		VBox logCard = new VBox();
+		logCard.getChildren().addAll(titleHBox,groupHBox);
+		logCard.backgroundProperty().bind(Settings.primaryBackground);
+		logCard.borderProperty().bind(Settings.primaryBorder);
+		logCard.setPadding(Settings.INSETS_ZERO);
+		logCard.setSpacing(Settings.SPACING);
+		
 		return logCard;
 	}
 
-	private VBox buildOptionsCard(){
-		// StartDate
-		Label startDateLabel = Factory.custom_Label("Start Date", widthLabel, heightLabel);
-		DatePicker startDatePicker = Factory.custom_DatePicker(widthLabel, heightLabel);
-		HBox startDateHBox = Factory.custom_HBox();
-		startDateHBox.getChildren().addAll(startDateLabel,startDatePicker);
-		// StopDate 
-		Label stopDateLabel = Factory.custom_Label("Stop Date", widthLabel, heightLabel);
-		DatePicker stopDatePicker = Factory.custom_DatePicker(widthLabel, heightLabel);
-		HBox stopDateHBox = Factory.custom_HBox();
-		stopDateHBox.getChildren().addAll(stopDateLabel,stopDatePicker);
-		// StopTime
-		Label startTimeLabel = Factory.custom_Label("Start Time", widthLabel, heightLabel);
-		ComboBox<String> startTimeSelection = Factory.custom_ComboBox(widthLabel, heightLabel);
-		HBox startTimeHBox = Factory.custom_HBox();
-		startTimeHBox.getChildren().addAll(startTimeLabel,startTimeSelection);
-		// StopTime
-		Label stopTimeLabel = Factory.custom_Label("Stop Time", widthLabel, heightLabel);
-		ComboBox<String> stopTimeSelection = Factory.custom_ComboBox(widthLabel, heightLabel);
-		HBox stopTimeHBox = Factory.custom_HBox();
-		stopTimeHBox.getChildren().addAll(stopTimeLabel,stopTimeSelection);
+	private static VBox buildOptionsCard(){
+
+		CustomLabel optionsLabel = new CustomLabel("Schedule & Search", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 		
-		VBox optionsCard = Factory.custom_VBox();
-		optionsCard.getChildren().addAll(startDateHBox,stopDateHBox,startTimeHBox,stopTimeHBox);
+		CustomTextField titleTextField = new CustomTextField("Title",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT);
+		titleTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+			tempCalendar.setTitle(newValue);
+		});
+		titleTextField.setPromptText("Calendar Title");
+		
+		startDatePicker = new CustomDatePicker("Start Date",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		startDatePicker.valueProperty().addListener((obs,oldVal,newVal) -> {
+			tempCalendar.setStartDate(newVal);
+			tempSearch.setStartDate(newVal);
+		});
+
+		startTimeSelection = new CustomComboBox<>("Start Time",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		startTimeSelection.valueProperty().addListener((obs,oldVal,newVal) -> {
+			tempCalendar.setStartTime(newVal);
+			tempSearch.setStartTime(newVal);
+		});
+		startTimeSelection.setItems(DateTime.timeList);
+
+		stopDatePicker = new CustomDatePicker("Stop Date",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		stopDatePicker.valueProperty().addListener((obs,oldVal,newVal) -> {
+			tempCalendar.setStopDate(newVal);
+			tempSearch.setStopDate(newVal);
+		});
+		
+		stopTimeSelection = new CustomComboBox<>("Stop Time",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		stopTimeSelection.valueProperty().addListener((obs,oldVal,newVal) -> {
+			tempCalendar.setStopTime(newVal);
+			tempSearch.setStopTime(newVal);
+		}); 
+		stopTimeSelection.setItems(DateTime.timeList);
+		
+		CustomVBox optionsCard = new CustomVBox();
+		optionsCard.borderProperty().bind(Settings.primaryBorder);
+		optionsCard.getChildren().addAll(optionsLabel,titleTextField,startDatePicker,startTimeSelection,stopDatePicker,stopTimeSelection);
 		return optionsCard; 
 	}
 
-	private void maximize(ActionEvent event) {
-		try {
-			Stage stage = (Stage) maximize.getScene().getWindow();
-			if (stage.isFullScreen()) {
-				stage.setFullScreen(false);
-				stage.setWidth(originalWidth);
-				stage.setHeight(originalHeight);
-			} else {
-				originalWidth = stage.getWidth();
-				originalHeight = stage.getHeight();
-				Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-				stage.setX(screenBounds.getMinX());
-				stage.setY(screenBounds.getMinY());
-				stage.setWidth(screenBounds.getWidth());
-				stage.setHeight(screenBounds.getHeight());
-				stage.setFullScreen(true);
-			}
-		} catch (Exception e) {e.printStackTrace();}
-	}
+	private static void handleClearParam(){
+		startDatePicker.setValue(null);
+		stopDatePicker.setValue(null);
+		startTimeSelection.setValue(null);
+		stopTimeSelection.setValue(null);
 
+		tempSearch.setType(null);
+		tempSearch.setTags(null);
+		tempSearch.setInitials(null);
+		tempSearch.setDescription(null);
+		tempSearch.setStartDate(null);
+		tempSearch.setStopDate(null);
+		tempSearch.setStartTime(null);
+		tempSearch.setStartTime(null);
+	}
 
 	public static void showPopup(String title, String message ){
 		PopupUI popup = new PopupUI();
-		popup.display(title, message);
+		popup.message(title, message);
 	}
 }

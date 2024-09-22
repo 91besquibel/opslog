@@ -1,10 +1,8 @@
 package opslog.ui.checklist;
 
 import javafx.collections.ListChangeListener;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.CheckBoxTreeItem.TreeModificationEvent;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
 import opslog.managers.ChecklistManager;

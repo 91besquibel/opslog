@@ -16,14 +16,14 @@ public class TaskParent {
 	private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
 	private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
 
-	//Constructor paramaterized
+	//Constructor parameterized
 	public TaskParent(Task task, LocalDate startDate, LocalDate stopDate) {
 		this.task.set(task);
 		this.startDate.set(startDate);
 		this.stopDate.set(stopDate);
 	}
 
-	//Constructor non - paramaterized
+	//Constructor non - parameterized
 	public TaskParent() {
 		this.task.set(null);
 		this.startDate.set(null);
@@ -57,8 +57,7 @@ public class TaskParent {
 	
 	@Override
 	public String toString(){
-		return task.get().getTitle() != null ? task.get().getTitle():"";
-	}
+		return task.get().getTitle() != null ? task.get().getTitle() : "";}
 
 	@Override
 	public boolean equals(Object other) {

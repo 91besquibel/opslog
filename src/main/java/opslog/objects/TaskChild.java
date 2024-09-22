@@ -4,7 +4,9 @@ import java.time.LocalTime;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import opslog.util.DateTime;
+import javafx.beans.property.SimpleStringProperty;
 
 public class TaskChild {
 
@@ -13,14 +15,14 @@ public class TaskChild {
 	private final ObjectProperty<LocalTime> startTime = new SimpleObjectProperty<>();
 	private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
 
-	//Constructor paramaterized
+	//Constructor parameterized
 	public TaskChild(Task task, LocalTime startTime, LocalTime stopTime) {
 		this.task.set(task);
 		this.startTime.set(startTime);
 		this.stopTime.set(stopTime);
 	}
 
-	//Constructor non-paramaterized
+	//Constructor non-parameterized
 	public TaskChild() {
 		this.task.set(null);
 		this.startTime.set(null);
@@ -54,9 +56,7 @@ public class TaskChild {
 	}
 
 	@Override
-	public String toString(){
-		return task.get().getTitle() != null ? task.get().getTitle():"";
-	}
+	public String toString(){return task.get().getTitle() != null ? task.get().getTitle() : "null";}
 
 	@Override
 	public boolean equals(Object other) {

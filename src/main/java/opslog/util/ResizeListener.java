@@ -4,15 +4,6 @@ import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-// My imports
-import opslog.objects.*;
-import opslog.managers.*;
-import opslog.ui.*;
-import opslog.util.*;
-import opslog.interfaces.*;
 
 /**
  * Listener class for resizing and moving a JavaFX Stage.
@@ -21,8 +12,7 @@ import opslog.interfaces.*;
 public class ResizeListener implements EventHandler<MouseEvent> {
 
 	private final Stage stage;
-	private final double border = 10;
-	private double dx;
+    private double dx;
 	private double dy;
 	private boolean resizeH = false;
 	private boolean resizeV = false;
@@ -47,7 +37,8 @@ public class ResizeListener implements EventHandler<MouseEvent> {
 	@Override
 	public void handle(MouseEvent t) {
 		if (MouseEvent.MOUSE_MOVED.equals(t.getEventType())) {
-			if (t.getX() < border && t.getY() < border) {
+            double border = 10;
+            if (t.getX() < border && t.getY() < border) {
 				stage.getScene().setCursor(Cursor.NW_RESIZE);
 				resizeH = true;
 				resizeV = true;
