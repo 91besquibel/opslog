@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 import opslog.managers.SearchManager;
 import opslog.objects.Log;
 import java.util.concurrent.locks.ReentrantLock;
