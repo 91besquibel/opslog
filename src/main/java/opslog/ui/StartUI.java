@@ -194,34 +194,29 @@ public class StartUI {
 		Preferences prefs = Directory.getPref();
 		if ((userInput == null || userInput.isEmpty()) && (selectorInput != null && !selectorInput.isEmpty())) {
 			if (Files.notExists(selectedPath)) {
-				showPopup("Invalid Input", "Directory could not be found");
+				showPopup("Directory could not be found");
 			} else {
 				Directory.initialize(selectorInput);
 				popupWindow.close();
 			}
 		} else if ((selectorInput == null || selectorInput.isEmpty()) && (userInput != null && !userInput.isEmpty())) {
 			if (Files.notExists(userPath)) {
-				showPopup("Invalid Input", "Directory could not be found");
+				showPopup("Directory could not be found");
 			} else {
 				
 				Directory.initialize(userInput);
-				String newKey = Directory.newKey();
-				if(newKey != null){
-					prefs.put(Directory.newKey(), userInput);
-					Directory.forceStore();
-					popupWindow.close();
-				}else{
-					showPopup("Storage","Failed to generate new key for storage, possibly out of room for new paths");
-				}
-			}
+                prefs.put(Directory.newKey(), userInput);
+                Directory.forceStore();
+                popupWindow.close();
+            }
 		} else {
-			showPopup("Invalid Input", "Please select or enter a new file path");
+			showPopup("Please select or enter a new file path");
 		}
 	}
 
-	private static void showPopup(String title, String message ){
+	private static void showPopup(String message ){
 		PopupUI popup = new PopupUI();
-		popup.message(title, message);
+		popup.message("Invalid Input", message);
 
 	}
 }

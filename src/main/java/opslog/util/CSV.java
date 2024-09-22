@@ -129,10 +129,10 @@ public class CSV {
 	}
 
 	public static String removeCommas(String string) {
-		return string.replace(",", ">>>");
+		return string.replace(",", ">>>"); // Temporary placeholder for commas
 	}
 
 	public static String addCommas(String string) {
-		return string.replace(">>>", ",");
+		return string.replace(">>>", ","); // Restore original commas
 	}
 }

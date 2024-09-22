@@ -13,7 +13,7 @@ public class Task {
 	private final ObjectProperty<Tag> tag = new SimpleObjectProperty<>();
 	private final StringProperty description = new SimpleStringProperty();
 
-	//Constructor paramaterized
+	//Constructor parameterized
 	public Task(String title, Type type, Tag tag, String description) {
 		this.title.set(title);
 		this.type.set(type);
@@ -21,7 +21,7 @@ public class Task {
 		this.description.set(description);
 	}
 	
-	//Constructor non paramaterized
+	//Constructor non parameterized
 	public Task() {
 		this.title.set(null);
 		this.type.set(null);
@@ -45,7 +45,7 @@ public class Task {
 	public boolean hasValue(){
 		return
 			title.get() != null && !title.get().trim().isEmpty() &&
-			type.get().hasValue() && tag.get().hasValue() &&
+			type.get().hasValue() && !tag.get().hasValue() &&
 			description.get() != null && !description.get().trim().isEmpty();
 	}
 	

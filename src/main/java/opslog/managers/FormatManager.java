@@ -1,25 +1,17 @@
 package opslog.managers;
 
-import opslog.objects.Format;
-import opslog.util.CSV;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-import java.io.IOException;
+import opslog.objects.Format;
+import opslog.util.CSV;
 import java.nio.file.Path;
-import opslog.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-
-/* 
-Usage Example
-FormatManager manager = FormatManager.getInstance();
-manager.add(new Format("Title", "StartDate", "StopDate", "StartTime", "StopTime", new Type("Type"), new Tag("Tag"), "Description"));
-*/
 public class FormatManager {
 
-	private static FormatManager instance;
-	
 	private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
+	private static FormatManager instance;
 
 	private FormatManager() {}
 
@@ -28,35 +20,19 @@ public class FormatManager {
 		return instance;
 	}
 
-	public ObservableList<String> getFormatTitles() {
-		ObservableList<String> titles = FXCollections.observableArrayList();
-		for (Format format : formatList) {titles.add(format.getTitle());}
-		return titles;
+	public static List<Format> getCSVData(Path path) {
+		List<String[]> csvList = CSV.read(path);
+		List<Format> csvFormatList = new ArrayList<>();
+
+		for (String[] row : csvList) {
+			String title = row[0];
+			String description = row[1];
+			Format format = new Format(title,description);
+			csvFormatList.add(format);
+		}
+
+		return csvFormatList;
 	}
-
-	public static ObservableList<Format> getFormatList() {return formatList;}
-
-	public static void add(Format format){
-		try {String[] newRow = format.toStringArray();
-			CSV.write(Directory.Format_Dir.get(), newRow);
-		} catch (IOException e) {e.printStackTrace();}
-	}
-
-	public static void delete(Format format) {
-		try {String[] rowFilters = format.toStringArray();
-			CSV.delete(Directory.Format_Dir.get(), rowFilters);
-		} catch (IOException e) {e.printStackTrace();}
-	}
-
-	public static void edit(Format oldFormat, Format newFormat) {
-		try{String [] oldValue = oldFormat.toStringArray();
-			String [] newValue = newFormat.toStringArray();
-			CSV.edit(Directory.Format_Dir.get(), oldValue, newValue);
-		}catch(IOException e){e.printStackTrace();}
-	}
-
-	public static void updateFormats(Path path) {
-		Update.updateList(path, formatList, row -> new Format(row[0],row[1]));
-	}
-
+	
+	public static ObservableList<Format> getList() {return formatList;}
 }
