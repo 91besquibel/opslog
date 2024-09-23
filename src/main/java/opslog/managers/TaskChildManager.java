@@ -48,8 +48,8 @@ public class TaskChildManager{
 			Task task = TaskManager.valueOf(row[0]);
 			LocalTime startTime = LocalTime.parse(row[1]);
 			LocalTime stopTime = LocalTime.parse(row[2]);
-				TaskChild taskParent = new TaskChild(task,startTime,stopTime);
-			csvTaskChildList.add(taskParent);
+			TaskChild taskChild = new TaskChild(task,startTime,stopTime);
+			csvTaskChildList.add(taskChild);
 		}
 		return csvTaskChildList;
 	}

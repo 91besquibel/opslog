@@ -57,7 +57,8 @@ public class TaskParent {
 	
 	@Override
 	public String toString(){
-		return task.get().getTitle() != null ? task.get().getTitle() : "";}
+		return task.get().getTitle() != null ? task.get().getTitle() : "null";
+	}
 
 	@Override
 	public boolean equals(Object other) {
@@ -66,7 +67,7 @@ public class TaskParent {
 		TaskParent otherTaskParent = (TaskParent) other;
 		return 
 			task.get().equals(otherTaskParent.getTask()) && 
-			startDate.get().equals(otherTaskParent .getStartDate()) &&
-			stopDate.get().equals(otherTaskParent .getStopDate());
+			startDate.get().equals(otherTaskParent.getStartDate()) &&
+			stopDate.get().equals(otherTaskParent.getStopDate());
 	}
 }

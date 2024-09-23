@@ -14,15 +14,17 @@ public class CSV {
 	private static final ReentrantLock fileLock = new ReentrantLock();
 
 	public static void write(Path path, String[] data, boolean append) {
+		System.out.println("Accessing CSV writer");
 		boolean lockAcquired = false;
 		long startTime = System.currentTimeMillis();
 		long timeout = 10000; // 10 seconds timeout
 
 		while (!lockAcquired && (System.currentTimeMillis() - startTime) < timeout) {
             fileLock.lock(); // Acquire the lock
-
+			System.out.println("File Locked");
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(path.toFile(), append))) {
-                // Process the single row of data
+				System.out.println("Writing to file");
+				// Process the single row of data
                 for (int i = 0; i < data.length; i++) {
                     data[i] = removeCommas(data[i]);
                 }
@@ -34,9 +36,8 @@ public class CSV {
             } finally {
                 fileLock.unlock(); // Release the lock
             }
-
         }
-
+		
 		if (!lockAcquired) {
 			System.err.println("Failed to acquire file lock within the timeout period.");
 		}

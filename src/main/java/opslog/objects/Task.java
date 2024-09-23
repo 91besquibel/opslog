@@ -45,7 +45,8 @@ public class Task {
 	public boolean hasValue(){
 		return
 			title.get() != null && !title.get().trim().isEmpty() &&
-			type.get().hasValue() && !tag.get().hasValue() &&
+			type.get().hasValue() && 
+			tag.get().hasValue() &&
 			description.get() != null && !description.get().trim().isEmpty();
 	}
 	

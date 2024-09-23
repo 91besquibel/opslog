@@ -117,11 +117,10 @@ public class ChecklistEditor{
 		CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY,"Edit");
 		CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY,"Delete");
 		add.setOnAction(event -> {
-			System.out.println("Add Task button clicked");
-			System.out.println("Creating new task: " + Arrays.toString(newTask.get().toStringArray()));
 			if(newTask.get().hasValue()){
-				CSV.write(Directory.Task_Dir.get(), newTask.get().toStringArray(),true);
-				Update.add(TaskManager.getList(),newTask.get());
+				Task tempTask = new Task( newTask.get().getTitle(), newTask.get().getType(), newTask.get().getTag(), newTask.get().getDescription());
+				CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(),true);
+				Update.add(TaskManager.getList(),tempTask);
 				title.clear();
 				type.setValue(null);
 				tag.setValue(null);
@@ -129,9 +128,10 @@ public class ChecklistEditor{
 			}
 		});
 		edit.setOnAction(event -> {
-			if(newTask.get().hasValue()){
-				CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), newTask.get().toStringArray());
-				Update.edit(TaskManager.getList(),selector.getValue(),newTask.get());
+			if(newTask.get().hasValue() && selector.getValue().hasValue()){
+				Task tempTask = new Task( newTask.get().getTitle(), newTask.get().getType(), newTask.get().getTag(), newTask.get().getDescription());
+				CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), tempTask.toStringArray());
+				Update.edit(TaskManager.getList(), selector.getValue(),tempTask);
 				title.clear();
 				type.setValue(null);
 				tag.setValue(null);
@@ -139,9 +139,9 @@ public class ChecklistEditor{
 			}
 		});
 		delete.setOnAction(event -> {
-			if(newTask.get().hasValue()){
+			if(selector.getValue().hasValue()){
 				CSV.delete(Directory.Task_Dir.get(), selector.getValue().toStringArray());
-				Update.delete(TaskManager.getList(),selector.getValue());
+				Update.delete(TaskManager.getList(), selector.getValue());
 				title.clear();
 				type.setValue(null);
 				tag.setValue(null);
@@ -184,26 +184,28 @@ public class ChecklistEditor{
 		CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY,"Delete");
 		add.setOnAction(event -> {
 			if(newParent.get().hasValue()){
-				CSV.write(Directory.TaskParent_Dir.get(), newParent.get().toStringArray(),true);
-				Update.add(TaskParentManager.getList(),newParent.get());	
+				TaskParent tempParent = new TaskParent(newParent.get().getTask(), newParent.get().getStartDate(), newParent.get().getStopDate());
+				CSV.write(Directory.TaskParent_Dir.get(), tempParent.toStringArray(),true);
+				Update.add(TaskParentManager.getList(), tempParent);	
 				task.setValue(null);
 				startDate.setValue(null);
 				stopDate.setValue(null);
 			}
 		});
 		edit.setOnAction(event -> {
-			if(newParent.get().hasValue()){
-				CSV.edit(Directory.TaskParent_Dir.get(), selector.getValue().toStringArray(), newParent.get().toStringArray());
-				Update.edit(TaskParentManager.getList(),selector.getValue(),newParent.get());
+			if(newParent.get().hasValue() && selector.getValue().hasValue()){
+				TaskParent tempParent = new TaskParent(newParent.get().getTask(), newParent.get().getStartDate(), newParent.get().getStopDate());
+				CSV.edit(Directory.TaskParent_Dir.get(), selector.getValue().toStringArray(), tempParent.toStringArray());
+				Update.edit(TaskParentManager.getList(), selector.getValue(),tempParent);
 				task.setValue(null);
 				startDate.setValue(null);
 				stopDate.setValue(null);
 			}
 		});
 		delete.setOnAction(event -> {
-			if(newParent.get().hasValue()){
-				CSV.delete(Directory.TaskParent_Dir.get(), selector.getValue().toStringArray());
-				Update.delete(TaskParentManager.getList(),selector.getValue());
+			if(selector.getValue().hasValue()){
+				CSV.delete( Directory.TaskParent_Dir.get(), selector.getValue().toStringArray());
+				Update.delete( TaskParentManager.getList(), selector.getValue());
 				task.setValue(null);
 				startDate.setValue(null);
 				stopDate.setValue(null);
@@ -247,26 +249,28 @@ public class ChecklistEditor{
 		CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY,"Delete");
 		add.setOnAction(event -> {
 			if(newChild.get().hasValue()){
-				CSV.write(Directory.TaskChild_Dir.get(), newChild.get().toStringArray(),true);
-				Update.add(TaskChildManager.getList(),newChild.get());	
+				TaskChild tempChild = new TaskChild( newChild.get().getTask(), newChild.get().getStartTime(), newChild.get().getStopTime());
+				CSV.write( Directory.TaskChild_Dir.get(), tempChild.toStringArray(),true);
+				Update.add( TaskChildManager.getList(), tempChild);	
 				task.setValue(null);
 				startTime.setValue(null);
 				stopTime.setValue(null);
 			}
 		});
 		edit.setOnAction(event -> {
-			if(newChild.get().hasValue()){
-				CSV.edit(Directory.TaskChild_Dir.get(), selector.getValue().toStringArray(), newChild.get().toStringArray());
-				Update.edit(TaskChildManager.getList(),selector.getValue(),newChild.get());
+			if(newChild.get().hasValue() && selector.getValue().hasValue()){
+				TaskChild tempChild = new TaskChild( newChild.get().getTask(), newChild.get().getStartTime(), newChild.get().getStopTime());
+				CSV.edit( Directory.TaskChild_Dir.get(), selector.getValue().toStringArray(), tempChild.toStringArray());
+				Update.edit( TaskChildManager.getList(), selector.getValue(), tempChild);
 				task.setValue(null);
 				startTime.setValue(null);
 				stopTime.setValue(null);
 			}
 		});
 		delete.setOnAction(event -> {
-			if(newChild.get().hasValue()){
-				CSV.delete(Directory.TaskChild_Dir.get(), selector.getValue().toStringArray());
-				Update.delete(TaskChildManager.getList(),selector.getValue());
+			if(selector.getValue().hasValue()){
+				CSV.delete( Directory.TaskChild_Dir.get(), selector.getValue().toStringArray());
+				Update.delete( TaskChildManager.getList(), selector.getValue());
 				task.setValue(null);
 				startTime.setValue(null);
 				stopTime.setValue(null);
@@ -417,7 +421,7 @@ public class ChecklistEditor{
 		CustomButton swap = new CustomButton(Directory.SWAP_WHITE, Directory.SWAP_GREY,"Status Page");
 		CustomButton add = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY,"Add");
 		CustomButton delete = new CustomButton(Directory.DELETE_WHITE,Directory.DELETE_GREY,"Delete");
-		CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY,"Edit");
+		// CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY,"Edit");
 		swap.setOnAction(e -> {
 			ChecklistUI.editorRoot.setVisible(false);
 			ChecklistUI.statusRoot.setVisible(true);
@@ -425,19 +429,15 @@ public class ChecklistEditor{
 
 		add.setOnAction(event -> {
 			if(currentChecklist.get().hasValue()){
-				CSV.write(Directory.Checklist_Dir.get(),currentChecklist.get().toStringArray(),true);
+				//add logic to check if this checklist allready exists to prevent dublicates
+				CSV.write(currentChecklist.get().fileName(),currentChecklist.get().toStringArray(),false);
 				Update.add(ChecklistManager.getList(),currentChecklist.get());	
 			}
 		});
-		edit.setOnAction(event -> {
-			if(currentChecklist.get().hasValue()){
-				CSV.edit(Directory.Checklist_Dir.get(),selector.getSelectionModel().getSelectedItem().toStringArray(), currentChecklist.get().toStringArray());
-				Update.edit(ChecklistManager.getList(),selector.getSelectionModel().getSelectedItem(),currentChecklist.get());
-			}
-		});
+		
 		delete.setOnAction(event -> {
-			if(currentChecklist.get().hasValue()){
-				CSV.delete(Directory.Checklist_Dir.get(),selector.getSelectionModel().getSelectedItem().toStringArray());
+			if(selector.getSelectionModel().getSelectedItem().hasValue()){
+				CSV.delete(selector.getSelectionModel().getSelectedItem().fileName(),selector.getSelectionModel().getSelectedItem().toStringArray());
 				Update.delete(ChecklistManager.getList(),selector.getSelectionModel().getSelectedItem());
 			}
 		});
@@ -445,7 +445,7 @@ public class ChecklistEditor{
 		CustomHBox buttons = new CustomHBox();
 		buttons.prefWidthProperty().bind(vbox.widthProperty());
 		buttons.setSpacing(Settings.SPACING);
-		buttons.getChildren().addAll(swap,add,delete,edit);
+		buttons.getChildren().addAll(swap,add,delete);
 		buttons.setPadding(Settings.INSETS);
 		VBox frame = new VBox(buttons,vbox);
 		frame.setSpacing(Settings.SPACING);

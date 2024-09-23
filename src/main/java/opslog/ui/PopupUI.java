@@ -3,6 +3,8 @@ package opslog.ui;
 import java.io.IOException;
 import java.util.Objects;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -35,7 +37,7 @@ public class PopupUI{
 		CustomLabel label = new CustomLabel(message,400,200);
 		label.wrapTextProperty().set(true);
 
-		Button btn = ackBtn();
+		Button btn = ackBtn("Edit");
 		btn.setOnAction(e->{
 			Stage stage = (Stage) btn.getScene().getWindow();
 			stage.close();
@@ -72,7 +74,7 @@ public class PopupUI{
 		CustomHBox hbox = new CustomHBox();
 		hbox.getChildren().addAll(label,textArea);
 
-		Button btn = ackBtn();
+		Button btn = ackBtn("Append");
 		btn.setOnAction(e->{
 			if (textArea.getText() != null && !textArea.getText().trim().isEmpty()) {
 				String newDescription = textArea.getText() + "(" + oldLog.getDescription() + ")";
@@ -111,6 +113,51 @@ public class PopupUI{
 		root.setLeft(null);
 		root.setRight(null);
 		display(root);
+	}
+
+	public Boolean ackCheck(String title, String message){
+		BooleanProperty ack = new SimpleBooleanProperty(false);
+		BorderPane root = new BorderPane();
+
+		CustomLabel label = new CustomLabel(message,400,200);
+		label.wrapTextProperty().set(true);
+
+		Button yesBtn = ackBtn("Yes");
+		yesBtn.setOnAction(e->{
+			ack.set(true);
+			Stage stage = (Stage) yesBtn.getScene().getWindow();
+			stage.close();
+		});
+
+		Button noBtn = ackBtn("No");
+		noBtn.setOnAction(e->{
+			ack.set(false);
+			Stage stage = (Stage) noBtn.getScene().getWindow();
+			stage.close();
+		});
+		
+		CustomHBox btns = new CustomHBox();
+		btns.getChildren().addAll(yesBtn,noBtn);
+		CustomVBox content = new CustomVBox();
+		content.getChildren().addAll(label);
+
+		AnchorPane viewArea = new AnchorPane(content);
+		AnchorPane.setTopAnchor(content, 0.0);
+		AnchorPane.setRightAnchor(content, 0.0);
+		AnchorPane.setLeftAnchor(content, 0.0);
+		AnchorPane.setBottomAnchor(content, 0.0);
+		viewArea.setPadding(Settings.INSETS);
+
+		root.backgroundProperty().bind(Settings.rootBackground);
+		root.borderProperty().bind(Settings.borderWindow);
+		root.setTop(buildWindowBar());
+		root.setCenter(viewArea);
+		root.setBottom(null);
+		root.setLeft(null);
+		root.setRight(null);
+		display(root);
+		
+		return ack.get();
 	}
 
 	private void display(BorderPane root){
@@ -169,8 +216,8 @@ public class PopupUI{
 		return windowBar;
 	}
 
-	private static Button ackBtn(){
-		Button btn = new Button("Edit");
+	private static Button ackBtn(String title){
+		Button btn = new Button(title);
 		btn.setPrefSize(50, 30);
 		btn.setPadding(Settings.INSETS);
 		btn.setBackground(Settings.secondaryBackground.get());

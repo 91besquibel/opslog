@@ -184,7 +184,9 @@ public class Update {
 			try {
 				return isDif(TaskParentManager.getList(), csvListParent);
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "Error comparing TaskParentManager lists", e);
+				logger.log(Level.SEVERE, "Error comparing TaskParentManager lists");
+				
+				e.printStackTrace();
 				return false;
 			}
 		});

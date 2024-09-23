@@ -103,10 +103,10 @@ public class Directory{
 		Log_Dir.set(baseDir.resolve("opslog/logs"));
 		Pin_Board_Dir.set(baseDir.resolve("opslog/pinboard/pinboard.csv"));
 		Calendar_Dir.set(baseDir.resolve("opslog/calendar/calendar.csv"));
-		Task_Dir.set(baseDir.resolve("opslog/checklist/task.csv"));
-		TaskParent_Dir.set(baseDir.resolve("opslog/checklist/taskparent.csv"));
-		TaskChild_Dir.set(baseDir.resolve("opslog/checklist/taskchild.csv"));
-		Checklist_Dir.set(baseDir.resolve("opslog/checklist/checklist.csv"));
+		Task_Dir.set(baseDir.resolve("opslog/checklist/objects/task.csv"));
+		TaskParent_Dir.set(baseDir.resolve("opslog/checklist/objects/taskparent.csv"));
+		TaskChild_Dir.set(baseDir.resolve("opslog/checklist/objects/taskchild.csv"));
+		Checklist_Dir.set(baseDir.resolve("opslog/checklist/checklists/"));
 		Type_Dir.set(baseDir.resolve("opslog/setting/type.csv"));
 		Tag_Dir.set(baseDir.resolve("opslog/setting/tag.csv"));
 		Format_Dir.set(baseDir.resolve("opslog/setting/format.csv"));
@@ -116,7 +116,7 @@ public class Directory{
 
 		paths = new Path[]{
 				Pin_Board_Dir.get(), Calendar_Dir.get(),
-				Task_Dir.get(), TaskParent_Dir.get(), TaskChild_Dir.get(), Checklist_Dir.get(),
+				Task_Dir.get(), TaskParent_Dir.get(), TaskChild_Dir.get(),
 				Type_Dir.get(), Tag_Dir.get(), Format_Dir.get(), Profile_Dir.get()
 		};
 	}
@@ -125,6 +125,7 @@ public class Directory{
 		for(Path path : paths){
 			build(path);
 		}
+		
 		try {
 
 			if (Files.notExists(Log_Dir.get())) {
@@ -133,6 +134,10 @@ public class Directory{
 			if (Files.notExists(Export_Dir.get())) {
 				Files.createDirectories(Export_Dir.get());
 			}
+			if (Files.notExists(Checklist_Dir.get())){
+				Files.createDirectories(Checklist_Dir.get());
+			}
+			
 
 		} catch (FileAlreadyExistsException e) {
 			logger.log(Level.WARNING, classTag + ".build: File already exists", e);

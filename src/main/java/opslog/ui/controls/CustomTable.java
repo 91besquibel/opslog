@@ -11,17 +11,13 @@ import opslog.util.DateTime;
 import opslog.util.Directory;
 import opslog.util.Settings;
 import opslog.util.Update;
-
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -37,9 +33,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-
-
-
 
 public class CustomTable{
 	
@@ -128,8 +121,9 @@ public class CustomTable{
 	}
 	public static TableView<Log> pinTableView(){
 		TableView<Log> tableView = new TableView<>();
-
-		tableView.getColumns().add(descriptionColumn(tableView));
+		TableColumn<Log, String> column = descriptionColumn(tableView);
+		column.setText("Pin Board");
+		tableView.getColumns().add(column);
 		tableView.backgroundProperty().bind(Settings.primaryBackground);
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 		tableView.setRowFactory(tv -> createRow(tableView));

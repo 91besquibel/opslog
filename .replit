@@ -2,6 +2,7 @@ entrypoint = "src/main/java/opslog/App.java"
 compile = "mvn -X clean compile"
 run = "mvn -X exec:java -Dexec.mainClass=opslog.App"
 hidden = ["**/*.class"]
+modules = ["java-graalvm22.3"]
 
 [packager]
 language = "java"

@@ -100,6 +100,7 @@ public class SearchManager{
 		} catch (IOException e) {e.printStackTrace();}
 		return files;
 	}
+	
 	private static boolean matchesFilters(Log log, Type typeFilter, ObservableList<Tag> tagFilters, String initialsFilter, String descriptionFilter) {
 		return (typeFilter == null || typeFilter.toString().equals(log.getType().toString())) &&
 			   (tagFilters == null || tagFilters.stream().allMatch(tag -> log.getTags().contains(tag))) &&
@@ -148,8 +149,6 @@ public class SearchManager{
 			return false;
 		}
 	}
-
-
 
 	// find location of a single log for appending
 	public static Path findFile(Log log) {
@@ -251,8 +250,6 @@ public class SearchManager{
 			return false;
 		}
 	}
-
-
 
 	private static boolean filtersSingle(Log log, Type typeFilter, ObservableList<Tag> tagFilters, String initialsFilter) {
 		return (typeFilter == null || typeFilter.toString().equals(log.getType().toString())) &&

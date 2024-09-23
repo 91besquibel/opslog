@@ -56,7 +56,9 @@ public class TaskChild {
 	}
 
 	@Override
-	public String toString(){return task.get().getTitle() != null ? task.get().getTitle() : "null";}
+	public String toString(){
+		return task.get().getTitle() != null ? task.get().getTitle() : "null";
+	}
 
 	@Override
 	public boolean equals(Object other) {
