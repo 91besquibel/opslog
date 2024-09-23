@@ -139,7 +139,7 @@ public class PopupUI{
 		CustomHBox btns = new CustomHBox();
 		btns.getChildren().addAll(yesBtn,noBtn);
 		CustomVBox content = new CustomVBox();
-		content.getChildren().addAll(label);
+		content.getChildren().addAll(label,btns);
 
 		AnchorPane viewArea = new AnchorPane(content);
 		AnchorPane.setTopAnchor(content, 0.0);
