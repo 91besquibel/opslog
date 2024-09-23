@@ -149,7 +149,7 @@ public class ChecklistStatus{
 			});
 			
 			// Display all initial
-			parentItem.setExpanded(true);
+			parentItem.setExpanded(false);
 			// Display parent change
 			parentItem.addEventHandler(TreeItem.branchCollapsedEvent(), e -> {
 				checklistTree.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
