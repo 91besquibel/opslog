@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ChecklistManager {
@@ -57,6 +58,7 @@ public class ChecklistManager {
 
 				// Create Status List
 				String[] arrStatus = row[2].split("\\|");
+				System.out.println(Arrays.toString(arrStatus));
 				ObservableList<Boolean> stateList = FXCollections.observableArrayList();
 				for(String strStatus : arrStatus){stateList.add(Boolean.valueOf(strStatus));}
 				

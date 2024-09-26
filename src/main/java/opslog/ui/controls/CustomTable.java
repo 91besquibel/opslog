@@ -45,14 +45,14 @@ public class CustomTable{
 		tableView.getColumns().add(typeColumn());
 		tableView.getColumns().add(tagColumn());
 		tableView.getColumns().add(initialsColumn());
-		tableView.getColumns().add(descriptionColumn(tableView));
+		tableView.getColumns().add(descriptionColumn(tableView,"Description"));
 		tableView.backgroundProperty().bind(Settings.primaryBackground);
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 		tableView.setRowFactory(tv -> createRow(tableView));
 		tableView.setPadding(Settings.INSETS);
 
 		ContextMenu contextMenu = new ContextMenu();
-		MenuItem editItem = new MenuItem("Edit");
+		MenuItem editItem = new MenuItem("Append");
 		MenuItem copyItem = new MenuItem("Copy");
 		MenuItem pinItem = new MenuItem("Pin");
 		MenuItem exportItem = new MenuItem("Export");
@@ -121,8 +121,7 @@ public class CustomTable{
 	}
 	public static TableView<Log> pinTableView(){
 		TableView<Log> tableView = new TableView<>();
-		TableColumn<Log, String> column = descriptionColumn(tableView);
-		column.setText("Pin Board");
+		TableColumn<Log, String> column = descriptionColumn(tableView,"Pin Board");
 		tableView.getColumns().add(column);
 		tableView.backgroundProperty().bind(Settings.primaryBackground);
 		tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
@@ -287,10 +286,10 @@ public class CustomTable{
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
-	private static TableColumn<Log, String> descriptionColumn(TableView<Log> tableView) {
+	private static TableColumn<Log, String> descriptionColumn(TableView<Log> tableView,String header) {
 		TableColumn<Log, String> column = new TableColumn<>();
 		column.setCellValueFactory(new PropertyValueFactory<>("description"));
-		Label label = new Label("Description");
+		Label label = new Label(header);
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
 

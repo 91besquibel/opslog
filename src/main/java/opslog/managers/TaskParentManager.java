@@ -45,14 +45,10 @@ public class TaskParentManager{
 		List<TaskParent> csvTaskParentList = new ArrayList<>();
 
 		for (String[] row : csvList) {
-			System.out.println("Creating parent from: "+Arrays.toString(row));
 			Task task = TaskManager.valueOf(row[0]);
-			System.out.println(task.toString());
 			LocalDate startDate = LocalDate.parse(row[1]);
 			LocalDate stopDate = LocalDate.parse(row[2]);
 			TaskParent taskParent = new TaskParent(task,startDate,stopDate);
-			System.out.println(taskParent.toString());
-			System.out.println(taskParent.getTask().toString());
 			csvTaskParentList.add(taskParent);
 		}
 		return csvTaskParentList;

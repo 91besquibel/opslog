@@ -25,6 +25,7 @@ import opslog.ui.PopupUI;
 import opslog.objects.Log;
 import opslog.objects.Tag;
 import opslog.util.DateTime;
+import java.util.Arrays;
 
 public class ChecklistStatus{
 	
@@ -103,38 +104,29 @@ public class ChecklistStatus{
 			TreeView<String> checklistTree = new TreeView<String>();
 
 			// Create compleation status
-			CustomLabel percentage = new CustomLabel(checklist.getPercentage(),Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-			
+			CustomLabel percentage = new CustomLabel("0",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
+			percentage.textProperty().bind(checklist.getPercentage());
+			checklist.setPercentage();
 			// Create the parent checkbox
 			String strParentItem = String.join(" | " , checklist.getParent().toStringArray());
 			String parentDescription = checklist.getParent().getTask().getDescription();
 			String parentFinale = strParentItem + " | " + parentDescription;
 			CheckBoxTreeItem<String> parentItem = new CheckBoxTreeItem<String>(parentFinale);
-
-			// if the chcklist status list changes update the checkbox appropriatly
-			checklist.getStateList().addListener((ListChangeListener<Boolean>) change -> {
-				while (change.next()) {
-					if (change.wasUpdated()) {
-						if(newChecklist.getState(0) != checklist.getState(0)){
-							parentItem.setSelected(checklist.getState(0));
-						}
-					}
-				}
-			});
+			
+			parentItem.setSelected(checklist.getState(0));
 			
 			// Parent selection update
 			parentItem.selectedProperty().addListener((obs,ov,nv) -> {
-				// Change check
-				if(ov != nv){
+				// if user checks box
+				if(nv == true){
 					PopupUI popupUI = new PopupUI();
-					// Acknowledgment check
+					// if user is sure write log and write state
 					if(popupUI.ackCheck("Complete Checklist"," This will log the checklist as completed. Are you sure?")){
-						// Update percentage when change detected
-						percentage.setText(checklist.getPercentage());
 						// update the new checklist state
 						newChecklist.setState(0,nv);
 						// Overwrite the old checklist
 						CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
+						checklist.setPercentage();
 						// Create new log 
 						ObservableList<Tag> tags = FXCollections.observableArrayList();
 						tags.add(checklist.getParent().getTask().getTag());
@@ -142,9 +134,19 @@ public class ChecklistStatus{
 						Path path = Directory.newLog(tempLog.getDate(),tempLog.getTime());
 						Directory.build(path);
 						CSV.write(path,tempLog.toStringArray(),true);
-					} else{
+					}else{
+						// if user is not sure
+						newChecklist.setState(0,false);
 						parentItem.setSelected(false);
+						CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
+						checklist.setPercentage();
 					}
+				}else if(nv != true){
+					// if checkbox unchecked write the new state
+					System.out.println("Checkbox set to false");
+					newChecklist.setState(0,false);
+					CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
+					checklist.setPercentage();
 				}
 			});
 			
@@ -152,11 +154,11 @@ public class ChecklistStatus{
 			parentItem.setExpanded(false);
 			// Display parent change
 			parentItem.addEventHandler(TreeItem.branchCollapsedEvent(), e -> {
-				checklistTree.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+				checklistTree.setMinHeight(Settings.SINGLE_LINE_HEIGHT+5);
 			});
 			// Display all change
 			parentItem.addEventHandler(TreeItem.branchExpandedEvent(), e -> {
-				checklistTree.setMinHeight(parentItem.getChildren().size() * Settings.SINGLE_LINE_HEIGHT);
+				checklistTree.setMinHeight((parentItem.getChildren().size() * Settings.SINGLE_LINE_HEIGHT)+5);
 			});
 			
 			// Add parent item to tree
@@ -177,26 +179,18 @@ public class ChecklistStatus{
 					
 					// Set the state of the checkbox
 					childItem.setSelected(checklist.getState(statusIndex));
-
-					// if the chcklist status list changes update the checkbox appropriatly
-					checklist.getStateList().addListener((ListChangeListener<Boolean>) change -> {
-						while (change.next()) {
-							if (change.wasUpdated()) {
-								childItem.setSelected(checklist.getState(statusIndex));
-							}
-						}
-					});
 					
 					// Progress change listener write state csv
 					childItem.selectedProperty().addListener((obs,ov,nv)-> {
 						// Verify changed state
 						if(ov != nv){
-							// Update percentage when change detected
-							percentage.setText(checklist.getPercentage());
 							// update the new checklist state
-							newChecklist.setState(checklist.getChildren().indexOf(child)+1,nv);
+							newChecklist.setState(statusIndex,nv);
+							//checklist.setState(statusIndex,nv);
 							// Overwrite the old checklist
 							CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
+							// Update percentage when change detected
+							checklist.setPercentage();
 						}
 					});
 					
@@ -219,17 +213,17 @@ public class ChecklistStatus{
 			// Area Beautficat
 			checklistTree.backgroundProperty().bind(Settings.primaryBackground);
 			checklistTree.setMaxHeight(parentItem.getChildren().size()*Settings.SINGLE_LINE_HEIGHT);
-			checklistTree.prefWidthProperty().bind(checklistContainer.widthProperty());
+			checklistTree.prefWidthProperty().bind(checklistContainer.widthProperty().subtract(75));
 			
 			// Delete this container
 			CustomButton clear = new CustomButton(Directory.CLEAR_WHITE, Directory.CLEAR_GREY,"Remove Checklist");
 			CustomHBox btn = new CustomHBox();
 			btn.getChildren().addAll(percentage,clear);
-			btn.prefWidth(100);
+			btn.minWidth(75);
 
 			// return the container to be displayed
 			CustomHBox container = new CustomHBox();
-			container.setPrefHeight(Settings.SINGLE_LINE_HEIGHT);
+			container.setPrefHeight(Settings.SINGLE_LINE_HEIGHT+10);
 			container.getChildren().addAll(checklistTree,btn);
 			clear.setOnAction(e -> {checklistContainer.getChildren().remove(container);});
 			return container;

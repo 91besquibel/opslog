@@ -4,18 +4,22 @@ import java.util.stream.Collectors;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import opslog.util.Directory;
+import opslog.objects.*;
 
 public class Checklist {
 
 	private final ObjectProperty<TaskParent> parent = new SimpleObjectProperty<>();
 	private final ObservableList<TaskChild> childList = FXCollections.observableArrayList();
 	private final ObservableList<Boolean> stateList = FXCollections.observableArrayList();
+	private final StringProperty percentage = new SimpleStringProperty();
 
 	public Checklist(TaskParent parent, ObservableList<TaskChild> childList){
 		this.parent.set(parent);
@@ -33,44 +37,64 @@ public class Checklist {
 	public TaskParent getParent(){return parent.get();}
 	public ObservableList<TaskChild> getChildren(){return childList;}
 	public ObservableList<Boolean> getStateList(){return stateList;}
-	public Boolean getState(int index){
-		return stateList.get(index);
-	}
+	public Boolean getState(int index){return stateList.get(index);}
+	public StringProperty getPercentage(){return percentage;}
 
 	public void setStateList(ObservableList<Boolean> newStateList){
 		stateList.setAll(newStateList);
+		setPercentage();
 	}
 	public void setState(int index,Boolean state){
 		if(index < stateList.size()){
 			stateList.set(index,state);
+			setPercentage();
 		}
 	}
 	public void setParent(TaskParent newParent){
 		parent.set(newParent);
-		// default state of parent at index 0
 		stateList.add(0,false);
+		setPercentage();
 	}
 	public void setChildren(ObservableList<TaskChild> newChildList){
 		childList.setAll(newChildList);
-		// set default state to false for each child starting at index 1
 		for(int i = 0; i < newChildList.size(); i++){
-			stateList.add(i+1,false);
-		}
-	}
-
-	public String getPercentage() {
-		int numItems = stateList.size();
-		if (numItems == 0) {return "0";}
-		double percentPerItem = 100.0 / numItems;
-		double percentage = 0;
-		for (boolean state : stateList) {
-			if (state == true) {
-				percentage += percentPerItem;
-			} else {
-				percentage -= percentPerItem;
+			if(newChildList.get(i).hasValue()){
+				stateList.add(i+1,false);
 			}
 		}
-		return String.valueOf(Math.round(percentage));
+		setPercentage();
+	}
+
+	public void setPercentage() {
+		int numItems = 0;
+		for(TaskChild child: childList){
+			if(child.hasValue()){
+				System.out.println("Child found incrementing count");
+				numItems++;
+			}
+		}
+		// incrementing to include parent
+		numItems++;
+		System.out.println("Total values fount: "+ numItems);
+		if (numItems == 0) {
+			System.out.println("no value found returning: "+ numItems);
+			percentage.set("0");
+		}
+		double percentPerItem = 100.0 / numItems;
+		System.out.println("percent per item: " + percentPerItem);
+		double perc = 100;
+		for(int i = 0; i < numItems; i++){
+			System.out.println("Checking value @ index: " + i );
+			if(!stateList.get(i)){
+				// if false
+				perc -= percentPerItem;
+				System.out.println("State false at: " + i + " Percentage set to: " + perc);
+			}
+		}
+		System.out.println("Displaying: " + String.valueOf(Math.round(perc)));
+		
+		percentage.set(String.valueOf(Math.round(perc)));
+		System.out.println("Displaying: " + percentage.get());
 	}
 
 	public boolean hasValue(){
@@ -78,8 +102,12 @@ public class Checklist {
 	}
 	
 	public Path fileName(){
-		//returns opslog/checklist/checklist/parentTaskTitle_parentstartdate_parentstopdate.csv
-		return Directory.Checklist_Dir.get().resolve(parent.get().toString() + "_" + parent.get().getStartDate().toString() + "_" + parent.get().getStopDate().toString() + ".csv");
+		return Directory.Checklist_Dir.get().resolve(parent.get().toString() + 
+													 "_" + 
+													 parent.get().getStartDate().toString() + 
+													 "_" + 
+													 parent.get().getStopDate().toString() + 
+													 ".csv");
 	}
 
 	public String[] toStringArray() {
@@ -106,6 +134,8 @@ public class Checklist {
 		Checklist otherChecklist = (Checklist) other;
 		return
 				parent.get().equals(otherChecklist.getParent()) &&
-						childList.equals(otherChecklist.getChildren());
+				childList.equals(otherChecklist.getChildren()) &&
+				stateList.equals(otherChecklist.getStateList());
+						
 	}
 }

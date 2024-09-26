@@ -111,7 +111,6 @@ public class SearchManager{
 		try {
 			// Convert path to string and normalize separators
 			String pathString = path.toString().replace("\\", "/");
-			System.out.println("Processing path: " + pathString);
 
 			// Split the path into segments based on '/'
 			String[] dateIndex = pathString.split("/");
@@ -211,7 +210,6 @@ public class SearchManager{
 		try {
 			// Convert path to string and normalize separators
 			String pathString = path.toString().replace("\\", "/");
-			System.out.println("Processing path: " + pathString);
 
 			// Split the path into segments based on '/'
 			String[] dateIndex = pathString.split("/");

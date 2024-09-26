@@ -245,7 +245,6 @@ public class Update {
 
 	// Helper method: used asynchronously
 	private static <T> boolean isDif(List<T> appList, List<T> csvList) {
-
 		if (appList.size() != csvList.size()) {
 			logger.log(Level.WARNING, classTag + ".chkDif: Size difference found between: \n" + appList.toString() + "\n and \n" + csvList.toString() + "\n");
 			return true;
