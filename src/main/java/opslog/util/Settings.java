@@ -17,6 +17,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Screen;
 
 public class Settings{
 	
@@ -36,6 +37,8 @@ public class Settings{
 	);
 
 	// Constants
+	public static final double SCREEN_HEIGHT = Screen.getPrimary().getBounds().getHeight();
+	public static final double SCREEN_WIDTH = Screen.getPrimary().getBounds().getWidth();
 	public static BorderWidths BORDER_WIDTH_WB = new BorderWidths(0.0,0.0,1.0,0.0);
 	public static BorderWidths BORDER_WIDTH = new BorderWidths(2.0); // border width
 	public static CornerRadii CORNER_RADII_WB = new CornerRadii(0.0, false); // topleft, topright, bottomright , bottomleft, boolean asPercent?
@@ -45,6 +48,7 @@ public class Settings{
 	public static final Insets INSETS_ZERO = new Insets(0.0);
 	public static final Insets INSETS_WB = new Insets(0.0,5.0,0.0,5.0);
 	public static final int SINGLE_LINE_HEIGHT = 40;
+	public static final int HEIGHT_SMALL = 100;
 	public static final int HEIGHT_LARGE = 250;
 	public static final int WIDTH_SMALL = 100;
 	public static final int WIDTH_MEDIUM = 150;

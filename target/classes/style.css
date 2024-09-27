@@ -28,6 +28,12 @@
     -fx-background-color: #60606060;
     -fx-background-radius: 4; /* Rounded corners */
 }
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+.corner {
+    -fx-background-color: transparent;
+}
 .scroll-bar .track,
 .scroll-bar .decrement-button,
 .scroll-bar .increment-button {

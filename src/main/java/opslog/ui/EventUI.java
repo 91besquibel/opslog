@@ -21,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Screen;
 import javafx.stage.StageStyle;
 import opslog.ui.controls.*;
 	
@@ -34,8 +35,6 @@ public class EventUI {
 	private static double originalHeight;
 	private static CountDownLatch latch = new CountDownLatch(1);
 
-	private static LocalDate currentDate;
-	private static LocalTime currentTime;
 
 	private static Calendar tempCalendar = new Calendar();
 	private static Search tempSearch = new Search(); 
@@ -68,17 +67,26 @@ public class EventUI {
 		}
 		
 		try{
-			
+			stage = new Stage();
 			initialize();
 			latch.await();
-			
-			stage = new Stage();
 			stage.initModality(Modality.WINDOW_MODAL);
 			stage.initStyle(StageStyle.TRANSPARENT);
+			stage.setMaxHeight(Settings.SCREEN_HEIGHT);
+			stage.setMaxWidth(Settings.SCREEN_WIDTH);
+			stage.setMinHeight(429);
+			stage.setMinWidth(245);
+			stage.setWidth(245+440);
+			stage.setHeight(429+315);
 			
 			Scene scene = new Scene(root,Color.TRANSPARENT);		
 			String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
 			scene.getStylesheets().add(cssPath);
+
+			ResizeListener resizeListener = new ResizeListener(stage);
+			scene.setOnMouseMoved(resizeListener);
+			scene.setOnMousePressed(resizeListener);
+			scene.setOnMouseDragged(resizeListener);
 			scene.setFill(Color.TRANSPARENT);
 			
 			root.setOnMousePressed(event -> {
@@ -102,7 +110,7 @@ public class EventUI {
 
 			root.setOnMouseReleased(event -> {root.setCursor(Cursor.DEFAULT);});
 			stage.setScene(scene);
-			stage.setResizable(false);
+			stage.setResizable(true);
 			stage.showAndWait();
 
 		}catch(InterruptedException e){e.printStackTrace();}
@@ -110,61 +118,35 @@ public class EventUI {
 
 	private synchronized void initialize(){
 		try{			
-			HBox windowBar = buildWindowCard();
-			
-			VBox logCard = buildLogCard();
-			VBox optionsCard = buildOptionsCard();
-			HBox hbox = new HBox(logCard,optionsCard);
-			hbox.setSpacing(Settings.SPACING);
-			HBox.setHgrow(logCard, Priority.ALWAYS);
-			HBox.setHgrow(optionsCard, Priority.ALWAYS);
-			VBox.setVgrow(logCard, Priority.ALWAYS);
-			VBox.setVgrow(optionsCard, Priority.ALWAYS);
-			
-			AnchorPane viewArea = new AnchorPane(hbox);
-			AnchorPane.setTopAnchor(hbox, 0.0);
-			AnchorPane.setRightAnchor(hbox, 0.0);
-			AnchorPane.setLeftAnchor(hbox, 0.0);
-			AnchorPane.setBottomAnchor(hbox, 0.0);
-			viewArea.setPadding(Settings.INSETS);
-
 			root = new BorderPane(); 
 			root.backgroundProperty().bind(Settings.rootBackground);
 			root.borderProperty().bind(Settings.borderWindow);
-			root.setTop(windowBar);
-			root.setCenter(viewArea);
+			root.setTop(buildWindowBar());
+			root.setCenter(buildViewArea());
 			root.setBottom(null);
 			root.setLeft(null);
 			root.setRight(null);
 			latch.countDown();
-		
-		}catch(Exception e){
-			e.printStackTrace();
-		};
+		}catch(Exception e){e.printStackTrace();};
 	}
-
-	private static HBox buildWindowCard(){
-		Button exit = Buttons.exitWinBtn();
-
-		Button minimize = Buttons.minBtn();
-
-		Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
 	
+	private static HBox buildWindowBar(){
+		Button exit = Buttons.exitWinBtn();
+		Button minimize = Buttons.minBtn();
+		Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
+
 		Region leftSpacer = new Region();
 		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
-		CustomLabel statusLabel = new CustomLabel("Status", Settings.WIDTH_LARGE, 40);
-
+		CustomLabel statusLabel = new CustomLabel("Event Creator", Settings.WIDTH_LARGE, 40);
 		Region rightSpacer = new Region();
 		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-		CustomButton search = new CustomButton(Directory.SEARCH_WHITE,Directory.SEARCH_GREY,"Search");
+		CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search");
 		search.setOnAction(event -> {
 			List<Log> searchResults = SearchManager.searchLogs(tempSearch);
 			SearchManager.setList(searchResults);
 		});
-		
-		CustomButton calendar = new CustomButton(Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY,"Calendar");
+		CustomButton calendar = new CustomButton(Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
 		calendar.setOnAction(event -> {
 			if(tempCalendar.hasValue()){
 				CSV.write(Directory.Calendar_Dir.get(),tempCalendar.toStringArray(),true);
@@ -173,11 +155,10 @@ public class EventUI {
 				showPopup("Error", "Ensure all field are filled for the calendar");
 			}
 		});
-		
-		CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY,"Log");
+		CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY,"Create Log");
 		log.setOnAction(event -> {
-			currentDate = DateTime.getDate();
-			currentTime = DateTime.getTime();
+			LocalDate currentDate = DateTime.getDate();
+			LocalTime currentTime = DateTime.getTime();
 			tempLog.setDate(currentDate);
 			tempLog.setTime(currentTime);
 			if(tempLog.hasValue()){
@@ -191,7 +172,7 @@ public class EventUI {
 				showPopup("Error", "Ensure all field are filled for the log");
 			}
 		});	
-		
+
 		CustomHBox windowBar = new CustomHBox();
 		windowBar.getChildren().addAll(
 			exit,minimize,maximize,
@@ -201,57 +182,116 @@ public class EventUI {
 		windowBar.backgroundProperty().bind(Settings.backgroundWindow);
 		windowBar.borderProperty().bind(Settings.borderBar);
 		windowBar.setPadding(Settings.INSETS_WB);
-		
+
 		return windowBar;
 	}
-
-	private static VBox buildLogCard(){
+	
+	public static VBox buildViewArea(){
+		VBox typeCard = buildTypeCard(); 
+		VBox tagCard = buildTagCard();
+		VBox formatCard = buildFormatCard();
+		VBox descriptionCard = buildDescriptionCard();
+		VBox optionsCard = buildOptionsCard();
 		
+		FlowPane flowPane = new FlowPane( 
+			typeCard, 
+			tagCard, 
+			formatCard,
+			descriptionCard, 
+			optionsCard
+		);
+		
+		flowPane.backgroundProperty().bind(Settings.rootBackground);
+		flowPane.setVgap(5);
+		flowPane.setHgap(5);
+
+		ScrollPane scrollPane = new ScrollPane(flowPane);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+		
+		scrollPane.viewportBoundsProperty().addListener((ob, ov, nv) -> {
+			flowPane.setPrefWidth(nv.getWidth());
+			flowPane.setPrefHeight(nv.getHeight());
+		});
+		HBox titleCard = buildTitleCard();
+
+		VBox vbox = new VBox(titleCard,scrollPane);
+		vbox.setSpacing(Settings.SPACING);
+		vbox.setPadding(Settings.INSETS);
+		scrollPane.prefViewportHeightProperty().bind(vbox.heightProperty());
+		scrollPane.prefViewportWidthProperty().bind(vbox.widthProperty());
+		vbox.prefHeightProperty().bind(stage.heightProperty());
+		vbox.prefWidthProperty().bind(stage.widthProperty());
+		
+		return vbox;
+	}
+
+	private static HBox buildTitleCard(){
 		CustomButton clearParam = new CustomButton(Directory.CLEAR_WHITE,Directory.CLEAR_GREY,"Clear Values");
 		clearParam.setOnAction(e -> {handleClearParam();});
 		CustomLabel logLabel = new CustomLabel("Event Information", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-		HBox titleHBox = new HBox();
+		CustomHBox titleHBox = new CustomHBox();
 		titleHBox.setAlignment(Pos.CENTER);
 		titleHBox.getChildren().addAll(clearParam,logLabel);
+		return titleHBox;
+	}
+
+	private static VBox buildTypeCard(){
+		CustomLabel label = new CustomLabel("Type", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Type> listView = new CustomListView<>(TypeManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
+		CustomVBox vbox = new CustomVBox();
+		vbox.minWidth(100);
+		vbox.minHeight(200);
+		vbox.getChildren().addAll(label,listView);
+		vbox.setSpacing(Settings.SPACING);
 		
-		CustomLabel typeLabel = new CustomLabel("Type", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
-		CustomListView<Type> typeList = new CustomListView<>(TypeManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
-		typeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+		listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			tempLog.setType(newValue);
 			tempCalendar.setType(newValue);
 			tempSearch.setType(newValue);
 		});
-		VBox typeVBox = new VBox();
-		typeVBox.minWidth(100);
-		typeVBox.minHeight(200);
-		typeVBox.getChildren().addAll(typeLabel,typeList);
-		typeVBox.setSpacing(Settings.SPACING);
+		
+		return vbox;
+	}
 
-		CustomLabel tagLabel = new CustomLabel("Tag", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
-		CustomListView<Tag> tagList = new CustomListView<>(TagManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.MULTIPLE);
-		tagList.setItems(TagManager.getList());
-		tagList.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Tag>) change -> {
+	private static VBox buildTagCard(){
+		CustomLabel label = new CustomLabel("Tag",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Tag> listView = new CustomListView<>(TagManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.MULTIPLE);
+		CustomVBox vbox = new CustomVBox();
+		vbox.minWidth(100);
+		vbox.minHeight(200);
+		vbox.getChildren().addAll(label,listView);
+		vbox.setSpacing(Settings.SPACING);
+
+		listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Tag>) change -> {
 			tempLog.setTags(FXCollections.observableArrayList(change.getList()));
 			tempCalendar.setTags(FXCollections.observableArrayList(change.getList()));
 			tempSearch.setTags(FXCollections.observableArrayList(change.getList()));
 		});
-		VBox tagVBox = new VBox();
-		tagVBox.minWidth(100);
-		tagVBox.minHeight(200);
-		tagVBox.getChildren().addAll(tagLabel,tagList);
-		tagVBox.setSpacing(Settings.SPACING);
+		
+		return vbox;
+	}
 
-		CustomLabel formatLabel = new CustomLabel("Format", Settings.WIDTH_MEDIUM, Settings.SINGLE_LINE_HEIGHT);
-		CustomListView<Format> formatList = new CustomListView<>(FormatManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
-		VBox formatVBox = new VBox();
-		formatVBox.minWidth(100);
-		formatVBox.minHeight(200);
-		formatVBox.getChildren().addAll(formatLabel,formatList);
-		formatVBox.setSpacing(Settings.SPACING);
+	private static VBox buildFormatCard(){
+		CustomLabel label = new CustomLabel("Format", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		CustomListView<Format> listView = new CustomListView<>(FormatManager.getList(),Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
+		CustomVBox vbox = new CustomVBox();
+		vbox.minWidth(100);
+		vbox.minHeight(200);
+		vbox.getChildren().addAll(label,listView);
+		vbox.setSpacing(Settings.SPACING);
+		
+		SelectionModel<Format> selectionModel = listView.getSelectionModel();
+		selectionModel.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			descriptionTextArea.setText(newValue != null ? newValue.getFormatProperty().get() : "");
+		});
+		return vbox;
+	}
 
-		CustomTextField initialsTextField = new CustomTextField("Initials",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-		initialsTextField.setPromptText("Initials");
-		initialsTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+	private static VBox buildDescriptionCard(){
+		CustomTextField textField = new CustomTextField("Initials",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		textField.setPromptText("Initials");
+		textField.textProperty().addListener((observable, oldValue, newValue) -> {
 			tempLog.setInitials(newValue);
 			tempCalendar.setInitials(newValue);
 			tempSearch.setInitials(newValue);
@@ -262,43 +302,23 @@ public class EventUI {
 			tempCalendar.setDescription(newValue);
 			tempSearch.setDescription(newValue);
 		});
-		VBox initDescVBox = new VBox();
-		initDescVBox.minWidth(100);
-		initDescVBox.minHeight(200);
-		initDescVBox.setSpacing(Settings.SPACING);
-		initDescVBox.getChildren().addAll(initialsTextField,descriptionTextArea);
-
-		SelectionModel<Format> selectionModel = formatList.getSelectionModel();
-		selectionModel.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-			descriptionTextArea.setText(newValue != null ? newValue.getFormatProperty().get() : "");
-		});
-		
-		HBox groupHBox = new HBox();
-		groupHBox.getChildren().addAll(typeVBox, tagVBox, formatVBox, initDescVBox);
-		groupHBox.backgroundProperty().bind(Settings.primaryBackground);
-		groupHBox.borderProperty().bind(Settings.primaryBorder);
-		groupHBox.setPadding(Settings.INSETS_ZERO);
-		groupHBox.setSpacing(Settings.SPACING);
-		
-		VBox logCard = new VBox();
-		logCard.getChildren().addAll(titleHBox,groupHBox);
-		logCard.backgroundProperty().bind(Settings.primaryBackground);
-		logCard.borderProperty().bind(Settings.primaryBorder);
-		logCard.setPadding(Settings.INSETS_ZERO);
-		logCard.setSpacing(Settings.SPACING);
-		
-		return logCard;
+		CustomVBox vbox = new CustomVBox();
+		vbox.minWidth(100);
+		vbox.minHeight(200);
+		vbox.setSpacing(Settings.SPACING);
+		vbox.getChildren().addAll(textField,descriptionTextArea);
+		return vbox;
 	}
 
 	private static VBox buildOptionsCard(){
 
-		CustomLabel optionsLabel = new CustomLabel("Schedule & Search", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+		CustomLabel label = new CustomLabel("Schedule & Search", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 		
-		CustomTextField titleTextField = new CustomTextField("Title",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT);
-		titleTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+		CustomTextField textField = new CustomTextField("Title",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT);
+		textField.textProperty().addListener((observable, oldValue, newValue) -> {
 			tempCalendar.setTitle(newValue);
 		});
-		titleTextField.setPromptText("Calendar Title");
+		textField.setPromptText("Calendar Title");
 		
 		startDatePicker = new CustomDatePicker("Start Date",Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 		startDatePicker.valueProperty().addListener((obs,oldVal,newVal) -> {
@@ -326,10 +346,10 @@ public class EventUI {
 		}); 
 		stopTimeSelection.setItems(DateTime.timeList);
 		
-		CustomVBox optionsCard = new CustomVBox();
-		optionsCard.borderProperty().bind(Settings.primaryBorder);
-		optionsCard.getChildren().addAll(optionsLabel,titleTextField,startDatePicker,startTimeSelection,stopDatePicker,stopTimeSelection);
-		return optionsCard; 
+		CustomVBox vbox = new CustomVBox();
+		vbox.borderProperty().bind(Settings.primaryBorder);
+		vbox.getChildren().addAll(label,textField,startDatePicker,startTimeSelection,stopDatePicker,stopTimeSelection);
+		return vbox; 
 	}
 
 	private static void handleClearParam(){
@@ -339,7 +359,7 @@ public class EventUI {
 		stopTimeSelection.setValue(null);
 
 		tempSearch.setType(null);
-		tempSearch.setTags(null);
+		tempSearch.setTags(FXCollections.observableArrayList());
 		tempSearch.setInitials(null);
 		tempSearch.setDescription(null);
 		tempSearch.setStartDate(null);

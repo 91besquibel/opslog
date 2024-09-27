@@ -47,6 +47,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         DateTime.timeListPopulate();
         try{
+            
             logUI = LogUI.getInstance();
             logUI.initialize();
             calendarUI = CalendarUI.getInstance();
