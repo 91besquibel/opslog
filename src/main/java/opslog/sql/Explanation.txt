@@ -1,0 +1,148 @@
+The sql code was built with ai assitance it is a work in progress.
+
+SQLConfig.java{
+	An object class used for user input to connect to a database
+	Definition:
+		- databaseType;  // SQL Server, MySQL, PostgreSQL, etc.
+		- serverAddress; // IP or domain
+		- port;          // Port number
+		- databaseName;  // Database name
+		- username;
+		- password;
+	Accessors:
+		- getConnectionURL() builds the URL based on the objects database type
+		- getUsername() 
+		- getPassword()
+}
+
+SQLConnectionFactory.java{
+	- Uses an SQLConfig object to create a Connection obeject.
+	- Uses the Connection object to connect to the database.
+	- Uses java.sql.DriverManager to connect to the databbase. 
+	- make sure to understand how this works and if the code will need to be maintained to update the drivers. 
+	*Might need to make the Connection object a global variable but not final so users can switch between servers.
+}
+
+QueryExecutor.java{
+	- Using the Connection object the application 
+	Util Methods:
+	executeSelect()
+		- This method is used to execute SELECT queries. It takes the query string and any parameters that need to be set in the prepared statement (e.g., if you have a WHERE clause).
+		- The ResultSet object is returned so the caller can iterate over the rows of the result.
+	executeUpdate()
+		- This method is used for INSERT, UPDATE, and DELETE queries. It returns the number of rows affected by the query.
+	setParameters()
+		- This method dynamically sets the parameters for the PreparedStatement. It uses setObject() to handle any type of parameter (e.g., String, int, double).
+	close()
+		- This method ensures that the connection is properly closed when you're done using it.
+}
+
+Application Usage{
+
+	// Example of the config object construction will be emplimented in the StartupUI and the SettingsUI
+	SQLConfig config = new SQLConfig("sqlserver", "localhost", "1433", "myDatabase", "user", "password");
+	
+	try {
+		// connect to database 
+		Connection connection = SQLConnectionFactory.getConnection(config);
+		QueryExecutor queryExecutor = new QueryExecutor(connection);
+	
+		// Example: SELECT query you will need create one of these for each of the operations
+		String selectQuery = "SELECT * FROM users WHERE username = ?";
+		ResultSet resultSet = queryExecutor.executeSelect(selectQuery, "johndoe");
+	
+		while (resultSet.next()) {
+			System.out.println("User ID: " + resultSet.getInt("id"));
+			System.out.println("Username: " + resultSet.getString("username"));
+			System.out.println("Email: " + resultSet.getString("email"));
+		}
+	
+		// Example: INSERT query
+		String insertQuery = "INSERT INTO users (username, email) VALUES (?, ?)";
+		int rowsInserted = queryExecutor.executeUpdate(insertQuery, "janedoe", "janedoe@example.com");
+		System.out.println("Rows inserted: " + rowsInserted);
+	
+		// Always close the connection when done
+		queryExecutor.close();
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
+}
+
+Agnostic Database Behavior{
+
+	JDBC Abstraction: 
+		- The QueryExecutor relies on Java's JDBC API (Connection, PreparedStatement, ResultSet),
+		which abstracts the interaction with databases. JDBC is designed to be compatible with various database systems,
+		as long as you provide the appropriate JDBC driver (for SQL Server, MySQL, PostgreSQL, etc.).
+	Dynamic Queries: 
+		- The queries are passed as strings to the executeSelect() and executeUpdate() methods.
+		These strings are not tied to any particular SQL dialect unless your query contains 
+		specific syntax that’s unique to a particular database system.
+	Database Configuration: 
+		- The configuration (database type, connection URL) is handled outside of the QueryExecutor in the SQLConfig class,
+		which dynamically constructs the appropriate connection URL based on the database type. 
+		This allows the QueryExecutor to work with any supported database as long as the correct Connection object is provided.
+	
+	How to Ensure Full Database-Agnostic Behavior:
+		While the QueryExecutor is agnostic, you need to ensure that:
+		1. The SQL Queries are Standardized:
+			- Most databases support standard SQL syntax, but some may have differences in how they handle certain features (e.g., 
+			LIMIT vs. TOP, date/time handling). If your queries are simple and follow SQL standards, they will work across databases.
+			- If you're writing complex queries, be aware of any database-specific differences and adjust the queries accordingly. 
+			You can even build query templates for each database type if needed.
+		2. You Use the Correct JDBC Driver:
+			- The database connection is created using the appropriate JDBC driver for the database type (SQL Server, MySQL, PostgreSQL, etc.). 
+			This driver needs to be included in your project (e.g., via Maven dependencies).
+		3. Prepared Statements:
+			-By using PreparedStatement, you're automatically helping maintain agnosticism since parameterized queries 
+			are handled in a way that avoids database-specific quirks.
+}
+
+Maven Dependacies: For usage with each SQL database type
+
+<dependencies>
+	<!-- SQL Server -->
+	<dependency>
+		<groupId>com.microsoft.sqlserver</groupId>
+		<artifactId>mssql-jdbc</artifactId>
+		<version>9.2.1.jre8</version>
+	</dependency>
+
+	<!-- MySQL -->
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>8.0.26</version>
+	</dependency>
+
+	<!-- PostgreSQL -->
+	<dependency>
+		<groupId>org.postgresql</groupId>
+		<artifactId>postgresql</artifactId>
+		<version>42.2.20</version>
+	</dependency>
+</dependencies>
+
+module-info.java
+ requires java.sql;
+
+
+Security Considerations: Storing user passwords in plain text is not secure. You should consider encrypting passwords and/or using a secure authentication mechanism.
+
+
+Updates: 
+
+Polling with Timestamp Field {
+	Low Maintences high query usage
+	check the DataPoller.java class
+	- This class uses a Timer to periodically poll the database for changes.
+	- It queries for records where the last_modified timestamp is greater than the lastChecked timestamp, pulling only the updated records.
+	- The lastChecked timestamp is updated after each poll.
+}
+
+SQL Server Query Notifications{
+	High Maintenance: 
+	To achieve real-time notifications in SQL Server, you can use Query Notifications. 
+	This approach is more efficient than polling because it allows the database to notify your application when the result set of a query changes.
+}

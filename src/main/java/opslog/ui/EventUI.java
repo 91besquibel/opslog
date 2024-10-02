@@ -72,7 +72,7 @@ public class EventUI {
 			latch.await();
 			stage.initModality(Modality.WINDOW_MODAL);
 			stage.initStyle(StageStyle.TRANSPARENT);
-			stage.setMaxHeight(Settings.SCREEN_HEIGHT);
+			//stage.setMaxHeight(Settings.SCREEN_HEIGHT); this prevents the ui from expanding in replit check the laptop
 			stage.setMaxWidth(Settings.SCREEN_WIDTH);
 			stage.setMinHeight(429);
 			stage.setMinWidth(245);

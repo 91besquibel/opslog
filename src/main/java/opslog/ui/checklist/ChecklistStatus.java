@@ -5,6 +5,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.nio.file.Path;
 
@@ -26,11 +30,14 @@ import opslog.objects.Log;
 import opslog.objects.Tag;
 import opslog.util.DateTime;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ChecklistStatus{
 	
 	private static VBox checklistContainer;
-	
+	// Reference storage to prevent garbage collection
+	private static final List<HBox> checklistTrees = new ArrayList<>();
 	//Build Status
 	public static void buildStatusWindow(){
 		
@@ -71,8 +78,8 @@ public class ChecklistStatus{
 	}
 	private static VBox buildChecklistSelector() {
 		CustomLabel label = new CustomLabel("Select Checklist", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
-		CustomListView<Checklist> selector = new CustomListView<>(ChecklistManager.getList(),Settings.WIDTH_LARGE, Settings.WIDTH_LARGE, SelectionMode.MULTIPLE);
+		
+		CustomListView<Checklist> selector = new CustomListView<>(ChecklistManager.getList(), Settings.WIDTH_LARGE, Settings.WIDTH_LARGE, SelectionMode.MULTIPLE);
 		selector.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Checklist>) change -> {
 			while (change.next()) {
 				if (change.wasAdded()) {
@@ -80,10 +87,12 @@ public class ChecklistStatus{
 						HBox checklistTree = buildChecklistTree(checklist);
 						checklistTree.backgroundProperty().bind(Settings.secondaryBackground);
 						checklistContainer.getChildren().add(checklistTree);
+						checklistTrees.add(checklistTree);
 					}
 				}
 			}
 		});
+		
 		CustomVBox vbox = new CustomVBox();
 		selector.prefWidthProperty().bind(vbox.widthProperty());
 		selector.prefHeightProperty().bind(vbox.heightProperty().subtract(label.heightProperty()));
@@ -91,22 +100,36 @@ public class ChecklistStatus{
 		return vbox;			
 	}
 	private static HBox buildChecklistTree(Checklist checklist){
-		// Create checklist instance for listeners to store changes 
-		Checklist newChecklist = new Checklist();
-		newChecklist.setParent(checklist.getParent());
-		newChecklist.setChildren(checklist.getChildren());
-		newChecklist.setStateList(checklist.getStateList());
 		
 		// Create a new checklist when slected from the checklist selector if it has a value
 		if(checklist.hasValue()){
 			
+			// Create checklist instance for listeners to store changes 
+			Checklist newChecklist = new Checklist();
+			newChecklist.setParent(checklist.getParent());
+			newChecklist.setChildren(checklist.getChildren());
+			newChecklist.setStateList(checklist.getStateList());
+			newChecklist.setPercentage();
+
+			checklist.getStateList().addListener((ListChangeListener<Boolean>) change -> {
+				System.out.println("If you can see me this works");
+				while (change.next()) {
+					if(change.wasAdded() || change.wasUpdated()){
+						newChecklist.setParent(checklist.getParent());
+						newChecklist.setChildren(checklist.getChildren());
+						newChecklist.setStateList(checklist.getStateList());
+						newChecklist.setPercentage();
+					}
+				}
+			});
+
 			// Create the checklist tree view
 			TreeView<String> checklistTree = new TreeView<String>();
 
 			// Create compleation status
 			CustomLabel percentage = new CustomLabel("0",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-			percentage.textProperty().bind(checklist.getPercentage());
-			checklist.setPercentage();
+			percentage.textProperty().bind(newChecklist.getPercentage());
+			
 			// Create the parent checkbox
 			String strParentItem = String.join(" | " , checklist.getParent().toStringArray());
 			String parentDescription = checklist.getParent().getTask().getDescription();
@@ -126,7 +149,7 @@ public class ChecklistStatus{
 						newChecklist.setState(0,nv);
 						// Overwrite the old checklist
 						CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
-						checklist.setPercentage();
+						newChecklist.setPercentage();
 						// Create new log 
 						ObservableList<Tag> tags = FXCollections.observableArrayList();
 						tags.add(checklist.getParent().getTask().getTag());
@@ -139,14 +162,14 @@ public class ChecklistStatus{
 						newChecklist.setState(0,false);
 						parentItem.setSelected(false);
 						CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
-						checklist.setPercentage();
+						newChecklist.setPercentage();
 					}
 				}else if(nv != true){
 					// if checkbox unchecked write the new state
 					System.out.println("Checkbox set to false");
 					newChecklist.setState(0,false);
 					CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
-					checklist.setPercentage();
+					newChecklist.setPercentage();
 				}
 			});
 			
@@ -190,7 +213,7 @@ public class ChecklistStatus{
 							// Overwrite the old checklist
 							CSV.write(checklist.fileName(),newChecklist.toStringArray(),false);
 							// Update percentage when change detected
-							checklist.setPercentage();
+							newChecklist.setPercentage();
 						}
 					});
 					

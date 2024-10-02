@@ -1,5 +1,6 @@
 { pkgs }: {
   deps = [
+    pkgs.mssql_jdbc
     pkgs.systemd
     pkgs.maven
     pkgs.replitPackages.jdt-language-server

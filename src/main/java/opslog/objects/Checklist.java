@@ -69,32 +69,22 @@ public class Checklist {
 		int numItems = 0;
 		for(TaskChild child: childList){
 			if(child.hasValue()){
-				System.out.println("Child found incrementing count");
 				numItems++;
 			}
 		}
-		// incrementing to include parent
 		numItems++;
-		System.out.println("Total values fount: "+ numItems);
 		if (numItems == 0) {
-			System.out.println("no value found returning: "+ numItems);
 			percentage.set("0");
 		}
 		double percentPerItem = 100.0 / numItems;
-		System.out.println("percent per item: " + percentPerItem);
 		double perc = 100;
 		for(int i = 0; i < numItems; i++){
-			System.out.println("Checking value @ index: " + i );
 			if(!stateList.get(i)){
 				// if false
 				perc -= percentPerItem;
-				System.out.println("State false at: " + i + " Percentage set to: " + perc);
 			}
 		}
-		System.out.println("Displaying: " + String.valueOf(Math.round(perc)));
-		
 		percentage.set(String.valueOf(Math.round(perc)));
-		System.out.println("Displaying: " + percentage.get());
 	}
 
 	public boolean hasValue(){
