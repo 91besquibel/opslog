@@ -78,21 +78,28 @@ public class Settings{
 	
 	public static ObjectProperty<Background> selectedBackground = new SimpleObjectProperty<>( new Background( new BackgroundFill(selectedColor.get(), CORNER_RADII, INSETS_ZERO)));
 	public static ObjectProperty<Background> backgroundWindow = new SimpleObjectProperty<>( new Background( new BackgroundFill(primaryColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
+	public static ObjectProperty<Background> dateOutOfScopeBackground = new SimpleObjectProperty<>( new Background( new BackgroundFill(selectedColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
 	
 	// Border
+	public static ObjectProperty<Border> calendarBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	public static ObjectProperty<Border> primaryBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> secondaryBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(secondaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> borderWindow = new SimpleObjectProperty<>( new Border( new BorderStroke(borderColorWB.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	public static ObjectProperty<Border> borderBar = new SimpleObjectProperty<>( new Border( new BorderStroke(borderColorWB.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH_WB)));
 	public static ObjectProperty<Border> focusBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(focusColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> transparentBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(transparent.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
-
+	public static ObjectProperty<Border> dateOutOfScopeBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(selectedColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+	
 	// Text
 	public static ObjectProperty<Color> textColor = new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
 	public static ObjectProperty<Integer> textSize = new SimpleObjectProperty<Integer>(14);
+	public static ObjectProperty<Integer> textSizeSmall = new SimpleObjectProperty<Integer>(textSize.get()-2);
+	public static ObjectProperty<Integer> textSizeBig = new SimpleObjectProperty<Integer>(textSize.get()+4);
 	public static ObjectProperty<String> textFont = new SimpleObjectProperty<String>("Arial");
 	public static ObjectProperty<Font> fontProperty = new SimpleObjectProperty<>(Font.font(textFont.get(), textSize.get()));
 	public static ObjectProperty<Font> fontPropertyBold = new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSize.get()));
+	public static ObjectProperty<Font> fontCalendarSmall = new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeSmall.get()));
+	public static ObjectProperty<Font> fontCalendarBig = new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeBig.get()));
 
 	// Listener
 	static {
@@ -114,6 +121,7 @@ public class Settings{
 		primaryBackgroundZ.set(new Background(new BackgroundFill(primaryColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
 		backgroundWindow.set(new Background(new BackgroundFill(primaryColor.get(), CORNER_RADII_WB, INSETS_ZERO)));
 		primaryBorder.set(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
+		calendarBorder.set(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	}
 	public static void updateSecondaryBackground(){
 		selectedColor.set(darkenColor(secondaryColor.get(), 0.15));
@@ -128,6 +136,8 @@ public class Settings{
 	public static void updateFont(){
 		fontProperty.set(Font.font(textFont.get(), textSize.get()));
 		fontPropertyBold.set(Font.font(textFont.get(), FontWeight.BOLD, textSize.get()));
+		fontCalendarSmall.set(Font.font(textFont.get(), FontWeight.BOLD, textSizeSmall.get()));
+		fontCalendarBig.set(Font.font(textFont.get(), FontWeight.BOLD, textSizeBig.get()));
 	}
 	
 	private static Color darkenColor(Color color, double factor) {

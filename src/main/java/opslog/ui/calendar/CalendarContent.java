@@ -36,8 +36,10 @@ package opslog.ui.calendar;
 import opslog.util.Directory;
 import opslog.ui.controls.CustomButton;
 import opslog.util.Settings;
-import javafx.scene.paint.Color;
+import opslog.util.DateTime;
+import opslog.ui.controls.CustomComboBox;
 
+import static java.time.temporal.ChronoUnit.*;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -46,29 +48,21 @@ import java.time.chrono.Chronology;
 import java.time.chrono.IsoChronology;
 import java.time.chrono.ChronoLocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.ValueRange;
 import java.time.temporal.WeekFields;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static java.time.temporal.ChronoField.*;
-import static java.time.temporal.ChronoUnit.*;
+import javafx.scene.text.TextAlignment;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.WeakChangeListener;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.Region;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -77,9 +71,10 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import opslog.util.DateTime;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 
 
 /**
@@ -96,7 +91,6 @@ public class CalendarContent {
 	private static Label monthLabel;
 	private static Label yearLabel;
 	protected static GridPane gridPane;
-
 	private static final int daysPerWeek = 7;
 	private static List<DateCell> dayNameCells = new ArrayList<>();
 	private static List<DateCell> weekNumberCells = new ArrayList<>();
@@ -112,7 +106,8 @@ public class CalendarContent {
 	static final DateTimeFormatter yearWithEraFormatter = DateTimeFormatter.ofPattern("GGGGy"); // For Japanese. What to use for others??
 	static final DateTimeFormatter weekNumberFormatter = DateTimeFormatter.ofPattern("w");
 	static final DateTimeFormatter weekDayNameFormatter = DateTimeFormatter.ofPattern("ccc"); // Standalone day name
-	static final DateTimeFormatter dayCellFormatter = DateTimeFormatter.ofPattern("d");
+	static final DateTimeFormatter dateGregorian = DateTimeFormatter.ofPattern("d");
+	static final DateTimeFormatter dateOrdinal = DateTimeFormatter.ofPattern("D");
 
 
 	// Do Not Delete: Main method for this class initializes the calendar
@@ -183,34 +178,42 @@ public class CalendarContent {
 		// Month spinner
 		HBox monthSpinner = new HBox();
 		// Change Month: Back
-		backMonthButton = new CustomButton(Directory.EXPORT_WHITE, Directory.EXPORT_GREY, "Back");
+		backMonthButton = new CustomButton(Directory.ARROW_LEFT_WHITE, Directory.ARROW_LEFT_GREY, "Back");
 		backMonthButton.setOnAction(t -> {forward(-1, MONTHS, false);});
 		// Change Month: Forward
-		forwardMonthButton = new CustomButton(Directory.EXPORT_WHITE, Directory.EXPORT_GREY, "Forward");
+		forwardMonthButton = new CustomButton(Directory.ARROW_RIGHT_WHITE, Directory.ARROW_RIGHT_GREY, "Forward");
 		forwardMonthButton.setOnAction(t -> {forward(1, MONTHS, false);});
 		// Displayed Year
 		monthLabel = new Label();
-		monthLabel.fontProperty().bind(Settings.fontPropertyBold);
+		monthLabel.fontProperty().bind(Settings.fontCalendarBig);
 		monthLabel.textFillProperty().bind(Settings.textColor);
+		monthLabel.setTextAlignment(TextAlignment.CENTER);
 		//monthLabel.fontProperty().addListener((o, ov, nv) -> {updateMonthLabelWidth();});
 		monthSpinner.getChildren().addAll(backMonthButton, monthLabel, forwardMonthButton);
 		monthYearPane.setLeft(monthSpinner);
+		monthSpinner.setAlignment(Pos.CENTER);
 
 		// Year spinner
 		HBox yearSpinner = new HBox();
 		// Change Year: Back
-		backYearButton = new CustomButton(Directory.EXPORT_WHITE, Directory.EXPORT_GREY, "Back");
+		backYearButton = new CustomButton(Directory.ARROW_LEFT_WHITE, Directory.ARROW_LEFT_GREY, "Back");
 		backYearButton.setOnAction(t -> {forward(-1, YEARS, false);});
 		// Change Year: Forward
-		forwardYearButton = new CustomButton(Directory.EXPORT_WHITE, Directory.EXPORT_GREY,"Forward");
+		forwardYearButton = new CustomButton(Directory.ARROW_RIGHT_WHITE, Directory.ARROW_RIGHT_GREY, "Forward");
 		forwardYearButton.setOnAction(t -> {forward(1, YEARS, false);});
 		// Displayed Year
 		yearLabel = new Label();
-		yearLabel.fontProperty().bind(Settings.fontPropertyBold);
+		yearLabel.fontProperty().bind(Settings.fontCalendarBig);
 		yearLabel.textFillProperty().bind(Settings.textColor);
 		yearSpinner.getChildren().addAll(backYearButton, yearLabel, forwardYearButton);
 		yearSpinner.setFillHeight(false);
-		monthYearPane.setRight(yearSpinner);
+		yearSpinner.setAlignment(Pos.CENTER);
+		
+
+		HBox spinners = new HBox(monthSpinner,yearSpinner);
+		spinners.setAlignment(Pos.CENTER);
+		spinners.setSpacing(Settings.SPACING);
+		monthYearPane.setCenter(spinners);
 
 		return monthYearPane;
 	}
@@ -275,14 +278,16 @@ public class CalendarContent {
 			gridPane.add(weekNumberCells.get(i), 0, i + 1);  // col, row
 		}
 
-		// setup: 6 rows of daysPerWeek (which is the maximum number of cells required in the worst case layout)
+		//Add a vbox with the correct date cell
 		for (int row = 0; row < 6; row++) {
 			for (int col = 0; col < daysPerWeek; col++) {
 				//add daycells to col rows starting at col1 row1
 				VBox vbox = new VBox();
+				vbox.borderProperty().bind(Settings.calendarBorder);
 				vbox.getChildren().add(dayCells.get(row*daysPerWeek+col)); //daycell,col,row
-				VBox.setVgrow(vbox, Priority.ALWAYS);
+				VBox.setVgrow(dayCells.get(row*daysPerWeek+col),Priority.ALWAYS);
 				vbox.backgroundProperty().bind(Settings.secondaryBackground);
+				vbox.setPadding(Settings.INSETS_ZERO);
 				gridPane.add(vbox, col + nCols - daysPerWeek, row + 1); 
 			}
 		}
@@ -339,13 +344,17 @@ public class CalendarContent {
 			// Get the current day and set its style
 			DateCell dayCell = dayCells.get(i);
 			dayCell.backgroundProperty().bind(Settings.secondaryBackground);
-			dayCell.fontProperty().bind(Settings.fontProperty);
+			dayCell.fontProperty().bind(Settings.fontPropertyBold);
 			dayCell.textFillProperty().bind(Settings.textColor);
 			dayCell.setDisable(false);
 			dayCell.setStyle(null);
 			dayCell.setGraphic(null);
 			dayCell.setTooltip(null);
 
+			// get the vbox for the daycell
+			VBox parent = (VBox) dayCell.getParent();
+			dayCell.prefHeightProperty().bind(parent.heightProperty());
+			
 			try {
 				// get the current days of the month or a backup value
 				if (daysInCurMonth == -1) {
@@ -363,8 +372,8 @@ public class CalendarContent {
 					}
 					month = prevMonth;
 					day = i + daysInPrevMonth - firstOfMonthIdx + 1;
-					dayCell.backgroundProperty().bind(Settings.selectedBackground);
-					dayCell.borderProperty().bind(Settings.secondaryBorder);
+					dayCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
+					dayCell.borderProperty().bind(Settings.dateOutOfScopeBorder);
 					dayCell.fontProperty().bind(Settings.fontProperty);
 					dayCell.textFillProperty().bind(Settings.textColor);
 				} else if (i >= firstOfMonthIdx + daysInCurMonth) {
@@ -374,8 +383,8 @@ public class CalendarContent {
 					}
 					month = nextMonth;
 					day = i - daysInCurMonth - firstOfMonthIdx + 1;
-					dayCell.backgroundProperty().bind(Settings.selectedBackground);
-					dayCell.borderProperty().bind(Settings.secondaryBorder);
+					dayCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
+					dayCell.borderProperty().bind(Settings.dateOutOfScopeBorder);
 					dayCell.fontProperty().bind(Settings.fontProperty);
 					dayCell.textFillProperty().bind(Settings.textColor);
 				}
@@ -391,15 +400,47 @@ public class CalendarContent {
 					dayCell.borderProperty().unbind();
 					dayCell.borderProperty().bind(Settings.focusBorder);
 				}
+				
+				//Create text layout for both gregorian and ordinal
+				Text gregText = new Text();
+				gregText.setText(dateGregorian
+								 .withLocale(locale)
+								 .withChronology(chrono)
+								 .withDecimalStyle(DecimalStyle.of(locale))
+								 .format(cDate)
+								);
+				gregText.setFill(Color.ORANGERED);
+				gregText.setFont(Settings.fontCalendarSmall.get());
+				
+				Text divider = new Text("/");
+				divider.setFill(Settings.textColor.get());
+				divider.setFont(Settings.fontCalendarSmall.get());
+				
+				Text ordText = new Text();
+				ordText.setText(dateOrdinal
+								 .withLocale(locale)
+								 .withChronology(chrono)
+								 .withDecimalStyle(DecimalStyle.of(locale))
+								 .format(cDate)
+								);
+				ordText.setFill(Color.CYAN);
+				ordText.setFont(Settings.fontCalendarSmall.get());
+				Settings.textSize.addListener((ov,nv,ob) -> {
+					ordText.setFont(Settings.fontCalendarSmall.get());
+					divider.setFont(Settings.fontCalendarSmall.get());
+					gregText.setFont(Settings.fontCalendarSmall.get());
+				});
 
+				Settings.textFont.addListener((ov,nv,ob) -> {
+					ordText.setFont(Settings.fontCalendarSmall.get());
+					divider.setFont(Settings.fontCalendarSmall.get());
+					gregText.setFont(Settings.fontCalendarSmall.get());
+				});
+				
+				TextFlow textFlow = new TextFlow(gregText,divider,ordText);
+				
 				// display the day number in the day cell with format
-				String cellText =
-					dayCellFormatter.withLocale(locale)
-									.withChronology(chrono)
-									.withDecimalStyle(DecimalStyle.of(locale))
-									.format(cDate);
-				dayCell.setText(cellText);
-
+				dayCell.setGraphic(textFlow);
 				dayCell.updateItem(date, false);
 			} catch (DateTimeException ex) {
 				// Date is out of range.
@@ -570,8 +611,11 @@ public class CalendarContent {
 
 	// Do Not Delete: findes the matching cell date with the requested date 
 	private static DateCell findDayCellForDate(LocalDate date) {
+		// for each date in the daycelldates
 		for (int i = 0; i < dayCellDates.length; i++) {
+			// if the date matches the dayCellDate at index
 			if (date.equals(dayCellDates[i])) {
+				//return the daycell at the same index
 				return dayCells.get(i);
 			}
 		}
@@ -609,7 +653,7 @@ public class CalendarContent {
 			if (ev.getButton() != MouseButton.PRIMARY) {
 				return;
 			}
-
+			
 			DateCell dayCell = (DateCell)ev.getSource();
 			selectDayCell(dayCell);
 			lastFocusedDayCell = dayCell;

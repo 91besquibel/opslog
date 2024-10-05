@@ -13,11 +13,31 @@ public class CustomComboBox<T> extends ComboBox<T> {
 	public CustomComboBox(String prompt, double width, double height) {
 		setPrefWidth(width);
 		setPrefHeight(height);
-		setEditable(false);
+		setEditable(true);
 		setFocusTraversable(true);
 		setPromptText(prompt);
+		//promptTextProperty().get().
+		getEditor().setPromptText(prompt);
+		getEditor().fontProperty().bind(Settings.fontProperty);
+		getEditor().backgroundProperty().bind(Settings.secondaryBackground);
+		getEditor().borderProperty().bind(Settings.secondaryBorder);
+		getEditor().setStyle(Styles.getTextStyle());
+		setStyle(Styles.getTextStyle());
 		backgroundProperty().bind(Settings.secondaryBackground);
 		borderProperty().bind(Settings.secondaryBorder);
+		
+		Settings.textColor.addListener((obs, oldColor, newColor) -> {
+			setStyle(Styles.getTextStyle());
+			getEditor().setStyle(Styles.getTextStyle());
+		});
+		Settings.textSize.addListener((obs, oldSize, newSize) -> {
+			setStyle(Styles.getTextStyle());
+			getEditor().setStyle(Styles.getTextStyle());
+		});
+		Settings.textFont.addListener((obs, oldFont, newFont) -> {
+			setStyle(Styles.getTextStyle());
+			getEditor().setStyle(Styles.getTextStyle());
+		});
 
 		addEventHandler(KeyEvent.KEY_PRESSED, event -> {
 			if (event.getCode() == KeyCode.ENTER && isFocused()) {

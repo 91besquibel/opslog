@@ -90,6 +90,12 @@ public class Directory{
 	public static final String ADD_CALENDAR_WHITE = "/IconLib/addCalendarIW.png";
 	public static final String ADD_CALENDAR_GREY = "/IconLib/addCalendarIG.png";
 	
+	public static final String ARROW_LEFT_WHITE = "/IconLib/arrowL_IW.png";
+	public static final String ARROW_LEFT_GREY = "/IconLib/arrowL_IG.png";
+	
+	public static final String ARROW_RIGHT_WHITE = "/IconLib/arrowR_IW.png";
+	public static final String ARROW_RIGHT_GREY = "/IconLib/arrowR_IG.png";
+	
 	public static Path [] paths;
 
 	public static void initialize(String newPath){

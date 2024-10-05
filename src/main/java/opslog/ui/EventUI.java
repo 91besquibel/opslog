@@ -21,7 +21,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Screen;
 import javafx.stage.StageStyle;
 import opslog.ui.controls.*;
 	
@@ -157,8 +156,8 @@ public class EventUI {
 		});
 		CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY,"Create Log");
 		log.setOnAction(event -> {
-			LocalDate currentDate = DateTime.getDate();
-			LocalTime currentTime = DateTime.getTime();
+			LocalDate currentDate = LocalDate.parse(DateTime.convertDate(DateTime.getDate()));
+			LocalTime currentTime = LocalTime.parse(DateTime.convertTime(DateTime.getTime()));
 			tempLog.setDate(currentDate);
 			tempLog.setTime(currentTime);
 			if(tempLog.hasValue()){
