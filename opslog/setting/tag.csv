@@ -1,5 +1,6 @@
-PMI,Color
-HPA,Color
-LNA,Color
-GT,Color
-Server,Color
+HPA,#8066CC
+LNA,#669966
+Fault,#E64D4D
+PMI,#000000
+GT,#4D66CC
+FEP,#4D1A4D

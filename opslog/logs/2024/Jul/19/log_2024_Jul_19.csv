@@ -1,4 +1,0 @@
-Date,Time,Type,Tag,Initials,Description
-19/Jul/24,10:53:30,Sat 3,HPA,ZAE,Shift Change: Complete - Status/NTR
-19/Jul/24,12:24:04,Sat 2,LNA,ouft,Status w/ Site-Side (Start-Stop) ranging verified
-19/Jul/24,14:25:30,Sat 2,HPA,ZAE,Successfully fixed the readBatchFile method. It will no longer read in the Database into the GUI multiple times in a row. Next I will add time filters and change to invidual csv logs for each entry. I will change the log file format to include the time of log this will increase file search speed.

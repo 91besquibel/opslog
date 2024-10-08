@@ -13,6 +13,22 @@
         "version": 10447,
         "index": 5211
       }
+    ],
+    "src/main/java/opslog/Settings.java": [
+      {
+        "id": "c0b26974-65ed-4a7a-a1d4-91aca7389fe4",
+        "line": 27,
+        "version": 615,
+        "index": 793
+      }
+    ],
+    "src/main/java/opslog/ui/calendar/CalendarContent.java": [
+      {
+        "id": "62193c9d-fc0f-43a9-b6ef-d02115fcbaf9",
+        "line": 134,
+        "version": 11165,
+        "index": 5477
+      }
     ]
   }
 }
