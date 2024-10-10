@@ -39,6 +39,11 @@ import javafx.scene.control.skin.DateCellSkin;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/*
+	This class is not to be used with the CustomDatePicker. 
+	This class was designed to work with the CalendarContent.java class
+*/
+
 public class CustomDateCell extends Cell<LocalDate> {
 	
 	// Container for assigned calendar events
@@ -52,6 +57,42 @@ public class CustomDateCell extends Cell<LocalDate> {
 	public CustomDateCell() {
 		getStyleClass().add(DEFAULT_STYLE_CLASS);
 		setAccessibleRole(AccessibleRole.TEXT);
+		
+		hoverProperty().addListener((obs, noHov, hov) -> {
+			borderProperty().unbind();
+			backgroundProperty().unbind();
+			if (hov) {
+				setBackground(Settings.dateSelectBackground.get());
+				setBorder(Settings.dateSelectBorder.get());
+			} else {
+				backgroundProperty().bind(Settings.dateSelectBackground);
+				borderProperty().bind(Settings.dateSelectBorder);
+			}
+		});
+
+		focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+			borderProperty().unbind();
+			backgroundProperty().unbind();
+			if (isFocused) {
+				setBackground(Settings.dateSelectBackground.get());
+				setBorder(Settings.dateSelectBorder.get());
+			} else {
+				backgroundProperty().bind(Settings.dateSelectBackground);
+				borderProperty().bind(Settings.dateSelectBorder);
+			}
+		});
+
+		selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+			borderProperty().unbind();
+			backgroundProperty().unbind();
+			if (isSelected) {
+				setBackground(Settings.dateSelectBackground.get());
+				setBorder(Settings.dateSelectBorder.get());
+			} else {
+				backgroundProperty().bind(Settings.dateSelectBackground);
+				borderProperty().bind(Settings.dateSelectBorder);
+			}
+		});
 	}
 
 	
@@ -68,43 +109,39 @@ public class CustomDateCell extends Cell<LocalDate> {
 	private void orderByDate(){
 		// get the time of each child item and sort it  
 	}
-
-	// Update The cell with the new labels
-	private void updateLabels(){
-		//add child lables and parent labels
-		if(!dailyChecklist.isEmpty()){	
-			for(Checklist checklist : dailyChecklist){
-				if(checklist.hasValue()){
-					Label label = new Label(checklist.toString());
-					labelContainer.getChildren().add(label);
-				}
-			}
-		}
-		
-		if(!dailyEvents.isEmpty()){	
-			for(Calendar event: dailyEvents){
-				if(event.hasValue()){
-					Label label = new Label(event.toString());
-					labelContainer.getChildren().add(label);
-				}
-			}
-		}
-	}
-	
-	
 	
 	//Do Not Remove
 	@Override 
 	public void updateItem(LocalDate item, boolean empty) {
 		super.updateItem(item, empty);
-		updateLabels();
+		
+		if(empty || item == null){
+			setGraphic(null);
+		}else{
+			if(!dailyChecklist.isEmpty()){	
+				for(Checklist checklist : dailyChecklist){
+					if(checklist.hasValue()){
+						Label label = new Label(checklist.toString());
+						labelContainer.getChildren().add(label);
+					}
+				}
+			}
+			if(!dailyEvents.isEmpty()){	
+				for(Calendar event: dailyEvents){
+					if(event.hasValue()){
+						Label label = new Label(event.toString());
+						labelContainer.getChildren().add(label);
+					}
+				}
+			}
+		}
 	}
 	
 	//Do Not Remove
-	//@Override 	
-	//protected Skin<?> createDefaultSkin() {
-		//return new DateCellSkin(this);
-	//}
+	@Override 	
+	protected Skin<?> createDefaultSkin() {
+		return new DateCellSkin(this);
+	}
 
 	//Do Not Remove
 	private static final String DEFAULT_STYLE_CLASS = "date-cell";

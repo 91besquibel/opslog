@@ -64,6 +64,7 @@ public class Settings{
 	public static ObjectProperty<Color> transparent = new SimpleObjectProperty<>(Color.TRANSPARENT);
 	public static ObjectProperty<Color> focusColor = new SimpleObjectProperty<>(Color.DARKORANGE);
 	public static ObjectProperty<Color> selectedColor = new SimpleObjectProperty<>(darkenColor(secondaryColor.get(), 0.15));
+	public static ObjectProperty<Color> dateSelectColor = new SimpleObjectProperty<>(secondaryColor.get().interpolate(focusColor.get(),0.5)); 
 	public static ObjectProperty<Color> borderColorWB = new SimpleObjectProperty<>(darkenColor(primaryColor.get(), 0.3)); 
 	
 	
@@ -78,10 +79,11 @@ public class Settings{
 	
 	public static ObjectProperty<Background> selectedBackground = new SimpleObjectProperty<>( new Background( new BackgroundFill(selectedColor.get(), CORNER_RADII, INSETS_ZERO)));
 	public static ObjectProperty<Background> backgroundWindow = new SimpleObjectProperty<>( new Background( new BackgroundFill(primaryColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
+	
 	public static ObjectProperty<Background> dateOutOfScopeBackground = new SimpleObjectProperty<>( new Background( new BackgroundFill(selectedColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
+	public static ObjectProperty<Background> dateSelectBackground = new SimpleObjectProperty<>( new Background( new BackgroundFill(dateSelectColor.get(), CORNER_RADII_ZERO, INSETS_ZERO))); 
 	
 	// Border
-	public static ObjectProperty<Border> calendarBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	public static ObjectProperty<Border> primaryBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> secondaryBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(secondaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> borderWindow = new SimpleObjectProperty<>( new Border( new BorderStroke(borderColorWB.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
@@ -89,6 +91,8 @@ public class Settings{
 	public static ObjectProperty<Border> focusBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(focusColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 	public static ObjectProperty<Border> transparentBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(transparent.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	public static ObjectProperty<Border> dateOutOfScopeBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(selectedColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+	public static ObjectProperty<Border> dateSelectBorder = new SimpleObjectProperty<>( new Border( new BorderStroke(dateSelectColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+	public static ObjectProperty<Border> calendarBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
 	
 	// Text
 	public static ObjectProperty<Color> textColor = new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
@@ -122,6 +126,8 @@ public class Settings{
 		backgroundWindow.set(new Background(new BackgroundFill(primaryColor.get(), CORNER_RADII_WB, INSETS_ZERO)));
 		primaryBorder.set(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 		calendarBorder.set(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+		dateSelectBorder.set( new Border( new BorderStroke(dateSelectColor.get(),BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+		dateSelectBackground.set( new Background( new BackgroundFill(dateSelectColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
 	}
 	public static void updateSecondaryBackground(){
 		selectedColor.set(darkenColor(secondaryColor.get(), 0.15));

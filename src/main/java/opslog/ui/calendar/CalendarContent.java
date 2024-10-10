@@ -388,11 +388,11 @@ public class CalendarContent {
 					dayCell.fontProperty().bind(Settings.fontProperty);
 					dayCell.textFillProperty().bind(Settings.textColor);
 				}
+				
 				// get the date of the current cell
 				LocalDate date = month.atDay(day);
 				dayCellDates[i] = date;
 				ChronoLocalDate cDate = chrono.date(date);
-
 				dayCell.setDisable(false);
 				
 				// if today set focused border
@@ -438,7 +438,6 @@ public class CalendarContent {
 				});
 				
 				TextFlow textFlow = new TextFlow(gregText,divider,ordText);
-				
 				// display the day number in the day cell with format
 				dayCell.setGraphic(textFlow);
 				dayCell.updateItem(date, false);
@@ -449,6 +448,10 @@ public class CalendarContent {
 				dayCell.setDisable(true);
 			}
 		}
+	}
+
+	public static void checkForEvents(){
+		
 	}
 
 	// Do Not Delete: Update MonthLabel Width for resized or name change
