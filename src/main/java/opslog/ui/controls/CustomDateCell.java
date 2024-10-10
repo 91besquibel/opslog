@@ -25,101 +25,139 @@
 
 package opslog.ui.controls;
 
-import javafx.scene.control.Cell;
-import opslog.objects.Calendar;
-import opslog.objects.Checklist;
-
-import java.time.LocalDate;
-
-import javafx.scene.layout.VBox;
-import javafx.scene.AccessibleAttribute;
-import javafx.scene.control.Label;
-import javafx.scene.AccessibleRole;
-import javafx.scene.control.skin.DateCellSkin;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.AccessibleAttribute;
+import javafx.scene.AccessibleRole;
+import javafx.scene.control.Cell;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import opslog.object.event.Calendar;
+import opslog.object.event.Checklist;
+import opslog.util.Settings;
+
+import java.time.LocalDate;
+import java.util.Objects;
+
+/*
+	This class is not to be used with the CustomDatePicker. 
+	This class was designed to work with the CalendarContent.java class
+*/
 
 public class CustomDateCell extends Cell<LocalDate> {
-	
-	// Container for assigned calendar events
-	private final ObservableList<Calendar> dailyEvents = FXCollections.observableArrayList();
-	// Container for assigned checklists
-	private final ObservableList<Checklist> dailyChecklist = FXCollections.observableArrayList();
 
-	private VBox labelContainer = new VBox();
-	
-	//Do Not Remove
-	public CustomDateCell() {
-		getStyleClass().add(DEFAULT_STYLE_CLASS);
-		setAccessibleRole(AccessibleRole.TEXT);
-	}
-
-	
-	public void addEvent(Calendar newEvent){dailyEvents.add(newEvent);}
-	public void addChecklist(Checklist newChecklist){dailyChecklist.add(newChecklist);}
-
-	public void removeEvent(Calendar event){dailyEvents.remove(dailyEvents.indexOf(event));}
-	public void removeChecklist(Checklist checklist){dailyChecklist.remove(dailyChecklist.indexOf(checklist));}
-
-	// getters to retrieve the data from this event
+    //Do Not Remove
+    private static final String DEFAULT_STYLE_CLASS = "date-cell";
+    // Container for assigned calendar events
+    private final ObservableList<Calendar> dailyEvents = FXCollections.observableArrayList();
+    // Container for assigned checklists
+    private final ObservableList<Checklist> dailyChecklist = FXCollections.observableArrayList();
+    private final VBox labelContainer = new VBox();
 
 
-	// create a sort method 
-	private void orderByDate(){
-		// get the time of each child item and sort it  
-	}
+    //Do Not Remove
+    public CustomDateCell() {
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
+        setAccessibleRole(AccessibleRole.TEXT);
 
-	// Update The cell with the new labels
-	private void updateLabels(){
-		//add child lables and parent labels
-		if(!dailyChecklist.isEmpty()){	
-			for(Checklist checklist : dailyChecklist){
-				if(checklist.hasValue()){
-					Label label = new Label(checklist.toString());
-					labelContainer.getChildren().add(label);
-				}
-			}
-		}
-		
-		if(!dailyEvents.isEmpty()){	
-			for(Calendar event: dailyEvents){
-				if(event.hasValue()){
-					Label label = new Label(event.toString());
-					labelContainer.getChildren().add(label);
-				}
-			}
-		}
-	}
-	
-	
-	
-	//Do Not Remove
-	@Override 
-	public void updateItem(LocalDate item, boolean empty) {
-		super.updateItem(item, empty);
-		updateLabels();
-	}
-	
-	//Do Not Remove
-	//@Override 	
-	//protected Skin<?> createDefaultSkin() {
-		//return new DateCellSkin(this);
-	//}
+        hoverProperty().addListener((obs, noHov, hov) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (hov) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
 
-	//Do Not Remove
-	private static final String DEFAULT_STYLE_CLASS = "date-cell";
+        focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (isFocused) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
 
-	//Do Not Remove
-	@Override
-	public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
-		switch (attribute) {
-			case TEXT: {
-				if (isFocused()) {
-					return getText();
-				}
-				return "";
-			}
-			default: return super.queryAccessibleAttribute(attribute, parameters);
-		}
-	}
+        selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (isSelected) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
+    }
+
+    public void addEvent(Calendar newEvent) {
+        dailyEvents.add(newEvent);
+    }
+
+    public void addChecklist(Checklist newChecklist) {
+        dailyChecklist.add(newChecklist);
+    }
+
+    public void removeEvent(Calendar event) {
+        dailyEvents.remove(event);
+    }
+
+    // getters to retrieve the data from this event
+
+    public void removeChecklist(Checklist checklist) {
+        dailyChecklist.remove(checklist);
+    }
+
+    // create a sort method
+    private void orderByDate() {
+        // get the time of each child item and sort it
+    }
+
+    //Do Not Remove
+    @Override
+    public void updateItem(LocalDate item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty || item == null) {
+            setGraphic(null);
+        } else {
+            if (!dailyChecklist.isEmpty()) {
+                for (Checklist checklist : dailyChecklist) {
+                    if (checklist.hasValue()) {
+                        Label label = new Label(checklist.toString());
+                        labelContainer.getChildren().add(label);
+                    }
+                }
+            }
+            if (!dailyEvents.isEmpty()) {
+                for (Calendar event : dailyEvents) {
+                    if (event.hasValue()) {
+                        Label label = new Label(event.toString());
+                        labelContainer.getChildren().add(label);
+                    }
+                }
+            }
+        }
+    }
+
+    //Do Not Remove
+
+    //Do Not Remove
+    @Override
+    public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+        if (Objects.requireNonNull(attribute) == AccessibleAttribute.TEXT) {
+            if (isFocused()) {
+                return getText();
+            }
+            return "";
+        }
+        return super.queryAccessibleAttribute(attribute, parameters);
+    }
 }

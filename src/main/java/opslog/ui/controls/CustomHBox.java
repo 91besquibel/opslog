@@ -6,12 +6,12 @@ import opslog.util.Settings;
 
 public class CustomHBox extends HBox {
 
-	public CustomHBox() {
-		setSpacing(Settings.SPACING);
-		setAlignment(Pos.CENTER);
-		setPadding(Settings.INSETS);
-		backgroundProperty().bind(Settings.primaryBackground);
-		borderProperty().bind(Settings.primaryBorder);
-	}
-	
+    public CustomHBox() {
+        setSpacing(Settings.SPACING);
+        setAlignment(Pos.CENTER);
+        setPadding(Settings.INSETS);
+        backgroundProperty().bind(Settings.primaryBackground);
+        borderProperty().bind(Settings.primaryBorder);
+    }
+
 }

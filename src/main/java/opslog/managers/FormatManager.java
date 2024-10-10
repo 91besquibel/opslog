@@ -1,38 +1,84 @@
 package opslog.managers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.objects.Format;
-import opslog.util.CSV;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import opslog.object.Format;
+
 import java.util.List;
 
 public class FormatManager {
 
-	private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
-	private static FormatManager instance;
+    private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
 
-	private FormatManager() {}
+    public static void operation(String operation, List<String[]> rows, String ID) {
+        switch (operation) {
+            case "INSERT":
+                for (String[] row : rows) {
+                    Format newFormat = new Format();
+                    newFormat.setID(Integer.parseInt(row[0]));
+                    newFormat.setTitle(row[1]);
+                    newFormat.setFormat(row[2]);
+                    insert(newFormat);
+                }
+                break;
+            case "DELETE":
+                delete(Integer.parseInt(ID));
+                break;
+            case "UPDATE":
+                for (String[] row : rows) {
+                    Format oldFormat = new Format();
+                    oldFormat.setID(Integer.parseInt(row[0]));
+                    oldFormat.setTitle(row[1]);
+                    oldFormat.setFormat(row[2]);
+                    update(oldFormat);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-	public static FormatManager getInstance() {
-		if (instance == null) {instance = new FormatManager();}
-		return instance;
-	}
+    public static void insert(Format format) {
+        synchronized (formatList) {
+            Platform.runLater(() -> formatList.add(format));
+        }
+    }
 
-	public static List<Format> getCSVData(Path path) {
-		List<String[]> csvList = CSV.read(path);
-		List<Format> csvFormatList = new ArrayList<>();
+    public static void delete(int ID) {
+        Format format = getFormat(ID);
+        synchronized (formatList) {
+            Platform.runLater(() -> {
+                if (format.hasValue()) {
+                    formatList.remove(format);
+                }
+            });
+        }
+    }
 
-		for (String[] row : csvList) {
-			String title = row[0];
-			String description = row[1];
-			Format format = new Format(title,description);
-			csvFormatList.add(format);
-		}
+    public static void update(Format oldFormat) {
+        synchronized (formatList) {
+            Platform.runLater(() -> {
+                for (Format format : formatList) {
+                    if (oldFormat.getID() == format.getID()) {
+                        formatList.set(formatList.indexOf(format), oldFormat);
+                    }
+                }
+            });
+        }
+    }
 
-		return csvFormatList;
-	}
-	
-	public static ObservableList<Format> getList() {return formatList;}
+    public static Format getFormat(int ID) {
+        Format newFormat = new Format();
+        for (Format format : formatList) {
+            if (format.hasID(ID)) {
+                return format;
+            }
+        }
+        return newFormat;
+    }
+
+    public static ObservableList<Format> getList() {
+        return formatList;
+    }
 }

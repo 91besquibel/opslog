@@ -7,7 +7,7 @@ module test.opslog {
     requires java.prefs;
     requires java.logging;
 
-    opens opslog.objects to javafx.base;
+    opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 
 
     exports opslog; 

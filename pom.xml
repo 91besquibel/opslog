@@ -28,6 +28,11 @@
             <version>11.2.1</version>
         </dependency>
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.2</version> <!-- Replace with the latest version -->
+        </dependency>
+        <dependency>
             <groupId>org.kordamp.bootstrapfx</groupId>
             <artifactId>bootstrapfx-core</artifactId>
             <version>0.4.0</version>
@@ -63,11 +68,6 @@
                 <version>0.0.8</version> <!-- Update to a more recent version if needed -->
                 <configuration>
                     <mainClass>your.main.ClassNameHere</mainClass> <!-- Specify your main class -->
-                    <modules>
-                        <module>javafx.controls</module>
-                        <module>javafx.fxml</module>
-                        <!-- Add any other required modules here -->
-                    </modules>
                 </configuration>
             </plugin>
         </plugins>

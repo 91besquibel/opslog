@@ -1,62 +1,103 @@
 package opslog.managers;
 
-import opslog.objects.Calendar;
-import opslog.objects.Tag;
-import opslog.objects.Type;
-import opslog.util.CSV;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import java.util.ArrayList;
-import java.util.List;
-import java.nio.file.Path;
+import opslog.object.event.Calendar;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
+public class CalendarManager {
 
-public class CalendarManager{
-	private static final ObservableList<Calendar> calendarList = FXCollections.observableArrayList();
-	public static CalendarManager instance;
-	private CalendarManager(){}
+    private static final ObservableList<Calendar> calendarList = FXCollections.observableArrayList();
 
-	public static CalendarManager getInstance(){
-		if (instance == null){instance = new CalendarManager();}
-		return instance;
-	}
-	
-	public static List<Calendar> getCSVData(Path path){
-		try{
-			List<String[]> csvList = CSV.read(path);
-			List<Calendar> csvCalendarList = new ArrayList<>();
-			
-			for (String[] row : csvList) {
-				String title = row[0];
-				LocalDate startDate = LocalDate.parse(row[1]);
-				LocalDate stopDate = LocalDate.parse(row[2]);
-				LocalTime startTime = LocalTime.parse(row[3]);
-				LocalTime stopTime = LocalTime.parse(row[4]);
-				Type type = TypeManager.valueOf(row[5]);
-				
-				ObservableList<Tag> tags = FXCollections.observableArrayList();
-				String [] strTags = row[6].split("\\|");
-				for(String strTag:strTags){
-					Tag newTag = TagManager.valueOf(strTag);
-					if(newTag.hasValue()){
-						tags.add(newTag);
-					}
-				}
-				
-				String initials = row[7];
-				String description = row[8];
-				Calendar calendar = new Calendar(title,startDate,stopDate,startTime,stopTime,type,tags,initials,description);
-				csvCalendarList.add(calendar);
-			}
+    // which operation
+    public static void operation(String operation, List<String[]> rows, String ID) {
+        switch (operation) {
+            case "INSERT":
+                for (String[] row : rows) {
+                    Calendar newCalendar = new Calendar();
+                    newCalendar.setID(Integer.parseInt(row[0]));
+                    newCalendar.setStartDate(LocalDate.parse(row[1]));
+                    newCalendar.setStopDate(LocalDate.parse(row[2]));
+                    newCalendar.setStartTime(LocalTime.parse(row[3]));
+                    newCalendar.setStopTime(LocalTime.parse(row[4]));
+                    newCalendar.setType(TypeManager.getType(Integer.parseInt(row[5])));
+                    newCalendar.setTags(TagManager.getTags(row[6]));
+                    newCalendar.setInitials(row[7]);
+                    newCalendar.setDescription(row[8]);
+                    insert(newCalendar);
+                }
+                break;
+            case "DELETE":
+                delete(Integer.parseInt(ID));
+                break;
+            case "UPDATE":
+                for (String[] row : rows) {
+                    Calendar oldCalendar = new Calendar();
+                    oldCalendar.setID(Integer.parseInt(row[0]));
+                    oldCalendar.setStartDate(LocalDate.parse(row[1]));
+                    oldCalendar.setStopDate(LocalDate.parse(row[2]));
+                    oldCalendar.setStartTime(LocalTime.parse(row[3]));
+                    oldCalendar.setStopTime(LocalTime.parse(row[4]));
+                    oldCalendar.setType(TypeManager.getType(Integer.parseInt(row[5])));
+                    oldCalendar.setTags(TagManager.getTags(row[6]));
+                    oldCalendar.setInitials(row[7]);
+                    oldCalendar.setDescription(row[8]);
+                    update(oldCalendar);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-			return csvCalendarList; 
-		}catch(Exception e){
-			e.printStackTrace();
-			return new ArrayList<>();
-		}
-	}
-	
-	public static ObservableList<Calendar> getList(){return calendarList;}
+    // add a log to the log list
+    public static void insert(Calendar log) {
+        synchronized (calendarList) {
+            Platform.runLater(() -> calendarList.add(log));
+        }
+    }
+
+    // Used to delete or remove a value that contains this ID
+    public static void delete(int ID) {
+        Calendar calendar = getCalendar(ID);
+        synchronized (calendarList) {
+            Platform.runLater(() -> {
+                if (calendar.hasValue()) {
+                    calendarList.remove(calendar);
+                }
+            });
+        }
+    }
+
+    // Used to replace or edit a log
+    public static void update(Calendar oldCalendar) {
+        synchronized (calendarList) {
+            Platform.runLater(() -> {
+                for (Calendar calendar : calendarList) {
+                    if (oldCalendar.getID() == calendar.getID()) {
+                        calendarList.set(calendarList.indexOf(calendar), oldCalendar);
+                    }
+                }
+            });
+        }
+    }
+
+    // Overload: Get log using SQL ID
+    public static Calendar getCalendar(int ID) {
+        Calendar newCalendar = new Calendar();
+        for (Calendar calendar : calendarList) {
+            if (calendar.hasID(ID)) {
+                return calendar;
+            }
+        }
+        return newCalendar;
+    }
+
+    public static ObservableList<Calendar> getList() {
+        return calendarList;
+    }
 }

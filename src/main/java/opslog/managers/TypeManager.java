@@ -1,47 +1,90 @@
 package opslog.managers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.objects.Type;
-import opslog.util.CSV;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import opslog.object.Type;
+
 import java.util.List;
+import java.util.Optional;
 
 public class TypeManager {
 
-	private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
-	private static TypeManager instance;
+    private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
 
-	private TypeManager() {}
+    public static void operation(String operation, List<String[]> rows, String ID) {
+        switch (operation) {
+            case "INSERT":
+                for (String[] row : rows) {
+                    Type newType = new Type();
+                    newType.setID(Integer.parseInt(row[0]));
+                    newType.setTitle(row[1]);
+                    newType.setPattern(row[2]);
+                    insert(newType);
+                }
+                break;
+            case "DELETE":
+                delete(Integer.parseInt(ID));
+                break;
+            case "UPDATE":
+                for (String[] row : rows) {
+                    Type oldType = new Type();
+                    oldType.setID(Integer.parseInt(row[0]));
+                    oldType.setTitle(row[1]);
+                    oldType.setPattern(row[2]);
+                    update(oldType);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-	public static TypeManager getInstance() {
-		if (instance == null) {instance = new TypeManager();}
-		return instance;
-	}
+    public static void insert(Type type) {
+        synchronized (typeList) {
+            Platform.runLater(() -> typeList.add(type));
+        }
+    }
 
-	public static Type valueOf(String title) {
-		return typeList.stream()
-			.filter(tag -> tag.getTitle().equals(title))
-			.findFirst()
-			.orElseGet(() -> new Type(title, " ")
-		);
-	}
+    public static void delete(int ID) {
+        Type type = getType(ID);
+        synchronized (typeList) {
+            Platform.runLater(() -> {
+                if (type.hasValue()) {
+                    typeList.remove(type);
+                }
+            });
+        }
+    }
 
-	public static List<Type> getCSVData(Path path) {
-		List<String[]> csvList = CSV.read(path);
-		List<Type> csvTypeList = new ArrayList<>();
+    public static void update(Type oldType) {
+        synchronized (typeList) {
+            Platform.runLater(() -> {
+                for (Type type : typeList) {
+                    if (oldType.getID() == type.getID()) {
+                        typeList.set(typeList.indexOf(type), oldType);
+                    }
+                }
+            });
+        }
+    }
 
-		for (String[] row : csvList) {
-			String title = row[0];
-			String pattern = row[1];
-			Type format = new Type(title,pattern);
-			csvTypeList.add(format);
-		}
+    public static Type getType(int ID) {
+        Optional<Type> result =
+                typeList.stream()
+                        .filter(obj -> obj.hasID(ID))
+                        .findFirst();
+        if (result.isPresent()) {
+            Type type = result.get();
+            System.out.println("Found object: " + type.getTitle());
+            return type;
+        } else {
+            System.out.println("No object found with ID: " + ID);
+            return new Type();
+        }
+    }
 
-		return csvTypeList;
-
-	}
-
-	public static ObservableList<Type> getList() {return typeList;}
+    public static ObservableList<Type> getList() {
+        return typeList;
+    }
 }
