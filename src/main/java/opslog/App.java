@@ -61,8 +61,8 @@ public class App extends Application {
             checklistUI.initialize();
             System.out.println("starting application");
             createUI();
-            //StartUI startUI = StartUI.getInstance();
-            //startUI.display();
+            StartUI startUI = StartUI.getInstance();
+            startUI.display();
             //SqlNotification here
 
             display(stage);

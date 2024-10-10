@@ -306,7 +306,7 @@ public class StartUI {
     }
 
     public void display() {
-
+        System.out.println("Displaying StartUI");
         if (popupWindow != null && popupWindow.isShowing()) {
             popupWindow.toFront();
             return;
