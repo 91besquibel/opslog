@@ -6,27 +6,27 @@ import opslog.util.Utilities;
 
 public class Tag {
 
-    private final IntegerProperty ID = new SimpleIntegerProperty();
+    private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
 
-    public Tag(int ID, String title, Color color) {
+    public Tag(String ID, String title, Color color) {
         this.ID.set(ID);
         this.title.set(title);
         this.color.set(color);
     }
 
     public Tag() {
-        this.ID.set(-1);
+        this.ID.set(null);
         this.title.set(null);
         this.color.set(null);
     }
 
-    public int getID() {
+    public String getID() {
         return ID.get();
     }
 
-    public void setID(int newID) {
+    public void setID(String newID) {
         ID.set(newID);
     }
 
@@ -54,8 +54,8 @@ public class Tag {
         return color;
     }
 
-    public boolean hasID(int newID) {
-        return getID() == newID;
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
     }
 
     public boolean hasValue() {
@@ -65,7 +65,11 @@ public class Tag {
 
     @Override
     public String toString() {
-        return title.get();
+        String titleStr = getTitle() != null ? getTitle() : "";
+        String colorStr = getColor() != null ? Utilities.toHex(getColor()) : "";
+        return  titleStr +
+                ", " +
+                colorStr;
     }
 
     @Override

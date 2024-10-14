@@ -2,8 +2,10 @@ package opslog.object.event;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import opslog.object.Event;
 import opslog.object.Tag;
@@ -13,14 +15,15 @@ import opslog.util.DateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
+import opslog.interfaces.IDme;
 
-public class Log extends Event {
-    private final IntegerProperty ID = new SimpleIntegerProperty();
+public class Log extends Event implements IDme {
+    private final StringProperty ID = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalTime> time = new SimpleObjectProperty<>();
 
     // Construct: Parameterized
-    public Log(int ID, LocalDate date, LocalTime time, Type type, ObservableList<Tag> tags, String initials, String description) {
+    public Log(String ID, LocalDate date, LocalTime time, Type type, ObservableList<Tag> tags, String initials, String description) {
         super(type, tags, initials, description);
         this.ID.set(ID);
         this.date.set(date);
@@ -30,18 +33,20 @@ public class Log extends Event {
     // Construct: Default
     public Log() {
         super();
-        this.ID.set(-1);
+        this.ID.set(null);
         this.date.set(null);
         this.time.set(null);
     }
 
     // Accessor
-    public int getID() {
+    @Override
+    public String getID() {
         return ID.get();
     }
 
     // Mutator
-    public void setID(int newID) {
+    @Override
+    public void setID(String newID) {
         ID.set(newID);
     }
 
@@ -59,6 +64,10 @@ public class Log extends Event {
 
     public void setTime(LocalTime newTime) {
         time.set(newTime);
+    }
+
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
     }
 
     // Return true if all elements have a value
@@ -87,20 +96,20 @@ public class Log extends Event {
         String dateStr = getDate() != null ? DateTime.convertDate(getDate()) : "";
         String timeStr = getTime() != null ? DateTime.convertTime(getTime()) : "";
         String typeStr = super.getType() != null ? super.getType().toString() : "";
-        String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::toString).collect(Collectors.joining("|")) : "";
+        String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
         String initialsStr = super.getInitials() != null ? super.getInitials() : "";
         String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
 
-        return dateStr +
-                " " +
+        return  dateStr +
+                ", " +
                 timeStr +
-                " " +
+                ", " +
                 typeStr +
-                " " +
+                ", " +
                 tagStr +
-                " " +
+                ", " +
                 initialsStr +
-                " " +
+                ", " +
                 descriptionStr;
     }
 

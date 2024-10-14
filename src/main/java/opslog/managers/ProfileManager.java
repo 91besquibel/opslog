@@ -13,7 +13,8 @@ import java.util.prefs.Preferences;
 public class ProfileManager {
 
     public static final ObservableList<Profile> profileList = FXCollections.observableArrayList();
-
+    public static final String pfCol = "id, title, root_color, primary_color, secondary_color, border_color, text_color, text_size, text_font"; 
+    
     public static void loadPrefs() {
         Preferences prefs = Directory.getPref();
         profileList.add(getLightMode());
@@ -25,7 +26,7 @@ public class ProfileManager {
                     String[] row = profileStr.split(",");
 
                     Profile profile = new Profile();
-                    profile.setID(Integer.parseInt(row[0]));
+                    profile.setID(row[0]);
                     profile.setTitle(row[1]);
                     profile.setRoot(Color.web(row[2]));
                     profile.setPrimary(Color.web(row[3]));
@@ -44,7 +45,7 @@ public class ProfileManager {
     }
 
     private static Profile getLightMode() {
-        int id = 999;
+        String id = "-2";
         String title = "Light Mode";
         Color rootColor = Color.web("#121212");
         Color primaryColor = Color.web("#D0D0D0");
@@ -60,7 +61,7 @@ public class ProfileManager {
     }
 
     private static Profile getDarkMode() {
-        int id = 998;
+        String id = "-2";
         String title = "Dark Mode";
         Color rootColor = Color.web("#121212");
         Color primaryColor = Color.web("#1D1D1D");
@@ -81,7 +82,7 @@ public class ProfileManager {
             case "INSERT":
                 for (String[] row : rows) {
                     Profile profile = new Profile();
-                    profile.setID(Integer.parseInt(row[0]));
+                    profile.setID(row[0]);
                     profile.setTitle(row[1]);
                     profile.setRoot(Color.web(row[2]));
                     profile.setPrimary(Color.web(row[3]));
@@ -94,12 +95,12 @@ public class ProfileManager {
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                delete(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Profile profile = new Profile();
-                    profile.setID(Integer.parseInt(row[0]));
+                    profile.setID(row[0]);
                     profile.setTitle(row[1]);
                     profile.setRoot(Color.web(row[2]));
                     profile.setPrimary(Color.web(row[3]));
@@ -122,7 +123,7 @@ public class ProfileManager {
         }
     }
 
-    public static void delete(int ID) {
+    public static void delete(String ID) {
         synchronized (profileList) {
             Platform.runLater(() -> {
                 if (getProfile(ID).hasValue()) {
@@ -145,7 +146,7 @@ public class ProfileManager {
     }
 
     // Overload: Get Pin using SQL ID
-    public static Profile getProfile(int ID) {
+    public static Profile getProfile(String ID) {
         for (Profile profile : profileList) {
             if (profile.getID() == ID) {
                 return profile;

@@ -6,7 +6,8 @@ module test.opslog {
     requires org.kordamp.bootstrapfx.core;
     requires java.prefs;
     requires java.logging;
-
+    requires org.postgresql.jdbc;
+    
     opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 
 

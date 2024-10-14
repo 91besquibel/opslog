@@ -11,25 +11,26 @@ import java.util.Optional;
 public class TypeManager {
 
     private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
-
+    public static final String tagCol = "id, title, pattern";
+    
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Type newType = new Type();
-                    newType.setID(Integer.parseInt(row[0]));
+                    newType.setID(row[0]);
                     newType.setTitle(row[1]);
                     newType.setPattern(row[2]);
                     insert(newType);
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                delete(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Type oldType = new Type();
-                    oldType.setID(Integer.parseInt(row[0]));
+                    oldType.setID(row[0]);
                     oldType.setTitle(row[1]);
                     oldType.setPattern(row[2]);
                     update(oldType);
@@ -46,7 +47,7 @@ public class TypeManager {
         }
     }
 
-    public static void delete(int ID) {
+    public static void delete(String ID) {
         Type type = getType(ID);
         synchronized (typeList) {
             Platform.runLater(() -> {
@@ -69,7 +70,7 @@ public class TypeManager {
         }
     }
 
-    public static Type getType(int ID) {
+    public static Type getType(String ID) {
         Optional<Type> result =
                 typeList.stream()
                         .filter(obj -> obj.hasID(ID))

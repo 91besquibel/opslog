@@ -12,40 +12,41 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class LogManager {
-
+    
     private static final ObservableList<Log> logList = FXCollections.observableArrayList();
     public static ObjectProperty<Log> oldLog = new SimpleObjectProperty<>();
     public static ObjectProperty<Log> newLog = new SimpleObjectProperty<>();
-
+    public static final String LOG_COL = "date, time, typeID, tagIDs, initials, description"; 
+    
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Log newLog = new Log();
-                    newLog.setID(Integer.parseInt(row[0]));
+                    newLog.setID(row[0]);
                     newLog.setDate(LocalDate.parse(row[1]));
                     newLog.setTime(LocalTime.parse(row[2]));
-                    newLog.setType(TypeManager.getType(Integer.parseInt(row[3])));
+                    newLog.setType(TypeManager.getType(row[3]));
                     newLog.setTags(TagManager.getTags(row[4]));
                     newLog.setInitials(row[5]);
                     newLog.setDescription(row[6]);
-                    insert(newLog);
+                    insertApp(newLog);
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                deleteApp(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Log oldLog = new Log();
-                    oldLog.setID(Integer.parseInt(row[0]));
+                    oldLog.setID(row[0]);
                     oldLog.setDate(LocalDate.parse(row[1]));
                     oldLog.setTime(LocalTime.parse(row[2]));
-                    oldLog.setType(TypeManager.getType(Integer.parseInt(row[3])));
+                    oldLog.setType(TypeManager.getType(row[3]));
                     oldLog.setTags(TagManager.getTags(row[4]));
                     oldLog.setInitials(row[5]);
                     oldLog.setDescription(row[6]);
-                    update(oldLog);
+                    updateApp(oldLog);
                 }
                 break;
             default:
@@ -53,13 +54,13 @@ public class LogManager {
         }
     }
 
-    public static void insert(Log log) {
+    public static void insertApp(Log log) {
         synchronized (logList) {
             Platform.runLater(() -> logList.add(log));
         }
     }
 
-    public static void delete(int ID) {
+    public static void deleteApp(String ID) {
         synchronized (logList) {
             Platform.runLater(() -> {
                 if (getLog(ID).hasValue()) {
@@ -71,7 +72,7 @@ public class LogManager {
     }
 
     // Used to replace or edit a log
-    public static void update(Log otherLog) {
+    public static void updateApp(Log otherLog) {
         synchronized (logList) {
             Platform.runLater(() -> {
                 for (Log log : logList) {
@@ -84,7 +85,7 @@ public class LogManager {
     }
 
     // Overload: Get log using SQL ID
-    public static Log getLog(int ID) {
+    public static Log getLog(String ID) {
         for (Log log : logList) {
             if (log.getID() == ID) {
                 return log;

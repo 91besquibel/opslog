@@ -31,7 +31,7 @@ public class SettingsUI {
     private static final Format tempFormat = new Format();
 
     private static final Profile tempProfile = new Profile(
-            -1,
+            "",
             "",
             Settings.rootColor.get(),
             Settings.primaryColor.get(),

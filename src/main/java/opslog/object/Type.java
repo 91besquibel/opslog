@@ -7,28 +7,28 @@ import javafx.beans.property.StringProperty;
 
 public class Type {
 
-    private final IntegerProperty ID = new SimpleIntegerProperty();
+    private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final StringProperty pattern = new SimpleStringProperty();
 
 
     public Type() {
-        this.ID.set(-1);
+        this.ID.set(null);
         this.title.set(null);
         this.pattern.set(null);
     }
 
-    public Type(int ID, String title, String pattern) {
+    public Type(String ID, String title, String pattern) {
         this.ID.set(ID);
         this.title.set(title);
         this.pattern.set(pattern);
     }
 
-    public int getID() {
+    public String getID() {
         return ID.get();
     }
 
-    public void setID(int newID) {
+    public void setID(String newID) {
         ID.set(newID);
     }
 
@@ -56,8 +56,8 @@ public class Type {
         return pattern;
     }
 
-    public boolean hasID(int newID) {
-        return getID() == newID;
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
     }
 
     public boolean hasValue() {
@@ -71,7 +71,11 @@ public class Type {
 
     @Override
     public String toString() {
-        return title.get();
+        String titleStr = getTitle() != null ? getTitle() : "";
+        String patternStr = getPattern() != null ? getPattern() : "";
+        return  titleStr +
+                ", " +
+                patternStr;
     }
 
     @Override

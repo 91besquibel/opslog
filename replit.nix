@@ -1,5 +1,6 @@
 { pkgs }: {
   deps = [
+    pkgs.postgresql
     pkgs.mssql_jdbc
     pkgs.systemd
     pkgs.maven

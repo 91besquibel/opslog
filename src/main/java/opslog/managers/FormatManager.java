@@ -10,25 +10,26 @@ import java.util.List;
 public class FormatManager {
 
     private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
+    public static final String fmtCol = "id, title, format"; 
 
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Format newFormat = new Format();
-                    newFormat.setID(Integer.parseInt(row[0]));
+                    newFormat.setID(row[0]);
                     newFormat.setTitle(row[1]);
                     newFormat.setFormat(row[2]);
                     insert(newFormat);
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                delete(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Format oldFormat = new Format();
-                    oldFormat.setID(Integer.parseInt(row[0]));
+                    oldFormat.setID(row[0]);
                     oldFormat.setTitle(row[1]);
                     oldFormat.setFormat(row[2]);
                     update(oldFormat);
@@ -45,7 +46,7 @@ public class FormatManager {
         }
     }
 
-    public static void delete(int ID) {
+    public static void delete(String ID) {
         Format format = getFormat(ID);
         synchronized (formatList) {
             Platform.runLater(() -> {
@@ -68,7 +69,7 @@ public class FormatManager {
         }
     }
 
-    public static Format getFormat(int ID) {
+    public static Format getFormat(String ID) {
         Format newFormat = new Format();
         for (Format format : formatList) {
             if (format.hasID(ID)) {

@@ -108,7 +108,7 @@ public class ChecklistEditor {
 
         add.setOnAction(event -> {
             if (newTask.get().hasValue()) {
-                Task tempTask = new Task(-1, newTask.get().getTitle(), newTask.get().getStartTime(), newTask.get().getStopTime(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
+                Task tempTask = new Task(null, newTask.get().getTitle(), newTask.get().getStartTime(), newTask.get().getStopTime(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
                 //CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(), true);
                 //Update.add(TaskManager.getList(), tempTask);
                 title.clear();
@@ -119,7 +119,16 @@ public class ChecklistEditor {
         });
         edit.setOnAction(event -> {
             if (newTask.get().hasValue() && selector.getValue().hasValue()) {
-                Task tempTask = new Task(-1, newTask.get().getTitle(), newTask.get().getStartTime(), newTask.get().getStopTime(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
+                Task tempTask = new Task(
+                    newTask.get().getID(), 
+                    newTask.get().getTitle(), 
+                    newTask.get().getStartTime(), 
+                    newTask.get().getStopTime(), 
+                    newTask.get().getType(), 
+                    newTask.get().getTags(), 
+                    newTask.get().getInitials(), 
+                    newTask.get().getDescription()
+                );
                 //CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), tempTask.toStringArray());
                // Update.edit(TaskManager.getList(), selector.getValue(), tempTask);
                 title.clear();

@@ -7,27 +7,27 @@ import javafx.beans.property.StringProperty;
 
 public class Format {
 
-    private final IntegerProperty ID = new SimpleIntegerProperty();
+    private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final StringProperty format = new SimpleStringProperty();
 
-    public Format(int ID, String title, String format) {
+    public Format(String ID, String title, String format) {
         this.ID.set(ID);
         this.title.set(title);
         this.format.set(format);
     }
 
     public Format() {
-        this.ID.set(-1);
+        this.ID.set(null);
         this.title.set(null);
         this.format.set(null);
     }
 
-    public int getID() {
+    public String getID() {
         return ID.get();
     }
 
-    public void setID(int newID) {
+    public void setID(String newID) {
         ID.set(newID);
     }
 
@@ -61,8 +61,8 @@ public class Format {
                         format.get() != null && !format.get().trim().isEmpty();
     }
 
-    public boolean hasID(int newID) {
-        return getID() == newID;
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
     }
 
     public String[] toStringArray() {
@@ -70,10 +70,15 @@ public class Format {
                 getTitle(), getFormat()
         };
     }
-
+    
     @Override
     public String toString() {
-        return title.get();
+        String titleStr = getTitle() != null ? getTitle() : "";
+        String formatStr = getFormat() != null ? getFormat() : "";
+
+        return  titleStr +
+                ", " +
+                formatStr;
     }
 
     @Override

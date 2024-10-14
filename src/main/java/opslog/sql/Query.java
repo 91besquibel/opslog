@@ -1,6 +1,11 @@
 package opslog.sql;
 
-public class SQLQuery {
+import opslog.sql.Config;
+import opslog.sql.Connector;
+import opslog.sql.pgsql.PgNotificationPoller;
+import opslog.sql.pgsql.PgNotification;
+
+public class Query {
     private final String tableName;
     private String columns;
     private String whereClause;
@@ -14,12 +19,12 @@ public class SQLQuery {
     private boolean isDelete = false;
     private boolean returningId = false;
 
-    public SQLQuery(String tableName) {
+    public Query(String tableName) {
         this.tableName = tableName;
     }
 
     // The column or row(id number) that the query is targeting
-    public SQLQuery where(String whereClause) {
+    public Query where(String whereClause) {
         this.whereClause = whereClause;
         return this;
     }
@@ -27,21 +32,22 @@ public class SQLQuery {
     // Used to sort the data before it is returned
     // It will order by the column in either Asc or Dsc
     // orderByClause = "columnName ASC|DESC"
-    public SQLQuery orderBy(String orderByClause) {
+    public Query orderBy(String orderByClause) {
         this.orderByClause = orderByClause;
         return this;
     }
 
     // Used to limit the number of values returned by query
-    public SQLQuery limit(String limitClause) {
+    public Query limit(String limitClause) {
         this.limitClause = limitClause;
         return this;
     }
+    
     /*
         Used to return the new id for data INSERTS
 
         Example Return:
-        SQLQuery insertQuery = new SQLQuery("users");
+        Query insertQuery = new Query("users");
         insertQuery.insert("name, email", "'John Doe', 'john.doe@example.com'")
                     .returningId(); // Indicate we want to return the ID
 
@@ -49,7 +55,7 @@ public class SQLQuery {
         System.out.println(sql);
         // Output: INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com') RETURNING id;
     */
-    public SQLQuery returningId() {
+    public Query returningId() {
         this.returningId = true; // Set the flag to return the ID
         return this;
     }
@@ -57,7 +63,7 @@ public class SQLQuery {
     /*
         Example SELECT:
 
-        SQLQuery selectQuery = new SQLQuery("users");
+        Query selectQuery = new Query("users");
         selectQuery.select("id, name, email")           // Selecting specific columns
                    .where("age > 25")                    // Filtering with WHERE clause
                    .orderBy("name ASC")                  // Sorting by name in ascending order
@@ -67,7 +73,7 @@ public class SQLQuery {
 
         Output: SELECT id, name, email FROM users WHERE age > 25 ORDER BY name ASC LIMIT 10;
      */
-    public SQLQuery select(String columns) {
+    public Query select(String columns) {
         this.columns = columns;
         this.isSelect = true;
         return this;
@@ -76,7 +82,7 @@ public class SQLQuery {
     /*
         Example UPDATE:
 
-        SQLQuery updateQuery = new SQLQuery("users");
+        Query updateQuery = new Query("users");
         updateQuery.set("email = 'new.email@example.com'")  // Setting a new value for email
                    .where("id = 123");                      // Filtering by user ID
         String sql = updateQuery.build();
@@ -84,7 +90,7 @@ public class SQLQuery {
 
         Output: UPDATE users SET name = 'Jane Doe', email = 'jane.doe@example.com' WHERE id = 123;
     */
-    public SQLQuery set(String setClause) {
+    public Query set(String setClause) {
         this.setClause = setClause;
         this.isUpdate = true;
         return this;
@@ -93,14 +99,14 @@ public class SQLQuery {
     /*
         Example INSERT:
 
-        SQLQuery insertQuery = new SQLQuery("users");
+        Query insertQuery = new Query("users");
         insertQuery.insert("name, email", "'John Doe', 'john.doe@example.com'");  // Inserting values into columns
         String sql = insertQuery.build();
         System.out.println(sql);
 
         Output: INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com');
     */
-    public SQLQuery insert(String columns, String values) {
+    public Query insert(String columns, String values) {
         this.columns = columns; // Make sure columns are set
         this.insertValues = values;
         this.isInsert = true;
@@ -110,7 +116,7 @@ public class SQLQuery {
     /*
         Example DELETE:
 
-        SQLQuery deleteQuery = new SQLQuery("users");
+        Query deleteQuery = new Query("users");
         deleteQuery.where("id = 123");  // Deleting a user with a specific ID
 
         String sql = deleteQuery.build();
@@ -118,7 +124,7 @@ public class SQLQuery {
 
         Output: DELETE FROM users WHERE id = 123;
     */
-    public SQLQuery delete() {
+    public Query delete() {
         this.isDelete = true;
         return this;
     }

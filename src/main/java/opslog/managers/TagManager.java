@@ -12,25 +12,26 @@ import java.util.Optional;
 public class TagManager {
 
     private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
+    public static final String tagCol = "id, title, color";
 
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Tag newTag = new Tag();
-                    newTag.setID(Integer.parseInt(row[0]));
+                    newTag.setID(row[0]);
                     newTag.setTitle(row[1]);
                     newTag.setColor(Color.web(row[2]));
                     insert(newTag);
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                delete(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Tag oldTag = new Tag();
-                    oldTag.setID(Integer.parseInt(row[0]));
+                    oldTag.setID(row[0]);
                     oldTag.setTitle(row[1]);
                     oldTag.setColor(Color.web(row[2]));
                     update(oldTag);
@@ -47,7 +48,7 @@ public class TagManager {
         }
     }
 
-    public static void delete(int ID) {
+    public static void delete(String ID) {
         Tag tag = getTag(ID);
         synchronized (tagList) {
             Platform.runLater(() -> {
@@ -70,7 +71,7 @@ public class TagManager {
         }
     }
 
-    private static Tag getTag(int tagID) {
+    private static Tag getTag(String tagID) {
         Optional<Tag> result =
                 tagList.stream()
                         .filter(tag -> tag.hasID(tagID))
@@ -89,7 +90,7 @@ public class TagManager {
         ObservableList<Tag> tags = FXCollections.observableArrayList();
         String[] strTagIDs = strIDs.split("\\|");
         for (String tagID : strTagIDs) {
-            tags.add(getTag(Integer.parseInt(tagID)));
+            tags.add(getTag(tagID));
         }
         return tags;
     }

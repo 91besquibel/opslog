@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import opslog.managers.*;
 import opslog.object.Format;
 import opslog.object.Search;
@@ -20,20 +21,22 @@ import opslog.object.event.Calendar;
 import opslog.object.event.Log;
 import opslog.ui.controls.*;
 import opslog.util.*;
+
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.lang.reflect.Method;
 
 
 public class EventUI {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static final Calendar tempCalendar = new Calendar();
-    private static final Search tempSearch = new Search();
-    private static final Log tempLog = new Log();
+    private static Calendar tempCalendar = new Calendar();
+    private static Search tempSearch = new Search();
+    private static Log tempLog = new Log();
     private static Stage stage;
     private static BorderPane root;
     private static double lastX, lastY;
@@ -47,8 +50,7 @@ public class EventUI {
 
     private static volatile EventUI instance;
 
-    private EventUI() {
-    }
+    private EventUI() {}
 
     public static EventUI getInstance() {
         if (instance == null) {
@@ -62,47 +64,68 @@ public class EventUI {
     }
 
     private static HBox buildWindowBar() {
+        String sceneTitle = "Event Creator";
         Button exit = Buttons.exitWinBtn();
         Button minimize = Buttons.minBtn();
         Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
 
         Region leftSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-        CustomLabel statusLabel = new CustomLabel("Event Creator", Settings.WIDTH_LARGE, 40);
+        CustomLabel statusLabel = new CustomLabel(sceneTitle, Settings.WIDTH_LARGE, 40);
         Region rightSpacer = new Region();
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
         CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search");
         search.setOnAction(event -> {
+            // I will need to comeback and update this after SQL code has come along further
             List<Log> searchResults = SearchManager.searchLogs(tempSearch);
             SearchManager.setList(searchResults);
         });
-        CustomButton calendar = new CustomButton(
-                Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
+        CustomButton calendar = new CustomButton( Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
         calendar.setOnAction(event -> {
             if (tempCalendar.hasValue()) {
-                CSV.write(Directory.Calendar_Dir.get(), tempCalendar.toStringArray(), true);
-                handleClearParam();
+                // INSERT Calendar to Database
+                tempCalendar = DBManager.insertDB(tempCalendar,"calander_table",CalendarManager.CAL_COL);
+                if(tempCalendar.getID() == "-1") {
+                    showPopup("Error","Failed to add calendar event to database please try again, or contact admin.");
+                    System.out.println("Failed to add calendar event to database please try again, or contact admin.");
+                }else if (tempCalendar.getID() == "-2") {
+                    showPopup("Error","Failed to retrieve the new ID, application may need to be reloaded.");
+                    System.out.println("Failed to retrieve the new ID");
+                }else {
+                    System.out.println("Calendar event added to database, now adding to in app memory");
+                    CalendarManager.insertApp(tempCalendar);
+                    handleClearParam();
+                }
             } else {
-                showPopup("Error", "Ensure all field are filled for the calendar");
+                showPopup("Error", "Ensure all field are filled for the log");
+                System.out.println("User failed to fill all fields");
             }
         });
-        CustomButton log = new CustomButton(
-				Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
+        
+        CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
         log.setOnAction(event -> {
             LocalDate currentDate = LocalDate.parse(DateTime.convertDate(DateTime.getDate()));
             LocalTime currentTime = LocalTime.parse(DateTime.convertTime(DateTime.getTime()));
             tempLog.setDate(currentDate);
             tempLog.setTime(currentTime);
             if (tempLog.hasValue()) {
-                String[] newRow = tempLog.toStringArray();
-                Path path = Directory.newLog(currentDate, currentTime);
-                Directory.build(path);
-                //CSV.write(path, newRow, true);
-                //Update.add(LogManager.getList(), tempLog);
-                descriptionTextArea.clear();
+                // INSERT to Database
+                tempLog = DBManager.insertDB(tempLog,"log_table",LogManager.LOG_COL);
+                if(tempLog.getID() == "-1"){
+                    showPopup("Error","Failed to add log to database please try again, or contact admin.");
+                    System.out.println("Failed to add log to database please try again, or contact admin.");
+                }else if (tempLog.getID() == "-2"){
+                    showPopup("Error","Failed to retrieve the new ID, application may need to be reloaded.");
+                    System.out.println("Failed to retrieve the new ID");
+                }else{
+                    System.out.println("Log added to database, now adding to in app memory");
+                    LogManager.insertApp(tempLog);
+                    descriptionTextArea.clear();
+                }
             } else {
                 showPopup("Error", "Ensure all field are filled for the log");
+                System.out.println("User failed to fill all fields");
             }
         });
 

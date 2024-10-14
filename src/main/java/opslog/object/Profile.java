@@ -6,7 +6,7 @@ import opslog.util.Utilities;
 
 public class Profile {
 
-    IntegerProperty ID = new SimpleIntegerProperty();
+    StringProperty ID = new SimpleStringProperty();
     StringProperty title = new SimpleStringProperty();
     ObjectProperty<Color> root = new SimpleObjectProperty<>();
     ObjectProperty<Color> primary = new SimpleObjectProperty<>();
@@ -17,7 +17,7 @@ public class Profile {
     StringProperty textFont = new SimpleStringProperty();
 
     public Profile(
-            int ID, String title, Color root,
+            String ID, String title, Color root,
             Color primary, Color secondary, Color border,
             Color textColor, int textSize, String textFont) {
         this.ID.set(ID);
@@ -32,7 +32,7 @@ public class Profile {
     }
 
     public Profile() {
-        this.ID.set(-1);
+        this.ID.set(null);
         this.title.set(null);
         this.root.set(null);
         this.primary.set(null);
@@ -43,11 +43,11 @@ public class Profile {
         this.textFont.set(null);
     }
 
-    public int getID() {
+    public String getID() {
         return ID.get();
     }
 
-    public void setID(int newID) {
+    public void setID(String newID) {
         ID.set(newID);
     }
 
@@ -151,6 +151,10 @@ public class Profile {
 
     //Add a Tooltip Toggle
 
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
+    }
+
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
@@ -165,8 +169,26 @@ public class Profile {
 
     @Override
     public String toString() {
-        return title.get();
+        
+        String titleStr = title.get() != null ? title.get() : "";
+        String rootStr = root.get() != null ? Utilities.toHex(root.get()) : "";
+        String primaryStr = primary.get() != null ? Utilities.toHex(primary.get()) : "";
+        String secondaryStr = secondary.get() != null ? Utilities.toHex(secondary.get()) : "";
+        String borderStr = border.get() != null ? Utilities.toHex(border.get()) : "";
+        String textCStr = textColor.get() != null ? Utilities.toHex(textColor.get()) : "";
+        String textSStr = String.valueOf(textSize.get()) != null ? String.valueOf(textSize.get()) : "";
+        String textFontStr = textFont.get() != null ? textFont.get() : "";
+
+        return titleStr + ", " + 
+            rootStr + ", " + 
+            primaryStr + ", " + 
+            secondaryStr + ", " + 
+            borderStr + ", " + 
+            textCStr + ", " + 
+            textSStr + ", " + 
+            textFontStr;
     }
+
 
     public String[] toStringArray() {
         return new String[]{

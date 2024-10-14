@@ -71,10 +71,10 @@ public class SearchManager {
                             }
 
                             return new Log(
-                                    Integer.parseInt(values[0]),
+                                    values[0],
                                     LocalDate.parse(values[1]),
                                     LocalTime.parse(values[2]),
-                                    TypeManager.getType(Integer.parseInt(values[3])),
+                                    TypeManager.getType(values[3]),
                                     TagManager.getTags(values[4]),
                                     values[4],
                                     values[5]
@@ -181,10 +181,10 @@ public class SearchManager {
                             try {
 
                                 return new Log(
-                                        Integer.parseInt(values[0]),
+                                        values[0],
                                         LocalDate.parse(values[1]),
                                         LocalTime.parse(values[2]),
-                                        TypeManager.getType(Integer.parseInt(values[3])),
+                                        TypeManager.getType(values[3]),
                                         TagManager.getTags(values[4]),
                                         values[4],
                                         values[5]

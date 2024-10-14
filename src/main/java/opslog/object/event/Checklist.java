@@ -1,5 +1,6 @@
 package opslog.object.event;
 
+import java.util.stream.Collectors;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 
 public class Checklist extends Event {
 
-    private final IntegerProperty ID = new SimpleIntegerProperty();
+    private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
@@ -21,7 +22,7 @@ public class Checklist extends Event {
     private final StringProperty percentage = new SimpleStringProperty();
 
     // Constructor
-    public Checklist(int ID, String title, LocalDate startDate, LocalDate stopDate, ObservableList<Boolean> statusList, ObservableList<Task> taskList, Type type, ObservableList<Tag> tags, String initials, String description, String percentage) {
+    public Checklist(String ID, String title, LocalDate startDate, LocalDate stopDate, ObservableList<Boolean> statusList, ObservableList<Task> taskList, Type type, ObservableList<Tag> tags, String initials, String description, String percentage) {
         super(type, tags, initials, description);
         this.ID.set(ID);
         this.title.set(title);
@@ -34,7 +35,7 @@ public class Checklist extends Event {
 
     public Checklist() {
         super();
-        this.ID.set(-1);
+        this.ID.set(null);
         this.title.set(null);
         this.startDate.set(null);
         this.stopDate.set(null);
@@ -44,7 +45,7 @@ public class Checklist extends Event {
     }
 
     // Accessor
-    public int getID() {
+    public String getID() {
         return ID.get();
     }
     public String getTitle() {
@@ -90,7 +91,7 @@ public class Checklist extends Event {
     }
 
     // Mutator
-    public void setID(int newID) {
+    public void setID(String newID) {
         ID.set(newID);
     }
     public void setTitle(String newTitle) {
@@ -116,8 +117,8 @@ public class Checklist extends Event {
         taskList.add(newTask);
         statusList.add(false);
     }
-    public boolean hasID(int newID) {
-        return getID() == newID;
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
     }
     public boolean hasValue() {
         return
@@ -126,6 +127,31 @@ public class Checklist extends Event {
                         stopDate.get() != null &&
                         super.hasValue();
     }
+
+    @Override
+        public String toString() {
+            String titleStr = getTitle() != null ? getTitle() : "";
+            String startDateStr = getStartDate() != null ? DateTime.convertDate(getStartDate()) : "";
+            String stopDateStr = getStopDate() != null ? DateTime.convertDate(getStopDate()) : "";
+            String typeStr = super.getType() != null ? super.getType().toString() : "";
+            String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
+            String initialsStr = super.getInitials() != null ? super.getInitials() : "";
+            String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
+
+            return  titleStr +
+                    ", " +
+                    startDateStr +
+                    ", " +
+                    stopDateStr +
+                    ", " +
+                    typeStr +
+                    ", " +
+                    tagStr +
+                    ", " +
+                    initialsStr +
+                    ", " +
+                    descriptionStr;
+        }
 
     @Override
     public String [] toStringArray(){

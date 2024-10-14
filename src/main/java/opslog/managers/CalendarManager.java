@@ -11,42 +11,44 @@ import java.util.List;
 
 public class CalendarManager {
 
+    // Deffinition
     private static final ObservableList<Calendar> calendarList = FXCollections.observableArrayList();
-
+    public static final String CAL_COL = "title, start_date, stop_date, typeID, tagIDs, initials, description"; 
+    
     // which operation
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Calendar newCalendar = new Calendar();
-                    newCalendar.setID(Integer.parseInt(row[0]));
+                    newCalendar.setID(row[0]);
                     newCalendar.setStartDate(LocalDate.parse(row[1]));
                     newCalendar.setStopDate(LocalDate.parse(row[2]));
                     newCalendar.setStartTime(LocalTime.parse(row[3]));
                     newCalendar.setStopTime(LocalTime.parse(row[4]));
-                    newCalendar.setType(TypeManager.getType(Integer.parseInt(row[5])));
+                    newCalendar.setType(TypeManager.getType(row[5]));
                     newCalendar.setTags(TagManager.getTags(row[6]));
                     newCalendar.setInitials(row[7]);
                     newCalendar.setDescription(row[8]);
-                    insert(newCalendar);
+                    insertApp(newCalendar);
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                deleteApp(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
-                    Calendar oldCalendar = new Calendar();
-                    oldCalendar.setID(Integer.parseInt(row[0]));
-                    oldCalendar.setStartDate(LocalDate.parse(row[1]));
-                    oldCalendar.setStopDate(LocalDate.parse(row[2]));
-                    oldCalendar.setStartTime(LocalTime.parse(row[3]));
-                    oldCalendar.setStopTime(LocalTime.parse(row[4]));
-                    oldCalendar.setType(TypeManager.getType(Integer.parseInt(row[5])));
-                    oldCalendar.setTags(TagManager.getTags(row[6]));
-                    oldCalendar.setInitials(row[7]);
-                    oldCalendar.setDescription(row[8]);
-                    update(oldCalendar);
+                    Calendar newCalender = new Calendar();
+                    newCalender.setID(row[0]);
+                    newCalender.setStartDate(LocalDate.parse(row[1]));
+                    newCalender.setStopDate(LocalDate.parse(row[2]));
+                    newCalender.setStartTime(LocalTime.parse(row[3]));
+                    newCalender.setStopTime(LocalTime.parse(row[4]));
+                    newCalender.setType(TypeManager.getType(row[5]));
+                    newCalender.setTags(TagManager.getTags(row[6]));
+                    newCalender.setInitials(row[7]);
+                    newCalender.setDescription(row[8]);
+                    updateApp(newCalender);
                 }
                 break;
             default:
@@ -55,14 +57,14 @@ public class CalendarManager {
     }
 
     // add a log to the log list
-    public static void insert(Calendar log) {
+    public static void insertApp(Calendar calendar) {
         synchronized (calendarList) {
-            Platform.runLater(() -> calendarList.add(log));
+            Platform.runLater(() -> calendarList.add(calendar));
         }
     }
 
-    // Used to delete or remove a value that contains this ID
-    public static void delete(int ID) {
+    // Used to deleteApp or remove a value that contains this ID
+    public static void deleteApp(String ID) {
         Calendar calendar = getCalendar(ID);
         synchronized (calendarList) {
             Platform.runLater(() -> {
@@ -74,12 +76,12 @@ public class CalendarManager {
     }
 
     // Used to replace or edit a log
-    public static void update(Calendar oldCalendar) {
+    public static void updateApp(Calendar newCalender) {
         synchronized (calendarList) {
             Platform.runLater(() -> {
                 for (Calendar calendar : calendarList) {
-                    if (oldCalendar.getID() == calendar.getID()) {
-                        calendarList.set(calendarList.indexOf(calendar), oldCalendar);
+                    if (newCalender.getID() == calendar.getID()) {
+                        calendarList.set(calendarList.indexOf(calendar), newCalender);
                     }
                 }
             });
@@ -87,7 +89,7 @@ public class CalendarManager {
     }
 
     // Overload: Get log using SQL ID
-    public static Calendar getCalendar(int ID) {
+    public static Calendar getCalendar(String ID) {
         Calendar newCalendar = new Calendar();
         for (Calendar calendar : calendarList) {
             if (calendar.hasID(ID)) {
@@ -97,6 +99,7 @@ public class CalendarManager {
         return newCalendar;
     }
 
+    // Accessor
     public static ObservableList<Calendar> getList() {
         return calendarList;
     }

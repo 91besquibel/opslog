@@ -12,16 +12,17 @@ import java.util.Optional;
 public class TaskManager {
 
     private static final ObservableList<Task> taskList = FXCollections.observableArrayList();
-
+    private static final String tagCol = "id, title, start_time, stop_time, typeID, tagIDs, initials, descrption";
+    
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
                     Task task = new Task();
-                    task.setID(Integer.parseInt(row[0]));
+                    task.setID(row[0]);
                     task.setStartTime(LocalTime.parse(row[1]));
                     task.setStartTime(LocalTime.parse(row[2]));
-                    task.setType(TypeManager.getType(Integer.parseInt(row[3])));
+                    task.setType(TypeManager.getType(row[3]));
                     task.setTags(TagManager.getTags(row[4]));
                     task.setInitials(row[5]);
                     task.setDescription(row[6]);
@@ -29,15 +30,15 @@ public class TaskManager {
                 }
                 break;
             case "DELETE":
-                delete(Integer.parseInt(ID));
+                delete(ID);
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
                     Task task = new Task();
-                    task.setID(Integer.parseInt(row[0]));
+                    task.setID(row[0]);
                     task.setStartTime(LocalTime.parse(row[1]));
                     task.setStartTime(LocalTime.parse(row[2]));
-                    task.setType(TypeManager.getType(Integer.parseInt(row[3])));
+                    task.setType(TypeManager.getType(row[3]));
                     task.setTags(TagManager.getTags(row[4]));
                     task.setInitials(row[5]);
                     task.setDescription(row[6]);
@@ -55,7 +56,7 @@ public class TaskManager {
         }
     }
 
-    public static void delete(int ID) {
+    public static void delete(String ID) {
         Task task = getTask(ID);
         synchronized (taskList) {
             Platform.runLater(() -> {
@@ -78,7 +79,7 @@ public class TaskManager {
         }
     }
 
-    public static Task getTask(int ID) {
+    public static Task getTask(String ID) {
         Optional<Task> result =
                 taskList.stream()
                         .filter(task -> task.hasID(ID))

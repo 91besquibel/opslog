@@ -1,5 +1,14 @@
 package opslog.ui;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.prefs.Preferences;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
@@ -11,21 +20,15 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import opslog.managers.ProfileManager;
-import opslog.sql.SQLConfig;
-import opslog.sql.SQLNotification;
+
 import opslog.ui.controls.*;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.prefs.Preferences;
+import opslog.managers.ProfileManager;
+import opslog.sql.Config;
+import opslog.sql.Connector;
+import opslog.sql.pgsql.PgNotificationPoller;
+import opslog.sql.pgsql.PgNotification;
 
 public class StartUI {
 
@@ -35,21 +38,15 @@ public class StartUI {
     private static double lastX, lastY;
     private static volatile StartUI instance;
 
-    private static final ObservableList<String> dataBaseTypes = FXCollections.observableArrayList(
-            "postgresql","mysql","sqlserver");
-    private static final List<String> channels = List.of(
-            "log_channel", "pinboard_channel", "calendar_channel", "checklist_channel",
-            "parent_task_channel", "child_task_channel", "task_channel", "tag_channel",
-            "type_channel", "format_channel", "profile_channel"
-    );
+    private static final ObservableList<String> dataBaseTypes = FXCollections.observableArrayList("postgresql","mysql","sqlserver");
+    
     private static CustomComboBox<String> serverType;
     private static CustomTextField serverAddress;
     private static CustomTextField serverPort;
     private static CustomTextField serverDBName;
     private static CustomTextField serverUsername;
     private static CustomTextField serverPassword;
-    private static final Control [] controls = {
-            serverType,serverAddress,serverPort,serverDBName,serverUsername,serverPassword};
+   
     private static final Boolean [] isEmptyStatus = {false,false,false,false,false,false};
 
     private StartUI() {
@@ -149,9 +146,9 @@ public class StartUI {
                 "Select: Database", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
         serverType.requestFocus();
         serverType.setItems(dataBaseTypes);
-
+        
         serverAddress = new CustomTextField(
-                "Enter: IP Address", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+                "Enter: Host Address", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
         serverPort = new CustomTextField(
                 "Enter: Port", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
         serverDBName = new CustomTextField(
@@ -161,6 +158,16 @@ public class StartUI {
         serverPassword = new CustomTextField(
                 "Enter: Password", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
 
+        // preset for replit testing make sure to delete
+        serverType.setValue("postgresql");
+        serverAddress.setText(
+            "//ep-icy-frog-a5yrylqa.us-east-2.aws.neon.tech"
+        );
+        serverPort.setText("5432");
+        serverDBName.setText("neondb");
+        serverUsername.setText("neondb_owner");
+        serverPassword.setText("0cyrEuxY3spH");
+        
         Button loadAppData = new Button("Load");
         loadAppData.setPrefSize(50, 30);
         loadAppData.setPadding(Settings.INSETS);
@@ -182,14 +189,14 @@ public class StartUI {
                     break;
                 } else {
                     try {
-                        handleLoadSQLData();
+                        if(serverType.getValue().equals("postgresql")){
+                            handleLoadPgSQL();
+                        }
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 }
             }
-
-
         });
 
         loadAppData.focusedProperty().addListener(e -> {
@@ -217,7 +224,7 @@ public class StartUI {
         });
 
 
-        VBox body = new VBox(serverType, serverAddress, serverPort, serverDBName, serverUsername, serverPassword);
+        VBox body = new VBox(serverType, serverAddress, serverPort, serverDBName, serverUsername, serverPassword, loadAppData);
         body.setSpacing(Settings.SPACING);
         body.setPadding(Settings.INSETS);
         body.backgroundProperty().bind(Settings.primaryBackground);
@@ -245,6 +252,8 @@ public class StartUI {
     }
 
     private static void checkStatus(String value, int i){
+        Control [] controls = {
+            serverType,serverAddress,serverPort,serverDBName,serverUsername,serverPassword};
         boolean status = value.isEmpty();
         isEmptyStatus[i] = status;
         changeBorder(controls[i],status);
@@ -252,25 +261,30 @@ public class StartUI {
 
     private static void changeBorder(Control control, Boolean status) {
         // if status is true and field is empty change border to red
-        if (status) {
+        if (status && control != null) {
             control.borderProperty().unbind();
             control.borderProperty().bind(Settings.badInputBorder);
         }else{
             control.borderProperty().unbind();
             control.borderProperty().bind(Settings.secondaryBorder);
         }
+        
     }
 
-    private static void handleLoadSQLData() throws SQLException {
+    private static void handleLoadPgSQL() throws SQLException {
+        System.out.println("Createing connection URL");
         String type = serverType.getValue();
         String address = serverAddress.getText();
         String port = serverPort.getText();
         String name = serverDBName.getText();
         String user = serverUsername.getText();
         String password = serverPassword.getText();
-        SQLConfig config = new SQLConfig(type, address, port, name, user, password);
-        SQLNotification notification = new SQLNotification(config,channels);
-        notification.startListening();
+        Config config = new Config(type, address, port, name, user, password);
+        System.out.println("Connection URL: " + config.getConnectionURL());
+        Connection connection = Connector.getConnection(config);
+        PgNotification notifications = new PgNotification(connection);
+        notifications.startListeners();
+        popupWindow.close();
     }
 
     private static void handleLoadAppData(String userInput, String selectorInput) {
@@ -364,7 +378,7 @@ public class StartUI {
         windowBar.setPadding(Settings.INSETS_WB);
         windowBar.borderProperty().bind(Settings.borderBar);
 
-        AnchorPane viewArea = buildBody();
+        AnchorPane viewArea = buildSQLBody();
         viewArea.backgroundProperty().bind(Settings.rootBackground);
         viewArea.setPadding(Settings.INSETS);
 
