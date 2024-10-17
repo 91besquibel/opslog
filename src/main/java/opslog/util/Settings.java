@@ -14,8 +14,6 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
 import opslog.sql.Config;
 import opslog.sql.Connector;
-import opslog.sql.pgsql.PgNotificationPoller;
-import opslog.sql.pgsql.PgNotification;
 
 public class Settings {
 

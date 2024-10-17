@@ -1,11 +1,14 @@
 package opslog.object;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import java.util.Arrays;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import opslog.interfaces.SQL;
 
-public class Format {
+public class Format implements SQL {
 
     private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
@@ -22,11 +25,13 @@ public class Format {
         this.title.set(null);
         this.format.set(null);
     }
-
+    
+    @Override
     public String getID() {
         return ID.get();
     }
-
+    
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -55,30 +60,34 @@ public class Format {
         return format;
     }
 
+    public boolean hasID(String newID) {
+        return getID().contains(newID);
+    }
+    
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
                         format.get() != null && !format.get().trim().isEmpty();
     }
 
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
-    }
-
-    public String[] toStringArray() {
+    public String[] toArray() {
         return new String[]{
-                getTitle(), getFormat()
+            getID(),
+            getTitle(),
+            getFormat()
         };
     }
+
+    @Override
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }   
     
     @Override
     public String toString() {
-        String titleStr = getTitle() != null ? getTitle() : "";
-        String formatStr = getFormat() != null ? getFormat() : "";
-
-        return  titleStr +
-                ", " +
-                formatStr;
+        return getTitle();
     }
 
     @Override

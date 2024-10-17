@@ -1,10 +1,14 @@
 package opslog.object;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
 import opslog.util.Utilities;
+import opslog.interfaces.SQL;
 
-public class Profile {
+public class Profile implements SQL{
 
     StringProperty ID = new SimpleStringProperty();
     StringProperty title = new SimpleStringProperty();
@@ -42,11 +46,11 @@ public class Profile {
         this.textSize.set(null);
         this.textFont.set(null);
     }
-
+    @Override
     public String getID() {
         return ID.get();
     }
-
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -155,6 +159,32 @@ public class Profile {
         return getID().contains(newID);
     }
 
+    public String[] toArray() {
+        return new String[]{
+                getID(),
+                getTitle(),
+                Utilities.toHex(getRoot()),
+                Utilities.toHex(getPrimary()),
+                Utilities.toHex(getSecondary()),
+                Utilities.toHex(getBorder()),
+                Utilities.toHex(getTextColor()),
+                String.valueOf(getTextSize()),
+                getTextFont()
+        };
+    }
+    
+    @Override
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public String toString() {
+        return getTitle();
+    }
+
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
@@ -168,55 +198,11 @@ public class Profile {
     }
 
     @Override
-    public String toString() {
-        
-        String titleStr = title.get() != null ? title.get() : "";
-        String rootStr = root.get() != null ? Utilities.toHex(root.get()) : "";
-        String primaryStr = primary.get() != null ? Utilities.toHex(primary.get()) : "";
-        String secondaryStr = secondary.get() != null ? Utilities.toHex(secondary.get()) : "";
-        String borderStr = border.get() != null ? Utilities.toHex(border.get()) : "";
-        String textCStr = textColor.get() != null ? Utilities.toHex(textColor.get()) : "";
-        String textSStr = String.valueOf(textSize.get()) != null ? String.valueOf(textSize.get()) : "";
-        String textFontStr = textFont.get() != null ? textFont.get() : "";
-
-        return titleStr + ", " + 
-            rootStr + ", " + 
-            primaryStr + ", " + 
-            secondaryStr + ", " + 
-            borderStr + ", " + 
-            textCStr + ", " + 
-            textSStr + ", " + 
-            textFontStr;
-    }
-
-
-    public String[] toStringArray() {
-        return new String[]{
-                getTitle(),
-                Utilities.toHex(getRoot()),
-                Utilities.toHex(getPrimary()),
-                Utilities.toHex(getSecondary()),
-                Utilities.toHex(getBorder()),
-                Utilities.toHex(getTextColor()),
-                String.valueOf(getTextSize()),
-                getTextFont()
-        };
-    }
-
-    @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-        Profile otherProfile = (Profile) other;
-        return
-                title.get().equals(otherProfile.getTitle()) &&
-                        root.get().equals(otherProfile.getRoot()) &&
-                        primary.get().equals(otherProfile.getPrimary()) &&
-                        secondary.get().equals(otherProfile.getSecondary()) &&
-                        border.get().equals(otherProfile.getBorder()) &&
-                        textColor.get().equals(otherProfile.getTextColor()) &&
-                        textSize.get().equals(otherProfile.getTextSize()) &&
-                        textFont.get().equals(otherProfile.getTextFont());
+        if (this == other) return true; // check if its the same reference 
+        if (!(other instanceof Profile)) return false; // check if it is the same type
+        Profile otherProfile = (Profile) other; // if same type cast type
+        return getID().equals(otherProfile.getID()); // if same id return true
     }
 
     @Override

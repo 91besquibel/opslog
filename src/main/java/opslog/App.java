@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import opslog.ui.*;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.controls.Buttons;
@@ -48,24 +49,34 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        DateTime.timeListPopulate();
+        // Startup procedure
         try {
-            System.out.println("starting application");
+            
+            System.out.println("Starting application");
+            DateTime.timeListPopulate();
+
+            // Create and initialize each UI
             logUI = LogUI.getInstance();
             logUI.initialize();
+            
             calendarUI = CalendarUI.getInstance();
             calendarUI.initialize();
+            
             settingsUI = SettingsUI.getInstance();
             settingsUI.initialize();
+            
             checklistUI = ChecklistUI.getInstance();
             checklistUI.initialize();
-            System.out.println("starting application");
+
             createUI();
+
+            // Create and display database connection UI
             StartUI startUI = StartUI.getInstance();
             startUI.display();
-            //SqlNotification here
 
+            // Display the app after the user connects to a database
             display(stage);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

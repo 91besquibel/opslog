@@ -6,6 +6,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import opslog.managers.LogManager;
+import opslog.managers.PinboardManager;
 import opslog.object.*;
 import opslog.object.event.Log;
 import opslog.ui.controls.CustomTable;
@@ -42,7 +43,7 @@ public class LogUI {
         AnchorPane.setRightAnchor(tableView, 0.0);
 
         TableView<Log> pinTableView = CustomTable.pinTableView();
-        pinTableView.setItems(LogManager.getList());
+        pinTableView.setItems(PinboardManager.getList());
         AnchorPane leftSide = new AnchorPane(pinTableView);
         AnchorPane.setTopAnchor(pinTableView, 0.0);
         AnchorPane.setBottomAnchor(pinTableView, 0.0);

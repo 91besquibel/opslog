@@ -27,8 +27,12 @@ import opslog.util.Settings;
 import opslog.managers.ProfileManager;
 import opslog.sql.Config;
 import opslog.sql.Connector;
-import opslog.sql.pgsql.PgNotificationPoller;
-import opslog.sql.pgsql.PgNotification;
+//import opslog.sql.pgsql.PgNotificationPoller;
+//import opslog.sql.pgsql.PgNotification;
+import opslog.sql.TableLoader;
+import opslog.util.DateTime;
+import opslog.managers.*;
+import opslog.sql.Manager;
 
 public class StartUI {
 
@@ -46,11 +50,12 @@ public class StartUI {
     private static CustomTextField serverDBName;
     private static CustomTextField serverUsername;
     private static CustomTextField serverPassword;
-   
-    private static final Boolean [] isEmptyStatus = {false,false,false,false,false,false};
+    private static List<String> channels = List.of(
+        "log_changes", "pinboard_changes", "calendar_changes", "checklist_changes",
+        "task_changes", "tag_changes", "type_changes", "format_changes", "profile_changes"
+    );
 
-    private StartUI() {
-    }
+    private StartUI() {}
 
     public static StartUI getInstance() {
         if (instance == null) {
@@ -78,67 +83,6 @@ public class StartUI {
         windowBar.getChildren().addAll(exit, leftSpacer, statusLabel, rightSpacer);
 
         return windowBar;
-    }
-
-    private static AnchorPane buildBody() {
-
-        CustomComboBox<String> pathSelector = new CustomComboBox<>(
-                "Select Path", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-        pathSelector.setItems(Directory.mPathList);
-        pathSelector.requestFocus();
-
-        CustomTextField pathField = new CustomTextField(
-                "Create New", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-
-        Button loadAppData = new Button("Load");
-        loadAppData.setPrefSize(50, 30);
-        loadAppData.setPadding(Settings.INSETS);
-        loadAppData.setBackground(Settings.secondaryBackground.get());
-        loadAppData.setTextFill(Settings.textColor.get());
-        loadAppData.setBorder(Settings.secondaryBorder.get());
-
-        loadAppData.setOnAction(actionEvent -> {
-            loadAppData.setBackground(Settings.primaryBackground.get());
-            loadAppData.setPrefSize(50, 30);
-            loadAppData.setPadding(Settings.INSETS);
-            handleLoadAppData(pathField.getText(), pathSelector.getValue());
-        });
-
-        loadAppData.focusedProperty().addListener(e -> {
-            if (loadAppData.isFocused()) {
-                loadAppData.setBorder(Settings.focusBorder.get());
-                loadAppData.setPrefSize(50, 30);
-                loadAppData.setPadding(Settings.INSETS);
-            } else {
-                loadAppData.setBorder(Settings.secondaryBorder.get());
-                loadAppData.setPrefSize(50, 30);
-                loadAppData.setPadding(Settings.INSETS);
-            }
-        });
-
-        loadAppData.hoverProperty().addListener(e -> {
-            if (loadAppData.isFocused()) {
-                loadAppData.setBorder(Settings.focusBorder.get());
-                loadAppData.setPrefSize(50, 30);
-                loadAppData.setPadding(Settings.INSETS);
-            } else {
-                loadAppData.setBorder(Settings.secondaryBorder.get());
-                loadAppData.setPrefSize(50, 30);
-                loadAppData.setPadding(Settings.INSETS);
-            }
-        });
-
-
-        VBox body = new VBox(pathSelector, pathField, loadAppData);
-        body.setSpacing(Settings.SPACING);
-        body.setPadding(Settings.INSETS);
-        body.backgroundProperty().bind(Settings.primaryBackground);
-        AnchorPane viewArea = new AnchorPane(body);
-        AnchorPane.setTopAnchor(body, 0.0);
-        AnchorPane.setLeftAnchor(body, 0.0);
-        AnchorPane.setRightAnchor(body, 0.0);
-        AnchorPane.setBottomAnchor(body, 0.0);
-        return viewArea;
     }
 
     private static AnchorPane buildSQLBody() {
@@ -179,22 +123,13 @@ public class StartUI {
             loadAppData.setBackground(Settings.primaryBackground.get());
             loadAppData.setPrefSize(50, 30);
             loadAppData.setPadding(Settings.INSETS);
-
-            // check each fields value
-            check();
-
+            
             // if a field is empty do nothing if no fields are not empty connect to server
-            for (Boolean emptyStatus : isEmptyStatus) {
-                if (emptyStatus) {
-                    break;
-                } else {
-                    try {
-                        if(serverType.getValue().equals("postgresql")){
-                            handleLoadPgSQL();
-                        }
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
+            if (!emptyFields()) {
+                try {
+                    handleLoadSQL();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
             }
         });
@@ -236,7 +171,7 @@ public class StartUI {
         return viewArea;
     }
 
-    private static void check(){
+    private static boolean emptyFields(){
         String type = serverType.getValue();
         String address = serverAddress.getText();
         String port = serverPort.getText();
@@ -247,32 +182,19 @@ public class StartUI {
 
         // check if a string is empty
         for(int i = 0; i < values.length; i++){
-            checkStatus(values[i],i);
+            if(values[i].isEmpty()){
+                return true;
+            }
         }
+        return false;
     }
 
-    private static void checkStatus(String value, int i){
-        Control [] controls = {
-            serverType,serverAddress,serverPort,serverDBName,serverUsername,serverPassword};
-        boolean status = value.isEmpty();
-        isEmptyStatus[i] = status;
-        changeBorder(controls[i],status);
-    }
 
-    private static void changeBorder(Control control, Boolean status) {
-        // if status is true and field is empty change border to red
-        if (status && control != null) {
-            control.borderProperty().unbind();
-            control.borderProperty().bind(Settings.badInputBorder);
-        }else{
-            control.borderProperty().unbind();
-            control.borderProperty().bind(Settings.secondaryBorder);
-        }
-        
-    }
 
-    private static void handleLoadPgSQL() throws SQLException {
-        System.out.println("Createing connection URL");
+    private static void handleLoadSQL() throws SQLException {
+        System.out.println("StartUI: Createing connection URL");
+
+        // Build config 
         String type = serverType.getValue();
         String address = serverAddress.getText();
         String port = serverPort.getText();
@@ -280,42 +202,46 @@ public class StartUI {
         String user = serverUsername.getText();
         String password = serverPassword.getText();
         Config config = new Config(type, address, port, name, user, password);
-        System.out.println("Connection URL: " + config.getConnectionURL());
-        Connection connection = Connector.getConnection(config);
-        PgNotification notifications = new PgNotification(connection);
-        notifications.startListeners();
-        popupWindow.close();
-    }
-
-    private static void handleLoadAppData(String userInput, String selectorInput) {
-        Path userPath = userInput != null ? Paths.get(userInput) : null;
-        Path selectedPath = selectorInput != null ? Paths.get(selectorInput) : null;
-        Preferences prefs = Directory.getPref();
-        if ((userInput == null || userInput.isEmpty()) && (selectorInput != null && !selectorInput.isEmpty())) {
-            if (Files.notExists(selectedPath)) {
-                showPopup("Directory could not be found");
-            } else {
-                Directory.initialize(selectorInput);
-                popupWindow.close();
+        System.out.println("StartUI: Connection URL: " + config.getConnectionURL());
+        
+        // Get connection
+        try(Connection connection = Connector.getConnection(config)){
+            // if the connection works set this configuration @Manager.java
+            Manager.setConfig(config);
+            // initial loading of the database into the application
+            for(String tableName : DBManager.TABLE_NAMES){
+                System.out.println("StartUI: Loading table data for: " + tableName);
+                TableLoader.loadTable(tableName);
             }
-        } else if ((selectorInput == null || selectorInput.isEmpty()) && (userInput != null && !userInput.isEmpty())) {
-            if (Files.notExists(userPath)) {
-                showPopup("Directory could not be found");
-            } else {
-
-                Directory.initialize(userInput);
-                prefs.put(Directory.newKey(), userInput);
-                Directory.forceStore();
-                popupWindow.close();
+            // Handle each DB requirments based on the type
+            if(type.contains("postgresql")){
+                //startPG();
             }
-        } else {
-            showPopup("Please select or enter a new file path");
+            // Close popup and start application 
+            popupWindow.close();
+        }catch(SQLException e){
+            System.out.println("Failed to establish a connection.");
+            showPopup("Connection Failure","Connection attempt failed, please verify all fields are correct.");
+            e.printStackTrace();
         }
     }
+    
+    /*
+    private static void startPG(){
+        try{
+            //PG Notification management goes here
+        } catch(SQLException e){
+            System.out.println("Error occured while starting Postgre Notifications \n");
+            e.printStackTrace();
+        }
+    }
+    */
+    
+    
 
-    private static void showPopup(String message) {
+    private static void showPopup(String title, String message) {
         PopupUI popup = new PopupUI();
-        popup.message("Invalid Input", message);
+        popup.message(title, message);
 
     }
 
@@ -370,7 +296,6 @@ public class StartUI {
     }
 
     private synchronized void initialize() {
-        Directory.loadPrefs();
         ProfileManager.loadPrefs();
 
         HBox windowBar = buildWindowCard();

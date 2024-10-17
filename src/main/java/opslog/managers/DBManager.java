@@ -5,89 +5,90 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import opslog.object.*;
 import opslog.sql.*;
-import opslog.interfaces.IDme;
+import opslog.interfaces.SQL;
+import java.util.List;
+import java.util.Arrays;
 
 public class DBManager{
 	
-	public static <T extends IDme> T insertDB(T obj, String tableName, String column) {
-		String value = obj.toString();
-		Query query = new Query(tableName);
-		query.insert(column, value);
+	// Load table with the most basic objects first this way when
+	// complex objects that use the basic objects load it will be 
+	// able to verify their existence.
+	// or recode to request objects from SQL db based on id?
+	public static final List<String> TABLE_NAMES = Arrays.asList(
+		"tag_table", 
+		"type_table", 
+		"task_table", 
+		"format_table", 
+		"profile_table",
+		"log_table",
+		"pinboard_table",
+		"checklist_table", 
+		"calendar_table" 
+	);
+
+	
+	public static <T extends SQL> T insert(T obj, String tableName, String column) {
 		try {
-			Execute execute = new Execute(query);
-			String id = execute.insert();
-			obj.setID(id);
-			return obj;
+			String value = obj.toSQL(); // get the query values
+			Query query = new Query(tableName); // set the where for the query
+			query.insert(column, value); // set the columns and and values for insertion
+			Execute execute = new Execute(query); // create the execution statement
+			String id = execute.insert(); // // execute the statement as insert
+			obj.setID(id); // set the returned UUID from DB to the object
+			return obj; // return the object with its new ID
 		} catch (SQLException e) {
 			System.out.println("Error while attempting INSERT on " + tableName + ": \n");
-			String id = "-1";
-			obj.setID(id);
 			e.printStackTrace();
+			return null;
 		}
-		return obj;
 	}
 
-	public static <T extends IDme> T deleteDB(T obj, String tableName) {
+	public static <T extends SQL> int delete(T obj, String tableName) {
 		try {
-			String id = obj.getID(); 
+			String id = "'" + obj.getID() + "'";  
 			Query query = new Query(tableName);
 			query.delete();
 			query.where("id = " + id);
 			Execute execute = new Execute(query);
 			int rowsAffected = execute.delUpd();
 			System.out.println();
-			return obj;
+			return rowsAffected;
 		} catch (SQLException e ) {
 			System.out.println("Error while attempting DELETE on " + tableName + ": \n");
-			String id = "-1";
-			obj.setID(id);
 			e.printStackTrace();
 		}
-		return obj;
+		return -1;
 	}
 
-	public static <T extends IDme> T updateDB(T obj, String tableName, String column) {
-		try{
-			String id = obj.getID(); 
-			String[] columns = column.split(",");
-			String[] values = obj.toString().split(",");
-			StringBuilder setClause = new StringBuilder();
-			String whereClause = "id = '" + id + "'";
-			
-			if (columns.length == values.length) {
-				for (int i = 0; i < columns.length; i++) {
-					setClause.append(columns[i].trim())
-							 .append(" = '")
-							 .append(values[i].trim().replace("'", "''"))
-							 .append("', ");
-				}
-				
-				setClause.setLength(setClause.length() - 2);
-				String sql = "UPDATE " + tableName + " SET " + setClause.toString() + " WHERE " + whereClause;
-				System.out.println(sql);
-				Query query = new Query(tableName);
-				query.set(setClause.toString());
-				query.where(whereClause);
-	
-					Execute execute = new Execute(query);
-					int rowsAffected = execute.delUpd();
-					System.out.println();
-					return obj;
-				
-			}else {
-				throw new IllegalArgumentException("Columns and values length mismatch");
+	public static <T extends SQL> T update(T obj, String tableName, String column) {
+		try {
+			String id = obj.getID();
+			String [] col = column.split(",");
+			String [] val = obj.toSQL().split(",");
+			StringBuilder stringBuilder = new StringBuilder();
+			// create the setClause for query without the id column
+			for(int i = 1 ; i < col.length; i++){
+				stringBuilder.append(col[i] + " = " + val[i] + ", ");
+			}
+			// remove trailing comma
+			stringBuilder.setLength(stringBuilder.length() -2);
+			Query query = new Query(tableName);
+			query.set(stringBuilder.toString());
+			query.where(id);
+			Execute execute = new Execute(query);
+			int rowsAffected = execute.delUpd();
+			if(rowsAffected > 0){
+				System.out.println("Database succesfully updated: " + rowsAffected);
+				return obj;
+			}else{
+				System.out.println("No rows in database were updated");
+				return null;
 			}
 		} catch (SQLException e) {
 			System.out.println("Error while attempting UPDATE on " + tableName + ": \n");
-			String id = "-1";
-			obj.setID(id);
 			e.printStackTrace();
+			return null;
 		}
-		
-		System.out.println("Columns and values did not match: \n" + 
-						   "Columns: " + column + "\n" +
-						   "Values: " + obj.toString()
-						  );
-		return obj;
 	}
 }

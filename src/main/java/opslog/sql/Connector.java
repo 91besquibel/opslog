@@ -16,13 +16,11 @@ public class Connector {
 
         // Attempt to establish a connection
         try {
-            System.out.println("Testing Connection...");
+            System.out.println("Connector: Testing Connection...");
             Connection connection = DriverManager.getConnection(connectionURL, username, password);
-            System.out.println("Connection successful! Setting configuration as main");
-            Manager.setConfig(config);
             return connection;
         } catch (SQLException e) {
-            System.err.println("Failed to connect to the database: " + e.getMessage());
+            System.err.println("Connector: Failed to connect to the database: " + e.getMessage());
             throw e;
         }
     }

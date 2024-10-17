@@ -1,9 +1,7 @@
 package opslog.object.event;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -14,10 +12,11 @@ import opslog.util.DateTime;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.stream.Collectors;
-import opslog.interfaces.IDme;
+import opslog.interfaces.SQL;
 
-public class Log extends Event implements IDme {
+public class Log extends Event implements SQL {
     private final StringProperty ID = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalTime> time = new SimpleObjectProperty<>();
@@ -73,23 +72,32 @@ public class Log extends Event implements IDme {
     // Return true if all elements have a value
     @Override
     public boolean hasValue() {
+        System.out.println("Checking if log has values: " + toSQL());
         return super.hasValue() &&
                 date.get() != null &&
                 time.get() != null;
     }
 
     @Override
-    public String[] toStringArray() {
-        String[] superArray = super.toStringArray();
+    public String[] toArray() {
+        String[] superArray = super.toArray();
         return new String[]{
-                date.get() != null ? DateTime.convertDate(getDate()) : "",
-                time.get() != null ? DateTime.convertTime(getTime()) : "",
-                superArray[0], // type
-                superArray[1], // tags
+                getID(),
+                DateTime.convertDate(getDate()),
+                DateTime.convertTime(getTime()),
+                superArray[0], // typeID
+                superArray[1], // tagIDs
                 superArray[2], // initials
                 superArray[3]  // description
         };
     }
+    
+    @Override
+        public String toSQL(){
+            return Arrays.stream(toArray())
+                .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+                .collect(Collectors.joining(", "));
+        }
 
     @Override
     public String toString() {
@@ -115,14 +123,10 @@ public class Log extends Event implements IDme {
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-        if (!super.equals(other)) return false;
-        Log otherLog = (Log) other;
-        return
-                this.getDate() == otherLog.getDate() &&
-                        this.getTime() == otherLog.getTime();
-
+        if (this == other) return true; // check if its the same reference 
+        if (!(other instanceof Log)) return false; // check if it is the same type
+        Log otherLog = (Log) other; // if same type cast type
+        return getID().equals(otherLog.getID()); // if same id return true
     }
 }
 

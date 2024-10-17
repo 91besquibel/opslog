@@ -1,10 +1,14 @@
 package opslog.object;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import javafx.beans.property.*;
 import javafx.scene.paint.Color;
 import opslog.util.Utilities;
+import opslog.interfaces.SQL;
 
-public class Tag {
+public class Tag implements SQL{
 
     private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
@@ -21,11 +25,13 @@ public class Tag {
         this.title.set(null);
         this.color.set(null);
     }
-
+    
+    @Override
     public String getID() {
         return ID.get();
     }
-
+    
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -55,7 +61,7 @@ public class Tag {
     }
 
     public boolean hasID(String newID) {
-        return getID().contains(newID);
+        return getID().equals(newID);
     }
 
     public boolean hasValue() {
@@ -63,13 +69,21 @@ public class Tag {
                 color.get() != null;
     }
 
+    public String[] toArray() {
+        return new String[]{getID(), getTitle(), Utilities.toHex(getColor())};
+    }
+
     @Override
     public String toString() {
-        String titleStr = getTitle() != null ? getTitle() : "";
-        String colorStr = getColor() != null ? Utilities.toHex(getColor()) : "";
-        return  titleStr +
-                ", " +
-                colorStr;
+        return getTitle();
+    }
+
+    @Override
+    public String toSQL() {
+        // If the id value is null it will send NULL to the DB and the db will generate an ID
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
     }
 
     @Override
@@ -89,7 +103,5 @@ public class Tag {
         return title.hashCode() + color.hashCode();
     }
 
-    public String[] toStringArray() {
-        return new String[]{getTitle(), Utilities.toHex(getColor())};
-    }
+    
 }

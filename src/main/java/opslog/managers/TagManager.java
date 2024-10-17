@@ -1,5 +1,6 @@
 package opslog.managers;
 
+import java.util.Arrays;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,29 +13,25 @@ import java.util.Optional;
 public class TagManager {
 
     private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
-    public static final String tagCol = "id, title, color";
+    public static final String TAG_COL = "id, title, color";
 
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
-                    Tag newTag = new Tag();
-                    newTag.setID(row[0]);
-                    newTag.setTitle(row[1]);
-                    newTag.setColor(Color.web(row[2]));
-                    insert(newTag);
+                    Tag item = newItem(row);
+                    if(getItem(item.getID()) == null){
+                        ListOperation.insert(item,getList());
+                    }
                 }
                 break;
             case "DELETE":
-                delete(ID);
+                ListOperation.delete(getItem(ID),getList());
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
-                    Tag oldTag = new Tag();
-                    oldTag.setID(row[0]);
-                    oldTag.setTitle(row[1]);
-                    oldTag.setColor(Color.web(row[2]));
-                    update(oldTag);
+                    Tag item = newItem(row);
+                    ListOperation.update(getItem(item.getID()),getList());
                 }
                 break;
             default:
@@ -42,55 +39,35 @@ public class TagManager {
         }
     }
 
-    public static void insert(Tag tag) {
-        synchronized (tagList) {
-            Platform.runLater(() -> tagList.add(tag));
-        }
+    public static Tag newItem(String [] row){
+        Tag tag = new Tag();
+        tag.setID(row[0]);
+        tag.setTitle(row[1]);
+        tag.setColor(Color.web(row[2]));
+        return tag;
     }
 
-    public static void delete(String ID) {
-        Tag tag = getTag(ID);
-        synchronized (tagList) {
-            Platform.runLater(() -> {
-                if (tag.hasValue()) {
-                    tagList.remove(tag);
-                }
-            });
+    private static Tag getItem(String ID) {
+        System.out.println("TagManager: Attempting to retrive tag: " + ID);
+        for (Tag tag : tagList) {
+            if (tag.getID().equals(ID.trim())) {
+                System.out.println("TagManager: Tag found: " + tag.getID());
+                return tag;
+            }
         }
+        System.out.println("TagMangager: No tag matching: " + ID);
+        return null;
     }
 
-    public static void update(Tag oldTag) {
-        synchronized (tagList) {
-            Platform.runLater(() -> {
-                for (Tag tag : tagList) {
-                    if (oldTag.getID() == tag.getID()) {
-                        tagList.set(tagList.indexOf(tag), oldTag);
-                    }
-                }
-            });
-        }
-    }
-
-    private static Tag getTag(String tagID) {
-        Optional<Tag> result =
-                tagList.stream()
-                        .filter(tag -> tag.hasID(tagID))
-                        .findFirst();
-        if (result.isPresent()) {
-            Tag newTag = result.get();
-            System.out.println("Found object: " + newTag.getTitle());
-            return newTag;
-        } else {
-            System.out.println("No object found with ID: " + tagID);
-            return new Tag();
-        }
-    }
-
-    public static ObservableList<Tag> getTags(String strIDs) {
+    public static ObservableList<Tag> getItems(String IDs) {
         ObservableList<Tag> tags = FXCollections.observableArrayList();
-        String[] strTagIDs = strIDs.split("\\|");
-        for (String tagID : strTagIDs) {
-            tags.add(getTag(tagID));
+        String[] tagIDs = IDs.split("\\|");
+        System.out.println("TagManager: Checking for the following IDs " + Arrays.toString(tagIDs));
+        for (String ID : tagIDs) {
+            Tag tag = getItem(ID);
+            if(tag != null){
+                tags.add(tag);
+            }
         }
         return tags;
     }

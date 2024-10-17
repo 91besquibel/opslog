@@ -9,10 +9,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import opslog.managers.SearchManager;
 import opslog.object.event.Log;
 import opslog.ui.controls.*;
 import opslog.util.*;
+import opslog.managers.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,8 +32,7 @@ public class SearchUI {
     private static double originalWidth;
     private static double originalHeight;
 
-    private SearchUI() {
-    }
+    private SearchUI() {}
 
     public static SearchUI getInstance() {
         if (instance == null) {
@@ -150,8 +149,8 @@ public class SearchUI {
             Path newPath = basePath.resolve(fileName);
             Directory.build(newPath);
             List<String[]> data = new ArrayList<>();
-            for (Log log : SearchManager.getList()) {
-                data.add(log.toStringArray());
+            for (Log log : LogManager.getList()) {
+                data.add(log.toArray());
             }
             CSV.write(newPath, data, false);
         });
@@ -173,7 +172,7 @@ public class SearchUI {
 
     private AnchorPane createTable() {
         TableView<Log> tableView = CustomTable.logTableView();
-        tableView.setItems(SearchManager.getList());
+        tableView.setItems(LogManager.getList());
         AnchorPane tableHolder = new AnchorPane(tableView);
         AnchorPane.setLeftAnchor(tableView, 0.0);
         AnchorPane.setRightAnchor(tableView, 0.0);

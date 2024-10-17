@@ -2,6 +2,7 @@ package opslog.ui.controls;
 
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.Clipboard;
@@ -10,19 +11,22 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import opslog.App;
+import opslog.managers.DBManager;
+import opslog.managers.ListOperation;
 import opslog.managers.LogManager;
+import opslog.managers.PinboardManager;
 import opslog.object.event.Log;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.ui.PopupUI;
 import opslog.util.*;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CustomTable {
@@ -51,43 +55,36 @@ public class CustomTable {
 
         pinItem.setOnAction(e -> {
             if (tableView.getSelectionModel().getSelectedItem() != null) {
-                String[] newRow = tableView.getSelectionModel().getSelectedItem().toStringArray();
-                //CSV.write(Directory.Pin_Board_Dir.get(), newRow, true);
-                //Update.add(LogManager.getList(), tableView.getSelectionModel().getSelectedItem());
+                String[] newRow = tableView.getSelectionModel().getSelectedItem().toArray();
+                Log newPin = PinboardManager.newItem(newRow);
+                Log pin = DBManager.insert(newPin, "pinboard_table", PinboardManager.PIN_COL);
+                ListOperation.insert(pin,PinboardManager.getList());
             }
         });
 
         copyItem.setOnAction(e -> {
-            String data = tableView.getSelectionModel().getSelectedItem().toString();
+            String [] data = tableView.getSelectionModel().getSelectedItem().toArray();
+            String item = Arrays.toString(data).replace("[", "").replace("]", "");
             Clipboard clipboard = Clipboard.getSystemClipboard();
-            App.content.putString(data);
+            App.content.putString(item);
             clipboard.setContent(App.content);
         });
 
         editItem.setOnAction(e -> {
             Log log = tableView.getSelectionModel().getSelectedItem();
-            if (log.hasValue()) {
-                PopupUI popup = new PopupUI();
-                popup.append(log);
-            }
+            PopupUI popup = new PopupUI();
+            popup.append(log);
+            
         });
 
         exportItem.setOnAction(e -> {
-            Path basePath = Directory.Export_Dir.get();
-            Path fileName = Paths.get(
-                    DateTime.convertDate(DateTime.getDate()) +
-                            "_" +
-                            DateTime.convertTime(DateTime.getTime()) +
-                            ".csv"
-            );
-            Path newPath = basePath.resolve(fileName);
-            Directory.build(newPath);
-            List<Log> logs = tableView.getSelectionModel().getSelectedItems();
-            List<String[]> data = new ArrayList<>();
-            for (Log log : logs) {
-                data.add(log.toStringArray());
+            Stage stage = (Stage) tableView.getScene().getWindow(); 
+            ObservableList<Log> selectedItems = tableView.getSelectionModel().getSelectedItems();
+            List<String[]> exportingItems = new ArrayList<>();
+            for(Log item : selectedItems){
+                exportingItems.add(item.toArray());
             }
-            CSV.write(newPath, data, false);
+            FileSaver.saveFile(stage, exportingItems);
         });
 
         tableView.setContextMenu(contextMenu);
@@ -135,28 +132,23 @@ public class CustomTable {
 
         unpinItem.setOnAction(e -> {
             if (tableView.getSelectionModel().getSelectedItem() != null) {
-                String[] rowFilters = tableView.getSelectionModel().getSelectedItem().toStringArray();
-                //CSV.delete(Directory.Pin_Board_Dir.get(), rowFilters);
-                //Update.delete(LogManager.getList(), tableView.getSelectionModel().getSelectedItem());
+                String[] item = tableView.getSelectionModel().getSelectedItem().toArray();
+                Log newLog = LogManager.newItem(item);
+                int rowsAffected = DBManager.delete(newLog, "pinboard_table");
+                if(rowsAffected>0){
+                    ListOperation.delete(newLog,PinboardManager.getList());
+                }
             }
         });
 
         exportItem.setOnAction(e -> {
-            Path basePath = Directory.Export_Dir.get();
-            Path fileName = Paths.get(
-                    DateTime.convertDate(DateTime.getDate()) +
-                            "_" +
-                            DateTime.convertTime(DateTime.getTime()) +
-                            ".csv"
-            );
-            Path newPath = basePath.resolve(fileName);
-            Directory.build(newPath);
-            List<Log> logs = tableView.getSelectionModel().getSelectedItems();
-            List<String[]> data = new ArrayList<>();
-            for (Log log : logs) {
-                data.add(log.toStringArray());
+            Stage stage = (Stage) tableView.getScene().getWindow(); 
+            ObservableList<Log> selectedItems = tableView.getSelectionModel().getSelectedItems();
+            List<String[]> exportingItems = new ArrayList<>();
+            for(Log item : selectedItems){
+                exportingItems.add(item.toArray());
             }
-            CSV.write(newPath, data, false);
+            FileSaver.saveFile(stage, exportingItems);
         });
 
         tableView.setContextMenu(contextMenu);

@@ -1,11 +1,13 @@
 package opslog.object;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import opslog.interfaces.SQL;
 
-public class Type {
+public class Type implements SQL {
 
     private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
@@ -23,11 +25,13 @@ public class Type {
         this.title.set(title);
         this.pattern.set(pattern);
     }
-
+    
+    @Override
     public String getID() {
         return ID.get();
     }
-
+    
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -56,34 +60,35 @@ public class Type {
         return pattern;
     }
 
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
-    }
-
     public boolean hasValue() {
-        return title.get() != null && !title.get().trim().isEmpty() &&
+        System.out.println("Type: Checking for Type title: " + title.get());
+        System.out.println("Type: Checking for Type pattern: " + pattern.get());
+        return  title.get() != null && !title.get().trim().isEmpty() &&
                 pattern.get() != null && !pattern.get().trim().isEmpty();
     }
 
-    public String[] toStringArray() {
-        return new String[]{getTitle(), getPattern(),};
+    public String[] toArray() {
+        return new String[]{getID(), getTitle(), getPattern()};
+    }
+
+    @Override
+    public String toSQL() {
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
     }
 
     @Override
     public String toString() {
-        String titleStr = getTitle() != null ? getTitle() : "";
-        String patternStr = getPattern() != null ? getPattern() : "";
-        return  titleStr +
-                ", " +
-                patternStr;
+       return getTitle();
     }
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-        Type otherType = (Type) other;
-        return title.get().equals(otherType.getTitle()) && pattern.get().equals(otherType.getPattern());
+        if (this == other) return true; // check if its the same reference 
+        if (!(other instanceof Type)) return false; // check if it is the same type
+        Type otherType = (Type) other; // if same type cast type
+        return getID().equals(otherType.getID()); // if same id return true
     }
 
     @Override

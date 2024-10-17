@@ -7,12 +7,13 @@ import opslog.object.Event;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.util.DateTime;
-import opslog.interfaces.IDme;
+import opslog.interfaces.SQL;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Objects;
 
-public class Calendar extends Event implements IDme {
+public class Calendar extends Event implements SQL {
 
     private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
@@ -97,8 +98,7 @@ public class Calendar extends Event implements IDme {
     public boolean hasID(String newID) {
         return getID().contains(newID);
     }
-
-    // Utilities
+    
     @Override
     public boolean hasValue() {
         return super.hasValue() &&
@@ -111,44 +111,19 @@ public class Calendar extends Event implements IDme {
 
     @Override
     public String toString() {
-        String titleStr = getTitle() != null ? getTitle() : "";
-        String startDateStr = getStartDate() != null ? DateTime.convertDate(getStartDate()) : "";
-        String stopDateStr = getStopDate() != null ? DateTime.convertDate(getStopDate()) : "";
-        String startTimeStr = getStartTime() != null ? DateTime.convertTime(getStartTime()) : "";
-        String stopTimeStr = getStopTime() != null ? DateTime.convertTime(getStopTime()) : "";
-        String typeStr = super.getType() != null ? super.getType().toString() : "";
-        String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
-        String initialsStr = super.getInitials() != null ? super.getInitials() : "";
-        String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
-
-        return  titleStr +
-                ", " +
-                startDateStr +
-                ", " +
-                stopDateStr +
-                ", " +
-                startTimeStr +
-                ", " +
-                stopTimeStr +
-                ", " +
-                typeStr +
-                ", " +
-                tagStr +
-                ", " +
-                initialsStr +
-                ", " +
-                descriptionStr;
+        return getTitle();
     }
 
     @Override
-    public String[] toStringArray() {
-        String[] superArray = super.toStringArray();
+    public String[] toArray() {
+        String[] superArray = super.toArray();
         return new String[]{
+                getID(),
                 getTitle(),
-                getStartDate() != null ? getStartDate().format(DateTime.DATE_FORMAT) : "",
-                getStopDate() != null ? getStopDate().format(DateTime.DATE_FORMAT) : "",
-                getStartTime() != null ? getStartTime().format(DateTime.TIME_FORMAT) : "",
-                getStopTime() != null ? getStopTime().format(DateTime.TIME_FORMAT) : "",
+                getStartDate().format(DateTime.DATE_FORMAT),
+                getStopDate().format(DateTime.DATE_FORMAT),
+                getStartTime().format(DateTime.TIME_FORMAT),
+                getStopTime().format(DateTime.TIME_FORMAT),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
@@ -157,16 +132,18 @@ public class Calendar extends Event implements IDme {
     }
 
     @Override
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }
+
+    @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-        if (!super.equals(other)) return false;
-        Calendar otherCalendar = (Calendar) other;
-        return getTitle().equals(otherCalendar.getTitle()) &&
-                Objects.equals(getStartDate(), otherCalendar.getStartDate()) &&
-                Objects.equals(getStopDate(), otherCalendar.getStopDate()) &&
-                Objects.equals(getStartTime(), otherCalendar.getStartTime()) &&
-                Objects.equals(getStopTime(), otherCalendar.getStopTime());
+        if (this == other) return true; // check if its the same reference 
+        if (!(other instanceof Calendar)) return false; // check if it is the same type
+        Calendar otherCalendar = (Calendar) other; // if same type cast type
+        return getID().equals(otherCalendar.getID()); // if same id return true
     }
 }
 

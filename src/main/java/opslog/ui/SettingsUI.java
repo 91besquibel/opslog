@@ -1,5 +1,6 @@
 package opslog.ui;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
@@ -8,6 +9,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import opslog.managers.FormatManager;
+import opslog.managers.ListOperation;
 import opslog.managers.ProfileManager;
 import opslog.managers.TagManager;
 import opslog.managers.TypeManager;
@@ -17,37 +19,18 @@ import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.ui.controls.*;
 import opslog.util.*;
+import opslog.managers.DBManager;
 
 import java.util.prefs.Preferences;
 
 
 public class SettingsUI {
 
-
-    private static final Type tempType = new Type();
-
-    private static final Tag tempTag = new Tag();
-
-    private static final Format tempFormat = new Format();
-
-    private static final Profile tempProfile = new Profile(
-            "",
-            "",
-            Settings.rootColor.get(),
-            Settings.primaryColor.get(),
-            Settings.secondaryColor.get(),
-            Settings.focusColor.get(),
-            Settings.textColor.get(),
-            Settings.textSize.get(),
-            Settings.textFont.get()
-    );
-
     private static ScrollPane root;
 
     private static volatile SettingsUI instance;
 
-    private SettingsUI() {
-    }
+    private SettingsUI(){}
 
     public static SettingsUI getInstance() {
         if (instance == null) {
@@ -130,53 +113,48 @@ public class SettingsUI {
     }
 
     private static VBox createTypeCard() {
+        
         CustomLabel typeLabel = new CustomLabel("Type Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
         CustomListView<Type> listView = new CustomListView<>(TypeManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
-
-        CustomTextField nameTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        nameTextField.textProperty().bindBidirectional(tempType.getTitleProperty());
-
+        CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomTextField patternTextField = new CustomTextField("Pattern", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        patternTextField.textProperty().bindBidirectional(tempType.getPatternProperty());
+        CustomButton typeAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+        CustomButton typeDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+        
+        typeAdd.setOnAction(event -> {
+            Type newType = new Type();
+            newType.setTitle(titleTextField.getText());
+            newType.setPattern(patternTextField.getText());
+            Type dbType = DBManager.insert(newType, "type_table", TypeManager.TYPE_COL);
+            TypeManager.insert(dbType);
+            titleTextField.clear();
+            patternTextField.clear();
+        });
+
+        typeDelete.setOnAction(event -> {
+            Type selectedType = listView.getSelectionModel().getSelectedItem();
+            int rowsAffected = DBManager.delete(selectedType, "type_table");
+            if(rowsAffected > 0){
+                TypeManager.delete(selectedType.getID());
+                titleTextField.clear();
+                patternTextField.clear();
+                listView.getSelectionModel().clearSelection();
+            }
+        });
 
         listView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
             if (nv != null) {
-                nameTextField.setText(nv.getTitle());
+                titleTextField.setText(nv.getTitle());
                 patternTextField.setText(nv.getPattern());
             }
         });
-
-        CustomButton typeAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-        CustomButton typeDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-
-        typeAdd.setOnAction(event -> {
-            if (tempType.hasValue()) {
-                //CSV.write(Directory.Type_Dir.get(), tempType.toStringArray(), true);
-                //Update.add(TypeManager.getList(), tempType);
-                tempType.setPattern(null);
-                tempType.setTitle(null);
-                nameTextField.clear();
-                patternTextField.clear();
-            }
-        });
-        typeDelete.setOnAction(event -> {
-            if (tempType.hasValue()) {
-                //CSV.delete(Directory.Type_Dir.get(), tempType.toStringArray());
-                //Update.delete(TypeManager.getList(), tempType);
-                tempType.setPattern(null);
-                tempType.setTitle(null);
-                nameTextField.clear();
-                patternTextField.clear();
-            }
-        });
-
+        
         HBox typeBtns = new CustomHBox();
         typeBtns.getChildren().addAll(typeAdd, typeDelete);
         typeBtns.setAlignment(Pos.BASELINE_RIGHT);
 
         VBox typeCard = new CustomVBox();
-        typeCard.getChildren().addAll(typeLabel, listView, nameTextField, patternTextField, typeBtns);
+        typeCard.getChildren().addAll(typeLabel, listView, titleTextField, patternTextField, typeBtns);
 
         return typeCard;
     }
@@ -184,66 +162,80 @@ public class SettingsUI {
     private static VBox createTagCard() {
 
         CustomLabel tagLabel = new CustomLabel("Tag Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
         CustomListView<Tag> listView = new CustomListView<>(TagManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
-
-        CustomTextField tagTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        tagTextField.textProperty().bindBidirectional(tempTag.getTitleProperty());
-
+        CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomColorPicker tagColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        tagColorPicker.valueProperty().bindBidirectional(tempTag.getColorProperty());
-
         CustomButton tagAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
         CustomButton tagDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+        
         tagAdd.setOnAction(event -> {
-            if (tempTag.hasValue()) {
-                //CSV.write(Directory.Tag_Dir.get(), tempTag.toStringArray(), true);
-                //Update.add(TagManager.getList(), tempTag);
-                tempTag.setColor(null);
-                tempTag.setTitle(null);
-                tagTextField.clear();
-                tagColorPicker.setValue(null);
-            }
-        });
-        tagDelete.setOnAction(event -> {
-            if (tempTag.hasValue()) {
-                //CSV.delete(Directory.Tag_Dir.get(), tempTag.toStringArray());
-                //Update.delete(TagManager.getList(), tempTag);
-                tempTag.setColor(null);
-                tempTag.setTitle(null);
-                tagTextField.clear();
-                tagColorPicker.setValue(null);
-            }
+            Tag newTag = new Tag();
+            newTag.setTitle(titleTextField.getText());
+            newTag.setColor(tagColorPicker.getValue());
+            Tag dbTag = DBManager.insert(newTag, "tag_table", TagManager.TAG_COL);
+            ListOperation.insert(dbTag, TagManager.getList());
+            titleTextField.clear();
+            tagColorPicker.setValue(null);
         });
 
-        CustomHBox tagBtns = new CustomHBox();
-        tagBtns.getChildren().addAll(tagAdd, tagDelete);
-        tagBtns.setAlignment(Pos.BASELINE_RIGHT);
+        tagDelete.setOnAction(event -> {
+            Tag selectedTag = listView.getSelectionModel().getSelectedItem();
+            int rowsAffected = DBManager.delete(selectedTag, "tag_table");
+            if(rowsAffected > 0){
+                ListOperation.delete(selectedTag, TagManager.getList());
+                titleTextField.clear();
+                tagColorPicker.setValue(null);
+                listView.getSelectionModel().clearSelection();
+            }
+        });
 
         listView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
             if (nv != null) {
-                tagTextField.setText(nv.getTitle());
+                titleTextField.setText(nv.getTitle());
                 tagColorPicker.setValue(nv.getColor());
             }
         });
-
+        
+        CustomHBox tagBtns = new CustomHBox();
+        tagBtns.getChildren().addAll(tagAdd, tagDelete);
+        tagBtns.setAlignment(Pos.BASELINE_RIGHT);
+        
         CustomVBox tagCard = new CustomVBox();
-        tagCard.getChildren().addAll(tagLabel, listView, tagTextField, tagColorPicker, tagBtns);
+        tagCard.getChildren().addAll(tagLabel, listView, titleTextField, tagColorPicker, tagBtns);
 
         return tagCard;
     }
 
     private static VBox createFormatCard() {
+        
         CustomLabel formatLabel = new CustomLabel("Format Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
         CustomListView<Format> listView = new CustomListView<>(FormatManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
-
         CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        titleTextField.textProperty().bindBidirectional(tempFormat.getTitleProperty());
-
         CustomTextField descriptionTextField = new CustomTextField("Format", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        descriptionTextField.textProperty().bindBidirectional(tempFormat.getFormatProperty());
-
+        CustomButton formatAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+        CustomButton formatDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+        
+        formatAdd.setOnAction(event -> {
+            Format newFormat = new Format();
+            newFormat.setTitle(titleTextField.getText());
+            newFormat.setFormat(descriptionTextField.getText());
+            Format dbFormat = DBManager.insert(newFormat, "format_table", FormatManager.FORMAT_COL);
+            ListOperation.insert(dbFormat, FormatManager.getList());
+            titleTextField.clear();
+            descriptionTextField.clear();
+        });
+        
+        formatDelete.setOnAction(event -> {
+            Format selectedFormat = listView.getSelectionModel().getSelectedItem();
+            int rowsAffected = DBManager.delete(selectedFormat, "format_table");
+            if(rowsAffected > 0){
+                ListOperation.delete(selectedFormat, FormatManager.getList());
+                titleTextField.clear();
+                descriptionTextField.clear();
+                listView.getSelectionModel().clearSelection();
+            }
+        });
+        
         listView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
             if (nv != null) {
                 titleTextField.setText(nv.getTitle());
@@ -251,28 +243,6 @@ public class SettingsUI {
             }
         });
 
-        CustomButton formatAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-        CustomButton formatDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-        formatAdd.setOnAction(event -> {
-            if (tempFormat.hasValue()) {
-                //CSV.write(Directory.Format_Dir.get(), tempFormat.toStringArray(), true);
-                //Update.add(FormatManager.getList(), tempFormat);
-                tempFormat.setFormat(null);
-                tempFormat.setTitle(null);
-                titleTextField.clear();
-                descriptionTextField.clear();
-            }
-        });
-        formatDelete.setOnAction(event -> {
-            if (tempFormat.hasValue()) {
-                //CSV.delete(Directory.Format_Dir.get(), tempFormat.toStringArray());
-                //Update.delete(FormatManager.getList(), tempFormat);
-                tempFormat.setFormat(null);
-                tempFormat.setTitle(null);
-                titleTextField.clear();
-                descriptionTextField.clear();
-            }
-        });
         CustomHBox formatBtns = new CustomHBox();
         formatBtns.getChildren().addAll(formatAdd, formatDelete);
         formatBtns.setAlignment(Pos.BASELINE_RIGHT);
@@ -284,18 +254,19 @@ public class SettingsUI {
     }
 
     private static VBox createProfileCard() {
+        
+        Profile tempProfile = new Profile();
+        
         CustomLabel profileLabel = new CustomLabel("Profile Creation", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 
         CustomComboBox<Profile> profileSelector = new CustomComboBox<>("Profiles", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        profileSelector.setItems(ProfileManager.profileList);
+        profileSelector.setItems(ProfileManager.getList());
 
         CustomTextField profileTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         profileTextField.textProperty().bindBidirectional(tempProfile.getTitleProperty());
-
+        
         CustomColorPicker rootColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        rootColorPicker.setOnAction((event) -> {
-            Settings.rootColor.setValue(rootColorPicker.getValue());
-        });
+        rootColorPicker.setOnAction((event) -> { Settings.rootColor.setValue(rootColorPicker.getValue()); });
         rootColorPicker.valueProperty().bindBidirectional(tempProfile.getRootProperty());
         rootColorPicker.valueProperty().addListener(((obervable, ov, nv) -> {
             Settings.rootColor.set(nv);
@@ -304,9 +275,7 @@ public class SettingsUI {
         rootColorPicker.setTooltip(Utilities.createTooltip("Background Color"));
 
         CustomColorPicker primaryColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        primaryColorPicker.setOnAction((event) -> {
-            Settings.primaryColor.setValue(primaryColorPicker.getValue());
-        });
+        primaryColorPicker.setOnAction((event) -> { Settings.primaryColor.setValue(primaryColorPicker.getValue()); });
         primaryColorPicker.valueProperty().bindBidirectional(tempProfile.getPrimaryProperty());
         primaryColorPicker.valueProperty().addListener(((obervable, ov, nv) -> {
             Settings.primaryColor.set(nv);
@@ -315,9 +284,7 @@ public class SettingsUI {
         primaryColorPicker.setTooltip(Utilities.createTooltip("Panel Color"));
 
         CustomColorPicker secondaryColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        secondaryColorPicker.setOnAction((event) -> {
-            Settings.secondaryColor.setValue(secondaryColorPicker.getValue());
-        });
+        secondaryColorPicker.setOnAction((event) -> { Settings.secondaryColor.setValue(secondaryColorPicker.getValue()); });
         secondaryColorPicker.valueProperty().bindBidirectional(tempProfile.getSecondaryProperty());
         secondaryColorPicker.valueProperty().addListener(((obervable, ov, nv) -> {
             Settings.secondaryColor.set(nv);
@@ -326,9 +293,7 @@ public class SettingsUI {
         secondaryColorPicker.setTooltip(Utilities.createTooltip("Field Color"));
 
         CustomColorPicker focusColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        focusColorPicker.setOnAction((event) -> {
-            Settings.focusColor.setValue(focusColorPicker.getValue());
-        });
+        focusColorPicker.setOnAction((event) -> { Settings.focusColor.setValue(focusColorPicker.getValue()); });
         focusColorPicker.valueProperty().bindBidirectional(tempProfile.getBorderProperty());
         focusColorPicker.valueProperty().addListener(((obervable, ov, nv) -> {
             Settings.focusColor.set(nv);
@@ -337,9 +302,7 @@ public class SettingsUI {
         focusColorPicker.setTooltip(Utilities.createTooltip("Focus Color"));
 
         CustomColorPicker textColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        textColorPicker.setOnAction((event) -> {
-            Settings.textColor.setValue(textColorPicker.getValue());
-        });
+        textColorPicker.setOnAction((event) -> { Settings.textColor.setValue(textColorPicker.getValue()); });
         textColorPicker.valueProperty().bindBidirectional(tempProfile.getTextColorProperty());
         textColorPicker.valueProperty().addListener(((obervable, ov, nv) -> {
             Settings.textColor.set(nv);
@@ -364,28 +327,35 @@ public class SettingsUI {
         CustomButton profileAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
         CustomButton profileEdit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
         CustomButton profileDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+        
         profileAdd.setOnAction(event -> {
-            if (tempProfile.hasValue()) {
-                //CSV.write(Directory.Profile_Dir.get(), tempProfile.toStringArray(), true);
-                //Update.add(ProfileManager.getList(), tempProfile);
-            }
+            Profile newProfile = new Profile();
+            newProfile.setTitle(profileTextField.getText());
+            newProfile.setRoot(rootColorPicker.getValue());
+            newProfile.setPrimary(primaryColorPicker.getValue());
+            newProfile.setSecondary(secondaryColorPicker.getValue());
+            newProfile.setBorder(focusColorPicker.getValue());
+            newProfile.setTextColor(textColorPicker.getValue());
+            newProfile.setTextSize(textSizeSelector.getSelectionModel().getSelectedItem());
+            newProfile.setTextFont(textFontSelector.getSelectionModel().getSelectedItem());
+            
+            Profile profile = DBManager.insert(newProfile,"profile_table",ProfileManager.PROFILE_COL);
+            ListOperation.insert(profile, ProfileManager.getList());
+            profileTextField.textProperty().set("");
         });
+        
         profileEdit.setOnAction(event -> {
-            if (tempProfile.hasValue()) {
-                //CSV.edit(Directory.Format_Dir.get(), profileSelector.getValue().toStringArray(), tempProfile.toStringArray());
-                //Update.edit(ProfileManager.getList(), profileSelector.getValue(), tempProfile);
-            }
+            
         });
+        
         profileDelete.setOnAction(event -> {
-            if (tempProfile.hasValue()) {
-                //CSV.delete(Directory.Format_Dir.get(), tempProfile.toStringArray());
-               // Update.delete(ProfileManager.getList(), tempProfile);
+            Profile selectedProfile = profileSelector.getValue();
+            int rowsAffected = DBManager.delete(selectedProfile,"profile_table");
+            if(rowsAffected>0){
+                ListOperation.delete(selectedProfile, ProfileManager.getList());
+                profileSelector.setValue(null);
             }
         });
-
-        CustomHBox profileBtn = new CustomHBox();
-        profileBtn.getChildren().addAll(profileAdd, profileEdit, profileDelete);
-        profileBtn.setAlignment(Pos.BASELINE_RIGHT);
 
         profileSelector.valueProperty().addListener((obervable, ov, nv) -> {
             if (nv != null) {
@@ -397,8 +367,15 @@ public class SettingsUI {
                 textColorPicker.setValue(nv.getTextColor());
                 textSizeSelector.setValue(nv.getTextSize());
                 textFontSelector.setValue(nv.getTextFont());
+                // Defer the clearSelection to avoid race conditions
+                Platform.runLater(() -> profileSelector.getSelectionModel().clearSelection());
             }
         });
+        
+        CustomHBox profileBtn = new CustomHBox();
+        profileBtn.getChildren().addAll(profileAdd, profileEdit, profileDelete);
+        profileBtn.setAlignment(Pos.BASELINE_RIGHT);
+
 
         CustomVBox profileCard = new CustomVBox();
         profileCard.getChildren().addAll(

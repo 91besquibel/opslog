@@ -1,6 +1,5 @@
 package opslog.managers;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
@@ -13,35 +12,11 @@ import java.util.prefs.Preferences;
 public class ProfileManager {
 
     public static final ObservableList<Profile> profileList = FXCollections.observableArrayList();
-    public static final String pfCol = "id, title, root_color, primary_color, secondary_color, border_color, text_color, text_size, text_font"; 
+    public static final String PROFILE_COL = "id, title, root_color, primary_color, secondary_color, border_color, text_color, text_size, text_font"; 
     
     public static void loadPrefs() {
-        Preferences prefs = Directory.getPref();
         profileList.add(getLightMode());
         profileList.add(getDarkMode());
-        try {
-            for (String key : prefs.keys()) {
-                if (key.equals(Directory.PROFILE_KEY)) {
-                    String profileStr = prefs.get(key, null);
-                    String[] row = profileStr.split(",");
-
-                    Profile profile = new Profile();
-                    profile.setID(row[0]);
-                    profile.setTitle(row[1]);
-                    profile.setRoot(Color.web(row[2]));
-                    profile.setPrimary(Color.web(row[3]));
-                    profile.setSecondary(Color.web(row[4]));
-                    profile.setBorder(Color.web(row[5]));
-                    profile.setTextColor(Color.web(row[6]));
-                    profile.setTextSize(Integer.parseInt(row[7]));
-                    profile.setTextFont(row[8]);
-
-                    profileList.add(profile);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private static Profile getLightMode() {
@@ -76,40 +51,24 @@ public class ProfileManager {
         );
     }
 
-    // Determine the operation for SQL
+    
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
-                    Profile profile = new Profile();
-                    profile.setID(row[0]);
-                    profile.setTitle(row[1]);
-                    profile.setRoot(Color.web(row[2]));
-                    profile.setPrimary(Color.web(row[3]));
-                    profile.setSecondary(Color.web(row[4]));
-                    profile.setBorder(Color.web(row[5]));
-                    profile.setTextColor(Color.web(row[6]));
-                    profile.setTextSize(Integer.parseInt(row[7]));
-                    profile.setTextFont(row[8]);
-                    insert(profile);
+                    Profile item = newItem(row);
+                    if(getItem(item.getID()) == null){
+                        ListOperation.insert(item,getList());
+                    }
                 }
                 break;
             case "DELETE":
-                delete(ID);
+                ListOperation.delete(getItem(ID),getList());
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
-                    Profile profile = new Profile();
-                    profile.setID(row[0]);
-                    profile.setTitle(row[1]);
-                    profile.setRoot(Color.web(row[2]));
-                    profile.setPrimary(Color.web(row[3]));
-                    profile.setSecondary(Color.web(row[4]));
-                    profile.setBorder(Color.web(row[5]));
-                    profile.setTextColor(Color.web(row[6]));
-                    profile.setTextSize(Integer.parseInt(row[7]));
-                    profile.setTextFont(row[8]);
-                    update(profile);
+                    Profile item = newItem(row);
+                    ListOperation.update(getItem(item.getID()),getList());
                 }
                 break;
             default:
@@ -117,42 +76,30 @@ public class ProfileManager {
         }
     }
 
-    public static void insert(Profile log) {
-        synchronized (profileList) {
-            Platform.runLater(() -> profileList.add(log));
-        }
+    public static Profile newItem(String [] row){
+        Profile profile = new Profile();
+        profile.setID(row[0]);
+        profile.setTitle(row[1]);
+        profile.setRoot(Color.web(row[2]));
+        profile.setPrimary(Color.web(row[3]));
+        profile.setSecondary(Color.web(row[4]));
+        profile.setBorder(Color.web(row[5]));
+        profile.setTextColor(Color.web(row[6]));
+        profile.setTextSize(Integer.parseInt(row[7]));
+        profile.setTextFont(row[8]);
+        return profile;
     }
 
-    public static void delete(String ID) {
-        synchronized (profileList) {
-            Platform.runLater(() -> {
-                if (getProfile(ID).hasValue()) {
-                    profileList.remove(getProfile(ID));
-                }
-            });
-        }
-    }
-
-    public static void update(Profile oldProfile) {
-        synchronized (profileList) {
-            Platform.runLater(() -> {
-                for (Profile profile : profileList) {
-                    if (oldProfile.getID() == profile.getID()) {
-                        profileList.set(profileList.indexOf(profile), oldProfile);
-                    }
-                }
-            });
-        }
-    }
-
-    // Overload: Get Pin using SQL ID
-    public static Profile getProfile(String ID) {
+    public static Profile getItem(String ID) {
         for (Profile profile : profileList) {
-            if (profile.getID() == ID) {
+            if (profile.getID().equals(ID)) {
+                return profile;
+            }
+            if (profile.getTitle().equals(ID)){
                 return profile;
             }
         }
-        return new Profile();
+        return null;
     }
 
     public static ObservableList<Profile> getList() {

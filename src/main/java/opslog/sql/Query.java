@@ -2,8 +2,6 @@ package opslog.sql;
 
 import opslog.sql.Config;
 import opslog.sql.Connector;
-import opslog.sql.pgsql.PgNotificationPoller;
-import opslog.sql.pgsql.PgNotification;
 
 public class Query {
     private final String tableName;
@@ -13,6 +11,12 @@ public class Query {
     private String limitClause;
     private String setClause;
     private String insertValues;
+    private String startDate;
+    private String startTime;
+    private String stopDate;
+    private String stopTime;
+
+    private boolean isBetween = false;
     private boolean isSelect = false;
     private boolean isUpdate = false;
     private boolean isInsert = false;
@@ -76,6 +80,25 @@ public class Query {
     public Query select(String columns) {
         this.columns = columns;
         this.isSelect = true;
+        return this;
+    }
+
+    public Query between(){
+        
+        this.isBetween = true;
+        return this;
+    }
+
+    public Query dateRange(String startDate, String stopDate){
+        this.whereClause = "'date'";
+        this.startDate = startDate;
+        this.stopDate = stopDate;
+        return this;
+    }
+
+    public Query timeRange(String startTime, String stopTime){
+        this.startTime = startTime;
+        this.stopTime = stopTime;
         return this;
     }
 
@@ -149,6 +172,15 @@ public class Query {
             query.append("SELECT ").append(columns).append(" FROM ").append(tableName);
             if (whereClause != null) {
                 query.append(" WHERE ").append(whereClause);
+            }
+            if (isBetween){
+                query.append(" BETWEEN ");
+                if(startDate != null && stopDate != null){
+                    query.append(startDate).append(" AND ").append(stopDate);
+                }
+                if(startTime != null && stopDate != null){
+                    query.append(" AND ").append("'time'").append(" BETWEEN ").append(startTime).append(" AND ").append(stopTime); 
+                }
             }
             if (orderByClause != null) {
                 query.append(" ORDER BY ").append(orderByClause);

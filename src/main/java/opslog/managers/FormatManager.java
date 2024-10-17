@@ -10,29 +10,25 @@ import java.util.List;
 public class FormatManager {
 
     private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
-    public static final String fmtCol = "id, title, format"; 
+    public static final String FORMAT_COL = "id, title, format"; 
 
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
             case "INSERT":
                 for (String[] row : rows) {
-                    Format newFormat = new Format();
-                    newFormat.setID(row[0]);
-                    newFormat.setTitle(row[1]);
-                    newFormat.setFormat(row[2]);
-                    insert(newFormat);
+                    Format item = newItem(row);
+                    if(getItem(item.getID()) == null){
+                        ListOperation.insert(item,getList());
+                    }
                 }
                 break;
             case "DELETE":
-                delete(ID);
+                ListOperation.delete(getItem(ID),getList());
                 break;
             case "UPDATE":
                 for (String[] row : rows) {
-                    Format oldFormat = new Format();
-                    oldFormat.setID(row[0]);
-                    oldFormat.setTitle(row[1]);
-                    oldFormat.setFormat(row[2]);
-                    update(oldFormat);
+                    Format item = newItem(row);
+                    ListOperation.update(getItem(item.getID()),getList());
                 }
                 break;
             default:
@@ -40,43 +36,21 @@ public class FormatManager {
         }
     }
 
-    public static void insert(Format format) {
-        synchronized (formatList) {
-            Platform.runLater(() -> formatList.add(format));
-        }
+    public static Format newItem(String [] row){
+        Format format = new Format();
+        format.setID(row[0]);
+        format.setTitle(row[1]);
+        format.setFormat(row[2]);
+        return format;
     }
 
-    public static void delete(String ID) {
-        Format format = getFormat(ID);
-        synchronized (formatList) {
-            Platform.runLater(() -> {
-                if (format.hasValue()) {
-                    formatList.remove(format);
-                }
-            });
-        }
-    }
-
-    public static void update(Format oldFormat) {
-        synchronized (formatList) {
-            Platform.runLater(() -> {
-                for (Format format : formatList) {
-                    if (oldFormat.getID() == format.getID()) {
-                        formatList.set(formatList.indexOf(format), oldFormat);
-                    }
-                }
-            });
-        }
-    }
-
-    public static Format getFormat(String ID) {
-        Format newFormat = new Format();
+    public static Format getItem(String ID) {
         for (Format format : formatList) {
-            if (format.hasID(ID)) {
+            if (format.getID().equals(ID)) {
                 return format;
             }
         }
-        return newFormat;
+        return null;
     }
 
     public static ObservableList<Format> getList() {

@@ -152,7 +152,7 @@ public class ChecklistStatus {
                     int statusIndex = checklist.getTaskList().indexOf(task) + 1;
 
                     // Create UI elements
-                    String[] strArr = task.toStringArray();
+                    String[] strArr = task.toArray();
                     String strChildItem = String.join(" | ", strArr);
                     String childDescription = task.getDescription();
                     String childFinale = strChildItem + " | " + childDescription;
@@ -169,7 +169,7 @@ public class ChecklistStatus {
                            // newChecklist.setState(statusIndex, nv);
                             //checklist.setState(statusIndex,nv);
                             // Overwrite the old checklist
-                          // CSV.write(checklist.fileName(), newChecklist.toStringArray(), false);
+                          // CSV.write(checklist.fileName(), newChecklist.toArray(), false);
                             // Update percentage when change detected
                            // newChecklist.setPercentage();
                         }

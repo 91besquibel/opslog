@@ -1,6 +1,5 @@
 package opslog.util;
 
-import opslog.managers.SearchManager;
 import opslog.object.event.Log;
 
 import java.io.*;
@@ -85,8 +84,8 @@ public class CSV {
     }
 
     public static void append(Log oldLog, Log newLog) {
-        Path location = SearchManager.findFile(oldLog);
-        String[] row = newLog.toStringArray();
+        Path location = Directory.Format_Dir.get();
+        String[] row = newLog.toArray();
         write(location, row, true); // Use true for append
     }
 

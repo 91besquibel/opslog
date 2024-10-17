@@ -14,7 +14,6 @@ import javafx.stage.StageStyle;
 
 import opslog.managers.*;
 import opslog.object.Format;
-import opslog.object.Search;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Calendar;
@@ -35,13 +34,13 @@ public class EventUI {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static Calendar tempCalendar = new Calendar();
-    private static Search tempSearch = new Search();
     private static Log tempLog = new Log();
     private static Stage stage;
     private static BorderPane root;
     private static double lastX, lastY;
     private static double originalWidth;
     private static double originalHeight;
+    
     private static DatePicker startDatePicker;
     private static ComboBox<LocalTime> startTimeSelection;
     private static DatePicker stopDatePicker;
@@ -78,54 +77,45 @@ public class EventUI {
         CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search");
         search.setOnAction(event -> {
             // I will need to comeback and update this after SQL code has come along further
-            List<Log> searchResults = SearchManager.searchLogs(tempSearch);
-            SearchManager.setList(searchResults);
         });
         CustomButton calendar = new CustomButton( Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
         calendar.setOnAction(event -> {
-            if (tempCalendar.hasValue()) {
-                // INSERT Calendar to Database
-                tempCalendar = DBManager.insertDB(tempCalendar,"calander_table",CalendarManager.CAL_COL);
-                if(tempCalendar.getID() == "-1") {
-                    showPopup("Error","Failed to add calendar event to database please try again, or contact admin.");
-                    System.out.println("Failed to add calendar event to database please try again, or contact admin.");
-                }else if (tempCalendar.getID() == "-2") {
-                    showPopup("Error","Failed to retrieve the new ID, application may need to be reloaded.");
-                    System.out.println("Failed to retrieve the new ID");
-                }else {
-                    System.out.println("Calendar event added to database, now adding to in app memory");
-                    CalendarManager.insertApp(tempCalendar);
-                    handleClearParam();
-                }
-            } else {
-                showPopup("Error", "Ensure all field are filled for the log");
-                System.out.println("User failed to fill all fields");
+            Calendar newCalendar = new Calendar();
+            newCalendar.setTitle(tempCalendar.getTitle());
+            newCalendar.setStartDate(tempCalendar.getStartDate());
+            newCalendar.setStopDate(tempCalendar.getStopDate());
+            newCalendar.setStartTime(tempCalendar.getStartTime());
+            newCalendar.setType(tempCalendar.getType());
+            newCalendar.setTags(tempCalendar.getTags());
+            newCalendar.setInitials(tempCalendar.getInitials());
+            newCalendar.setDescription(tempCalendar.getDescription());
+            if(newCalendar.hasValue()){
+                newCalendar = DBManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
+                ListOperation.insert(newCalendar, CalendarManager.getList());
+                handleClearParam();
             }
         });
         
         CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
         log.setOnAction(event -> {
-            LocalDate currentDate = LocalDate.parse(DateTime.convertDate(DateTime.getDate()));
-            LocalTime currentTime = LocalTime.parse(DateTime.convertTime(DateTime.getTime()));
-            tempLog.setDate(currentDate);
-            tempLog.setTime(currentTime);
-            if (tempLog.hasValue()) {
-                // INSERT to Database
-                tempLog = DBManager.insertDB(tempLog,"log_table",LogManager.LOG_COL);
-                if(tempLog.getID() == "-1"){
-                    showPopup("Error","Failed to add log to database please try again, or contact admin.");
-                    System.out.println("Failed to add log to database please try again, or contact admin.");
-                }else if (tempLog.getID() == "-2"){
-                    showPopup("Error","Failed to retrieve the new ID, application may need to be reloaded.");
-                    System.out.println("Failed to retrieve the new ID");
-                }else{
-                    System.out.println("Log added to database, now adding to in app memory");
-                    LogManager.insertApp(tempLog);
-                    descriptionTextArea.clear();
-                }
-            } else {
-                showPopup("Error", "Ensure all field are filled for the log");
-                System.out.println("User failed to fill all fields");
+            // Create a new object refrence to store values in
+            Log newLog = new Log();
+            newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
+            newLog.setTime(LocalTime.parse(DateTime.convertTime(DateTime.getTime())));
+            newLog.setType(tempLog.getType());
+            newLog.setTags(tempLog.getTags());
+            newLog.setInitials(tempLog.getInitials());
+            newLog.setDescription(tempLog.getDescription());
+
+            // Verify all values except id are filled
+            if(newLog.hasValue()){
+                // Attempt SQL insert and get a UUID
+                newLog = DBManager.insert(newLog,"log_table",LogManager.LOG_COL);
+                // Add log to app memory if UUID is returned
+                ListOperation.insert(newLog, LogManager.getList());
+                handleClearParam();
+            }else{
+                showPopup("Log Error", "Failed to input log, ensure all fields are filled");
             }
         });
 
@@ -184,9 +174,7 @@ public class EventUI {
 
     private static HBox buildTitleCard() {
         CustomButton clearParam = new CustomButton(Directory.CLEAR_WHITE, Directory.CLEAR_GREY, "Clear Values");
-        clearParam.setOnAction(e -> {
-            handleClearParam();
-        });
+        clearParam.setOnAction(e -> { handleClearParam();});
         CustomLabel logLabel = new CustomLabel(
 				"Event Information", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomHBox titleHBox = new CustomHBox();
@@ -209,7 +197,6 @@ public class EventUI {
         listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             tempLog.setType(newValue);
             tempCalendar.setType(newValue);
-            tempSearch.setType(newValue);
         });
 
         return vbox;
@@ -228,7 +215,6 @@ public class EventUI {
         listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Tag>) change -> {
             tempLog.setTags(FXCollections.observableArrayList(change.getList()));
             tempCalendar.setTags(FXCollections.observableArrayList(change.getList()));
-            tempSearch.setTags(FXCollections.observableArrayList(change.getList()));
         });
 
         return vbox;
@@ -259,13 +245,11 @@ public class EventUI {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             tempLog.setInitials(newValue);
             tempCalendar.setInitials(newValue);
-            tempSearch.setInitials(newValue);
         });
         descriptionTextArea = new CustomTextArea(Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE);
         descriptionTextArea.textProperty().addListener((observable, oldValue, newValue) -> {
             tempLog.setDescription(newValue);
             tempCalendar.setDescription(newValue);
-            tempSearch.setDescription(newValue);
         });
         CustomVBox vbox = new CustomVBox();
         vbox.minWidth(100);
@@ -291,14 +275,12 @@ public class EventUI {
 				"Start Date", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             tempCalendar.setStartDate(newVal);
-            tempSearch.setStartDate(newVal);
         });
 
         startTimeSelection = new CustomComboBox<>(
 				"Start Time", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         startTimeSelection.valueProperty().addListener((obs, oldVal, newVal) -> {
             tempCalendar.setStartTime(newVal);
-            tempSearch.setStartTime(newVal);
         });
         startTimeSelection.setItems(DateTime.timeList);
 
@@ -306,14 +288,12 @@ public class EventUI {
 				"Stop Date", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         stopDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             tempCalendar.setStopDate(newVal);
-            tempSearch.setStopDate(newVal);
         });
 
         stopTimeSelection = new CustomComboBox<>(
 				"Stop Time", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         stopTimeSelection.valueProperty().addListener((obs, oldVal, newVal) -> {
             tempCalendar.setStopTime(newVal);
-            tempSearch.setStopTime(newVal);
         });
         stopTimeSelection.setItems(DateTime.timeList);
 
@@ -329,15 +309,7 @@ public class EventUI {
         stopDatePicker.setValue(null);
         startTimeSelection.setValue(null);
         stopTimeSelection.setValue(null);
-
-        tempSearch.setType(null);
-        tempSearch.setTags(FXCollections.observableArrayList());
-        tempSearch.setInitials(null);
-        tempSearch.setDescription(null);
-        tempSearch.setStartDate(null);
-        tempSearch.setStopDate(null);
-        tempSearch.setStartTime(null);
-        tempSearch.setStartTime(null);
+        descriptionTextArea.clear();
     }
 
     public static void showPopup(String title, String message) {

@@ -1,5 +1,6 @@
 package opslog.object.event;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -8,10 +9,11 @@ import opslog.object.Event;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.util.DateTime;
+import opslog.interfaces.SQL;
 
 import java.time.LocalDate;
 
-public class Checklist extends Event {
+public class Checklist extends Event implements SQL {
 
     private final StringProperty ID = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
@@ -45,6 +47,7 @@ public class Checklist extends Event {
     }
 
     // Accessor
+    @Override
     public String getID() {
         return ID.get();
     }
@@ -91,6 +94,7 @@ public class Checklist extends Event {
     }
 
     // Mutator
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -120,6 +124,7 @@ public class Checklist extends Event {
     public boolean hasID(String newID) {
         return getID().contains(newID);
     }
+    
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
@@ -129,42 +134,40 @@ public class Checklist extends Event {
     }
 
     @Override
-        public String toString() {
-            String titleStr = getTitle() != null ? getTitle() : "";
-            String startDateStr = getStartDate() != null ? DateTime.convertDate(getStartDate()) : "";
-            String stopDateStr = getStopDate() != null ? DateTime.convertDate(getStopDate()) : "";
-            String typeStr = super.getType() != null ? super.getType().toString() : "";
-            String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
-            String initialsStr = super.getInitials() != null ? super.getInitials() : "";
-            String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
-
-            return  titleStr +
-                    ", " +
-                    startDateStr +
-                    ", " +
-                    stopDateStr +
-                    ", " +
-                    typeStr +
-                    ", " +
-                    tagStr +
-                    ", " +
-                    initialsStr +
-                    ", " +
-                    descriptionStr;
+        public String toSQL(){
+            return Arrays.stream(toArray())
+                .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+                .collect(Collectors.joining(", "));
         }
 
     @Override
-    public String [] toStringArray(){
-        String[] superArray = super.toStringArray();
+    public String toString() {
+        return getTitle();
+    }
+
+    @Override
+    public String [] toArray(){
+        String[] superArray = super.toArray();
         return new String[]{
-                title.get() != null ? title.get() : "",
-                startDate.get() != null ? DateTime.convertDate(getStartDate()) : "",
-                stopDate.get() != null ? DateTime.convertDate(getStopDate()) : "",
-                // tasks go here
+                ID.get(),
+                title.get(),
+                DateTime.convertDate(getStartDate()),
+                DateTime.convertDate(getStopDate()),
+                statusList.stream().map(String::valueOf).collect(Collectors.joining(" | ")),
+                taskList.stream().map(Task::toString).collect(Collectors.joining(" | ")),
+                percentage.get(),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
                 superArray[3]  // description
         };
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true; // check if its the same reference 
+        if (!(other instanceof Checklist)) return false; // check if it is the same type
+        Checklist otherChecklist = (Checklist) other; // if same type cast type
+        return getID().equals(otherChecklist.getID()); // if same id return true
     }
 }

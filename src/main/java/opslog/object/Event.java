@@ -7,8 +7,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
-
 /*
 	Abstract super class for:
 	Log.java
@@ -44,67 +44,62 @@ public abstract class Event {
         this.initials.set(null);
         this.description.set(null);
     }
-
+    
+    // Mutator
+    public void setType(Type newType) {
+        type.set(newType);
+    }
     public void setTag(Tag newTag) {
         tags.add(newTag);
+    }
+    public void setTags(ObservableList<Tag> newTags) {
+        tags.setAll(newTags);
+    }
+    public void setInitials(String newInitials) {
+        initials.set(newInitials);
+    }
+    public void setDescription(String newDescription) {
+        description.set(newDescription);
     }
 
     // Accessor
     public Type getType() {
         return type.get();
     }
-
-    // Mutator
-    public void setType(Type newType) {
-        type.set(newType);
-    }
-
     public ObservableList<Tag> getTags() {
         return tags;
     }
-
-    public void setTags(ObservableList<Tag> newTags) {
-        tags.setAll(newTags);
-    }
-
     public String getInitials() {
         return initials.get();
     }
-
-    public void setInitials(String newInitials) {
-        initials.set(newInitials);
-    }
-
     public String getDescription() {
         return description.get();
     }
 
-    public void setDescription(String newDescription) {
-        description.set(newDescription);
-    }
-
-    // Return true if all elements have a value
+    // Checkis if all properties have a value
     public boolean hasValue() {
+        System.out.println("Checking if type has a value: " + type.get().toString());
         return
                 type.get().hasValue() &&
-                        !tags.isEmpty() && tags.stream().allMatch(Tag::hasValue) &&
-                        initials.get() != null && !initials.get().trim().isEmpty() &&
-                        description.get() != null && !description.get().trim().isEmpty();
+                !tags.isEmpty() && tags.stream().allMatch(Tag::hasValue) &&
+                initials.get() != null && !initials.get().trim().isEmpty() &&
+                description.get() != null && !description.get().trim().isEmpty();
     }
 
-    public String[] toStringArray() {
+    public String[] toArray() {
         return new String[]{
-                getType() != null ? getType().toString() : "",
-                !tags.isEmpty() ? tags.stream().map(Tag::toString).collect(Collectors.joining("|")) : "",
+                getType().getID(),
+                tags.stream().map(Tag::getID).collect(Collectors.joining(" | ")),
                 getInitials(),
                 getDescription()
         };
     }
+    
 
     @Override
     public String toString() {
         String typeStr = getType().toString();
-        String tagStr = tags.stream().map(Tag::toString).collect(Collectors.joining("|"));
+        String tagStr = tags.stream().map(Tag::toString).collect(Collectors.joining(" | "));
         String initialsStr = getInitials();
         String descriptionStr = getDescription();
 

@@ -42,6 +42,7 @@ public class CustomListView<T> extends ListView<T> {
                 prefWidthProperty().bind(this.widthProperty().subtract(5));
 
                 hoverProperty().addListener((obs, noHov, hov) -> {
+                    requestLayout();
                     if (!isEmpty()) {
                         borderProperty().unbind();
                         if (hov) {
@@ -53,6 +54,7 @@ public class CustomListView<T> extends ListView<T> {
                 });
 
                 focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+                    requestLayout();
                     if (!isEmpty()) {
                         borderProperty().unbind();
                         if (isFocused) {
@@ -64,6 +66,7 @@ public class CustomListView<T> extends ListView<T> {
                 });
 
                 selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+                    requestLayout();
                     backgroundProperty().unbind();
                     if (isSelected) {
                         setBackground(Settings.selectedBackground.get());

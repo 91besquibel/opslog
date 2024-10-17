@@ -8,9 +8,11 @@ import opslog.object.Type;
 import opslog.util.DateTime;
 import java.util.stream.Collectors;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Objects;
+import opslog.interfaces.SQL;
 
-public class Task extends Event {
+public class Task extends Event implements SQL {
 
     //Definition
     private final StringProperty ID = new SimpleStringProperty();
@@ -41,11 +43,13 @@ public class Task extends Event {
     }
 
     // Accessor
+    @Override
     public String getID() {
         return ID.get();
     }
 
     // Mutator
+    @Override
     public void setID(String newID) {
         ID.set(newID);
     }
@@ -87,12 +91,13 @@ public class Task extends Event {
                         super.hasValue();
     }
 
-    public String[] toStringArray() {
-        String[] superArray = super.toStringArray();
+    public String[] toArray() {
+        String[] superArray = super.toArray();
         return new String[]{
+                getID(),
                 getTitle(),
-                getStartTime() != null ? getStartTime().format(DateTime.TIME_FORMAT) : "",
-                getStopTime() != null ? getStopTime().format(DateTime.TIME_FORMAT) : "",
+                getStartTime().format(DateTime.TIME_FORMAT),
+                getStopTime().format(DateTime.TIME_FORMAT),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
@@ -101,28 +106,15 @@ public class Task extends Event {
     }
 
     @Override
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }
+    
+    @Override
     public String toString() {
-        String titleStr = getTitle() != null ? getTitle() : "";
-        String startTimeStr = getStartTime() != null ? DateTime.convertTime(getStartTime()) : "";
-        String stopTimeStr = getStopTime() != null ? DateTime.convertTime(getStopTime()) : "";
-        String typeStr = super.getType() != null ? super.getType().toString() : "";
-        String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
-        String initialsStr = super.getInitials() != null ? super.getInitials() : "";
-        String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
-
-        return  titleStr +
-                ", " +
-                startTimeStr +
-                ", " +
-                stopTimeStr +
-                ", " +
-                typeStr +
-                ", " +
-                tagStr +
-                ", " +
-                initialsStr +
-                ", " +
-                descriptionStr;
+        return getTitle();
     }
 
     @Override

@@ -1,9 +1,7 @@
--- Unique id generation enabled
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create log table
 CREATE TABLE log_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	date DATE,
 	time TIME,
 	typeID TEXT,
@@ -25,9 +23,34 @@ CREATE TRIGGER log_table_changes
 AFTER INSERT OR UPDATE OR DELETE ON log_table
 FOR EACH ROW EXECUTE FUNCTION notify_log_table_change();
 
+-- Create pinboard table
+CREATE TABLE pinboard_table (
+	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	date DATE,
+	time TIME,
+	typeID TEXT,
+	tagIDs TEXT,
+	initials TEXT,
+	description TEXT
+);
+
+CREATE OR REPLACE FUNCTION notify_pinboard_table_change()
+RETURNS TRIGGER AS $$
+BEGIN
+	-- Send a notification to the 'pinboard_changes' channel
+	PERFORM pg_notify('pinboard_changes', TG_OP || ' on pinboard id: ' || NEW.id::text);
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER pinboard_table_changes
+AFTER INSERT OR UPDATE OR DELETE ON pinboard_table
+FOR EACH ROW EXECUTE FUNCTION notify_pinboard_table_change();
+
+
 -- Create checklist table
 CREATE TABLE checklist_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	start_date DATE,
 	stop_date DATE,
@@ -55,7 +78,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_checklist_table_change();
 
 -- Create task_table
 CREATE TABLE task_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	start_time TIME,
 	stop_time TIME,
@@ -80,7 +103,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_task_table_change();
 
 -- Create calendar_table
 CREATE TABLE calendar_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	start_date DATE,
 	stop_date DATE,
@@ -107,7 +130,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_calendar_table_change();
 
 -- create format_table
 CREATE TABLE format_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	format TEXT
 );
@@ -127,7 +150,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_format_table_change();
 
 -- create tag_table
 CREATE TABLE tag_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	color TEXT
 );
@@ -147,7 +170,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_tag_table_change();
 
 -- create type_table
 CREATE TABLE type_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	pattern TEXT
 );
@@ -167,7 +190,7 @@ FOR EACH ROW EXECUTE FUNCTION notify_type_table_change();
 
 -- create profile_table
 CREATE TABLE profile_table (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 	title TEXT,
 	root_color TEXT,
 	primary_color TEXT,
