@@ -13,7 +13,7 @@ public class CalendarManager {
 
     // Deffinition
     private static final ObservableList<Calendar> calendarList = FXCollections.observableArrayList();
-    public static final String CAL_COL = "id, title, start_date, stop_date, typeID, tagIDs, initials, description"; 
+    public static final String CAL_COL = "id, title, start_date, stop_date, start_time, stop_time, typeID, tagIDs, initials, description"; 
     
     // which operation
     public static void operation(String operation, List<String[]> rows, String ID) {

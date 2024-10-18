@@ -80,11 +80,13 @@ public class EventUI {
         });
         CustomButton calendar = new CustomButton( Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
         calendar.setOnAction(event -> {
+            System.out.println("CalendarManager: Attempting to create calendar event");
             Calendar newCalendar = new Calendar();
             newCalendar.setTitle(tempCalendar.getTitle());
             newCalendar.setStartDate(tempCalendar.getStartDate());
             newCalendar.setStopDate(tempCalendar.getStopDate());
             newCalendar.setStartTime(tempCalendar.getStartTime());
+            newCalendar.setStopTime(tempCalendar.getStopTime());
             newCalendar.setType(tempCalendar.getType());
             newCalendar.setTags(tempCalendar.getTags());
             newCalendar.setInitials(tempCalendar.getInitials());
