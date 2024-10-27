@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public class Calendar extends Event implements SQL {
 
-    private final StringProperty ID = new SimpleStringProperty();
+    private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
@@ -23,9 +23,9 @@ public class Calendar extends Event implements SQL {
     private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
 
     // Constructor
-    public Calendar(String ID, String title, LocalDate startDate, LocalDate stopDate, LocalTime startTime, LocalTime stopTime, Type type, ObservableList<Tag> tags, String initials, String description) {
+    public Calendar(String id, String title, LocalDate startDate, LocalDate stopDate, LocalTime startTime, LocalTime stopTime, Type type, ObservableList<Tag> tags, String initials, String description) {
         super(type, tags, initials, description);
-        this.ID.set(ID);
+        this.id.set(id);
         this.title.set(title);
         this.startDate.set(startDate);
         this.stopDate.set(stopDate);
@@ -35,7 +35,7 @@ public class Calendar extends Event implements SQL {
 
     public Calendar() {
         super();
-        this.ID.set(null);
+        this.id.set(null);
         this.title.set(null);
         this.startDate.set(null);
         this.stopDate.set(null);
@@ -43,16 +43,13 @@ public class Calendar extends Event implements SQL {
         this.stopTime.set(null);
     }
 
-    // Accessor
     @Override
-    public String getID() {
-        return ID.get();
+    public void setID(String id){
+        this.id.set(id);
     }
-
-    // Mutator
     @Override
-    public void setID(String newID) {
-        ID.set(newID);
+    public String getID(){
+        return id.get();
     }
 
     public String getTitle() {

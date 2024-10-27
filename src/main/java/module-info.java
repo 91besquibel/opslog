@@ -1,4 +1,5 @@
 module test.opslog {
+    
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
@@ -7,6 +8,14 @@ module test.opslog {
     requires java.prefs;
     requires java.logging;
     requires org.postgresql.jdbc;
+    
+    // Add the required Spring modules.
+    requires spring.boot;
+    requires spring.boot.autoconfigure;
+    requires spring.web;
+    requires spring.webmvc;
+
+    requires com.zaxxer.hikari;
     
     opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 

@@ -14,20 +14,19 @@ import opslog.interfaces.SQL;
 
 public class Task extends Event implements SQL {
 
-    //Definition
-    private final StringProperty ID = new SimpleStringProperty();
+    private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<LocalTime> startTime = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
 
     //Constructor parameterized
     public Task(
-            String ID, String title,
+            String id, String title,
 			LocalTime startTime, LocalTime stopTime,
 			Type type, ObservableList<Tag> tags,
 			String initials, String description) {
         super(type, tags, initials, description);
-        this.ID.set(ID);
+        this.id.set(id);
         this.title.set(title);
         this.startTime.set(startTime);
         this.stopTime.set(stopTime);
@@ -36,22 +35,19 @@ public class Task extends Event implements SQL {
     //Constructor non parameterized
     public Task() {
         super();
-        this.ID.set(null);
+        this.id.set(null);
         this.title.set(null);
         this.startTime.set(null);
         this.stopTime.set(null);
     }
 
-    // Accessor
     @Override
-    public String getID() {
-        return ID.get();
+    public void setID(String id){
+        this.id.set(id);
     }
-
-    // Mutator
     @Override
-    public void setID(String newID) {
-        ID.set(newID);
+    public String getID(){
+        return id.get();
     }
 
     public String getTitle() {

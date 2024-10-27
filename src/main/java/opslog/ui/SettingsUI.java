@@ -17,6 +17,8 @@ import opslog.object.Format;
 import opslog.object.Profile;
 import opslog.object.Tag;
 import opslog.object.Type;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.controls.*;
 import opslog.util.*;
 import opslog.managers.DBManager;
@@ -125,15 +127,19 @@ public class SettingsUI {
             Type newType = new Type();
             newType.setTitle(titleTextField.getText());
             newType.setPattern(patternTextField.getText());
-            Type dbType = DBManager.insert(newType, "type_table", TypeManager.TYPE_COL);
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
+            Type dbType = dbManager.insert(newType, "type_table", TypeManager.TYPE_COL);
             TypeManager.insert(dbType);
             titleTextField.clear();
             patternTextField.clear();
         });
 
         typeDelete.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             Type selectedType = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = DBManager.delete(selectedType, "type_table");
+            int rowsAffected = dbManager.delete(selectedType, "type_table");
             if(rowsAffected > 0){
                 TypeManager.delete(selectedType.getID());
                 titleTextField.clear();
@@ -169,18 +175,22 @@ public class SettingsUI {
         CustomButton tagDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
         
         tagAdd.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             Tag newTag = new Tag();
             newTag.setTitle(titleTextField.getText());
             newTag.setColor(tagColorPicker.getValue());
-            Tag dbTag = DBManager.insert(newTag, "tag_table", TagManager.TAG_COL);
+            Tag dbTag = dbManager.insert(newTag, "tag_table", TagManager.TAG_COL);
             ListOperation.insert(dbTag, TagManager.getList());
             titleTextField.clear();
             tagColorPicker.setValue(null);
         });
 
         tagDelete.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             Tag selectedTag = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = DBManager.delete(selectedTag, "tag_table");
+            int rowsAffected = dbManager.delete(selectedTag, "tag_table");
             if(rowsAffected > 0){
                 ListOperation.delete(selectedTag, TagManager.getList());
                 titleTextField.clear();
@@ -219,15 +229,19 @@ public class SettingsUI {
             Format newFormat = new Format();
             newFormat.setTitle(titleTextField.getText());
             newFormat.setFormat(descriptionTextField.getText());
-            Format dbFormat = DBManager.insert(newFormat, "format_table", FormatManager.FORMAT_COL);
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
+            Format dbFormat = dbManager.insert(newFormat, "format_table", FormatManager.FORMAT_COL);
             ListOperation.insert(dbFormat, FormatManager.getList());
             titleTextField.clear();
             descriptionTextField.clear();
         });
         
         formatDelete.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             Format selectedFormat = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = DBManager.delete(selectedFormat, "format_table");
+            int rowsAffected = dbManager.delete(selectedFormat, "format_table");
             if(rowsAffected > 0){
                 ListOperation.delete(selectedFormat, FormatManager.getList());
                 titleTextField.clear();
@@ -329,6 +343,7 @@ public class SettingsUI {
         CustomButton profileDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
         
         profileAdd.setOnAction(event -> {
+            
             Profile newProfile = new Profile();
             newProfile.setTitle(profileTextField.getText());
             newProfile.setRoot(rootColorPicker.getValue());
@@ -338,8 +353,9 @@ public class SettingsUI {
             newProfile.setTextColor(textColorPicker.getValue());
             newProfile.setTextSize(textSizeSelector.getSelectionModel().getSelectedItem());
             newProfile.setTextFont(textFontSelector.getSelectionModel().getSelectedItem());
-            
-            Profile profile = DBManager.insert(newProfile,"profile_table",ProfileManager.PROFILE_COL);
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
+            Profile profile = dbManager.insert(newProfile,"profile_table",ProfileManager.PROFILE_COL);
             ListOperation.insert(profile, ProfileManager.getList());
             profileTextField.textProperty().set("");
         });
@@ -349,8 +365,10 @@ public class SettingsUI {
         });
         
         profileDelete.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             Profile selectedProfile = profileSelector.getValue();
-            int rowsAffected = DBManager.delete(selectedProfile,"profile_table");
+            int rowsAffected = dbManager.delete(selectedProfile,"profile_table");
             if(rowsAffected>0){
                 ListOperation.delete(selectedProfile, ProfileManager.getList());
                 profileSelector.setValue(null);

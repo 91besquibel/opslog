@@ -28,14 +28,14 @@ public class TableLoader {
             query.select("*");
             Execute execute = new Execute(query);
             List<String[]> rows = execute.select();
-            System.out.println("TableLoader: Results for " + tableName + " query:");
+            //System.out.println("TableLoader: Results for " + tableName + " query:");
             for(String [] row : rows){
                 System.out.println("TableLoader:" + Arrays.toString(row));
             }
-            System.out.println("TableLoader: Adding results into application memory");
+            //System.out.println("TableLoader: Adding results into application memory");
             setAppData(tableName,"INSERT",rows);
         } catch (SQLException e) {
-            System.out.println("TableLoader: Failed to execute query for: " + tableName);
+            //System.out.println("TableLoader: Failed to execute query for: " + tableName);
             e.printStackTrace();
         }
     }

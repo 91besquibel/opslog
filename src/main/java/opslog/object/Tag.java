@@ -26,12 +26,10 @@ public class Tag implements SQL{
         this.color.set(null);
     }
     
-    @Override
     public String getID() {
         return ID.get();
     }
     
-    @Override
     public void setID(String newID) {
         ID.set(newID);
     }

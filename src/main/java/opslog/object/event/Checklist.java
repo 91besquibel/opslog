@@ -14,8 +14,8 @@ import opslog.interfaces.SQL;
 import java.time.LocalDate;
 
 public class Checklist extends Event implements SQL {
-
-    private final StringProperty ID = new SimpleStringProperty();
+    
+    private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
@@ -24,9 +24,9 @@ public class Checklist extends Event implements SQL {
     private final StringProperty percentage = new SimpleStringProperty();
 
     // Constructor
-    public Checklist(String ID, String title, LocalDate startDate, LocalDate stopDate, ObservableList<Boolean> statusList, ObservableList<Task> taskList, Type type, ObservableList<Tag> tags, String initials, String description, String percentage) {
+    public Checklist(String id, String title, LocalDate startDate, LocalDate stopDate, ObservableList<Boolean> statusList, ObservableList<Task> taskList, Type type, ObservableList<Tag> tags, String initials, String description, String percentage) {
         super(type, tags, initials, description);
-        this.ID.set(ID);
+        this.id.set(id);
         this.title.set(title);
         this.startDate.set(startDate);
         this.stopDate.set(stopDate);
@@ -37,7 +37,7 @@ public class Checklist extends Event implements SQL {
 
     public Checklist() {
         super();
-        this.ID.set(null);
+        this.id.set(null);
         this.title.set(null);
         this.startDate.set(null);
         this.stopDate.set(null);
@@ -46,11 +46,16 @@ public class Checklist extends Event implements SQL {
         this.percentage.set(null);
     }
 
-    // Accessor
     @Override
-    public String getID() {
-        return ID.get();
+    public void setID(String id){
+        this.id.set(id);
     }
+    
+    @Override
+    public String getID(){
+        return id.get();
+    }
+
     public String getTitle() {
         return title.get();
     }
@@ -93,11 +98,6 @@ public class Checklist extends Event implements SQL {
         return percentage;
     }
 
-    // Mutator
-    @Override
-    public void setID(String newID) {
-        ID.set(newID);
-    }
     public void setTitle(String newTitle) {
         title.set(newTitle);
     }
@@ -121,6 +121,7 @@ public class Checklist extends Event implements SQL {
         taskList.add(newTask);
         statusList.add(false);
     }
+    
     public boolean hasID(String newID) {
         return getID().contains(newID);
     }
@@ -134,11 +135,11 @@ public class Checklist extends Event implements SQL {
     }
 
     @Override
-        public String toSQL(){
-            return Arrays.stream(toArray())
-                .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
-                .collect(Collectors.joining(", "));
-        }
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }
 
     @Override
     public String toString() {
@@ -149,7 +150,7 @@ public class Checklist extends Event implements SQL {
     public String [] toArray(){
         String[] superArray = super.toArray();
         return new String[]{
-                ID.get(),
+                id.get(),
                 title.get(),
                 DateTime.convertDate(getStartDate()),
                 DateTime.convertDate(getStopDate()),

@@ -1,38 +1,35 @@
 package opslog.ui;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import java.util.prefs.Preferences;
+
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import opslog.ui.controls.*;
-import opslog.util.Directory;
 import opslog.util.Settings;
+import opslog.managers.*;
+import opslog.managers.DBManager;
 import opslog.managers.ProfileManager;
-import opslog.sql.Config;
-import opslog.sql.Connector;
 //import opslog.sql.pgsql.PgNotificationPoller;
 //import opslog.sql.pgsql.PgNotification;
-import opslog.sql.TableLoader;
-import opslog.util.DateTime;
-import opslog.managers.*;
-import opslog.sql.Manager;
+
+import com.zaxxer.hikari.HikariConfig;
+
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.HikariConfigSetup;
+import opslog.sql.hikari.HikariConnectionProvider;
 
 public class StartUI {
 
@@ -189,8 +186,6 @@ public class StartUI {
         return false;
     }
 
-
-
     private static void handleLoadSQL() throws SQLException {
         System.out.println("StartUI: Createing connection URL");
 
@@ -201,7 +196,27 @@ public class StartUI {
         String name = serverDBName.getText();
         String user = serverUsername.getText();
         String password = serverPassword.getText();
-        Config config = new Config(type, address, port, name, user, password);
+
+        // Setup HikariCP connection pool
+        HikariConfig config = HikariConfigSetup.configure(type, address, port, name, user, password);
+        ConnectionManager.setInstance(config);
+        HikariConnectionProvider connectionProvider = ConnectionManager.getInstance();
+        DatabaseExecutor executor = new DatabaseExecutor(connectionProvider);
+
+        try {
+            // Example: Execute a query
+            for(String tableName : DBManager.TABLE_NAMES){
+                System.out.println("StartUI: Loading table data for: " + tableName);
+                List<String[]> results = executor.executeQuery("SELECT * FROM " + tableName);
+                sendTo(tableName,results,"INSERT");             
+            }
+            popupWindow.close();
+        } catch (Exception e) {
+            showPopup("Connection Provider","Could not connect to the database! Verify database inforamation");
+            e.printStackTrace();
+        }
+        
+        /*Config config = new Config(type, address, port, name, user, password);
         System.out.println("StartUI: Connection URL: " + config.getConnectionURL());
         
         // Get connection
@@ -223,7 +238,7 @@ public class StartUI {
             System.out.println("Failed to establish a connection.");
             showPopup("Connection Failure","Connection attempt failed, please verify all fields are correct.");
             e.printStackTrace();
-        }
+        } */
     }
     
     /*
@@ -316,5 +331,41 @@ public class StartUI {
         root.setLeft(null);
         root.setRight(null);
         latch.countDown();
+    }
+
+    public static void sendTo(String tableName,List<String []> results, String operation){
+        String id = "-1";
+        switch(tableName){
+            case "log_table":
+                LogManager.operation(operation, results, id);
+                break;
+            case "pinboard_table":
+                PinboardManager.operation(operation, results, id);
+                break;
+            case "calendar_table":
+                CalendarManager.operation(operation, results, id);
+                break;
+            case "checklist_table":
+                ChecklistManager.operation(operation, results, id);
+                break;
+            case "task_table":
+                TaskManager.operation(operation, results, id);
+                break;
+            case "tag_table":
+                TagManager.operation(operation, results, id);
+                break;
+            case "type_table":
+                TypeManager.operation(operation, results, id);
+                break;
+            case "format_table":
+                FormatManager.operation(operation, results, id);
+                break;
+            case "profile_table":
+                ProfileManager.operation(operation, results, id);
+                break;
+            default:
+                System.out.println("Table does not exist!");
+                break;
+        }
     }
 }

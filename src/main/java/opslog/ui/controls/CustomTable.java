@@ -18,6 +18,8 @@ import opslog.managers.ListOperation;
 import opslog.managers.LogManager;
 import opslog.managers.PinboardManager;
 import opslog.object.event.Log;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.ui.PopupUI;
@@ -55,9 +57,11 @@ public class CustomTable {
 
         pinItem.setOnAction(e -> {
             if (tableView.getSelectionModel().getSelectedItem() != null) {
+                DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+                DBManager dbManager = new DBManager(databaseExecutor);
                 String[] newRow = tableView.getSelectionModel().getSelectedItem().toArray();
                 Log newPin = PinboardManager.newItem(newRow);
-                Log pin = DBManager.insert(newPin, "pinboard_table", PinboardManager.PIN_COL);
+                Log pin = dbManager.insert(newPin, "pinboard_table", PinboardManager.PIN_COL);
                 ListOperation.insert(pin,PinboardManager.getList());
             }
         });
@@ -131,10 +135,12 @@ public class CustomTable {
         });
 
         unpinItem.setOnAction(e -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             if (tableView.getSelectionModel().getSelectedItem() != null) {
                 String[] item = tableView.getSelectionModel().getSelectedItem().toArray();
                 Log newLog = LogManager.newItem(item);
-                int rowsAffected = DBManager.delete(newLog, "pinboard_table");
+                int rowsAffected = dbManager.delete(newLog, "pinboard_table");
                 if(rowsAffected>0){
                     ListOperation.delete(newLog,PinboardManager.getList());
                 }

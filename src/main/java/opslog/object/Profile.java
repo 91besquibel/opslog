@@ -46,11 +46,11 @@ public class Profile implements SQL{
         this.textSize.set(null);
         this.textFont.set(null);
     }
-    @Override
+
     public String getID() {
         return ID.get();
     }
-    @Override
+    
     public void setID(String newID) {
         ID.set(newID);
     }

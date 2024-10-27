@@ -25,13 +25,12 @@ public class Format implements SQL {
         this.title.set(null);
         this.format.set(null);
     }
-    
-    @Override
+
     public String getID() {
         return ID.get();
     }
     
-    @Override
+
     public void setID(String newID) {
         ID.set(newID);
     }

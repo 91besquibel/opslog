@@ -1,24 +1,26 @@
 package opslog.object;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-import java.util.Arrays;
+import javafx.collections.FXCollections;
 import java.util.stream.Collectors;
+import opslog.interfaces.*;
+
 /*
+
 	Abstract super class for:
 	Log.java
 	Calendar.java
 	Checklist.java
 	Task.java
-
+    
 	This will allow the DateCell in the CalendarContent.java 
 	to Display all the values associated with that date.
 	By using the Event Data type in an observable list in the CustomDateCell.java
+    
 */
 
 public abstract class Event {
@@ -45,7 +47,6 @@ public abstract class Event {
         this.description.set(null);
     }
     
-    // Mutator
     public void setType(Type newType) {
         type.set(newType);
     }
@@ -62,7 +63,6 @@ public abstract class Event {
         description.set(newDescription);
     }
 
-    // Accessor
     public Type getType() {
         return type.get();
     }
@@ -94,7 +94,6 @@ public abstract class Event {
                 getDescription()
         };
     }
-    
 
     @Override
     public String toString() {

@@ -13,7 +13,6 @@ public class Type implements SQL {
     private final StringProperty title = new SimpleStringProperty();
     private final StringProperty pattern = new SimpleStringProperty();
 
-
     public Type() {
         this.ID.set(null);
         this.title.set(null);
@@ -26,12 +25,10 @@ public class Type implements SQL {
         this.pattern.set(pattern);
     }
     
-    @Override
     public String getID() {
         return ID.get();
     }
-    
-    @Override
+        
     public void setID(String newID) {
         ID.set(newID);
     }

@@ -23,40 +23,132 @@
  * questions.
  */
 
-package opslog.ui.controls;
+package opslog.ui.calendar;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
 import javafx.scene.control.Cell;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
+import opslog.ui.calendar.CalendarCellHeader;
 import opslog.util.Settings;
-
-import java.time.LocalDate;
-import java.util.Objects;
 
 /*
 	This class is not to be used with the CustomDatePicker. 
 	This class was designed to work with the CalendarContent.java class
 */
 
-public class CustomDateCell extends Cell<LocalDate> {
+public class CalendarCell extends Cell<LocalDate> {
 
     //Do Not Remove
     private static final String DEFAULT_STYLE_CLASS = "date-cell";
-    // Container for assigned calendar events
-    private final ObservableList<Calendar> dailyEvents = FXCollections.observableArrayList();
-    // Container for assigned checklists
-    private final ObservableList<Checklist> dailyChecklist = FXCollections.observableArrayList();
-    private final VBox labelContainer = new VBox();
-
+    private final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();  // container for all events taking place on that dat
+    private final VBox eventContainer = new VBox(); 
+    private final CalendarCellHeader header = new CalendarCellHeader();
+    private final LocalDate date;
 
     //Do Not Remove
-    public CustomDateCell() {
+    public CalendarCell(LocalDate date) {
+        super();
+        this.date = date;
+        
+        initializeListeners();
+    }
+
+    public void addEvent(Event event) {
+        dailyEvents.add(event);
+    }
+
+    public void removeEvent(Event event) {
+        dailyEvents.remove(event);
+    } 
+
+    public LocalDate getDate(){
+        return date;
+    }
+    public CalendarCellHeader getHeader(){
+        return header;
+    }
+
+    //Do Not Remove
+    @Override
+    public void updateItem(LocalDate item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty || item == null) {
+            setGraphic(null);
+        } else {
+            header.setDate(item);
+            dailyEvents.addListener(new ListChangeListener<Event>() {
+                @Override
+                public void onChanged(Change<? extends Event> change) {
+                    while (change.next()) {
+                        if (change.wasAdded()) {
+                            // sets the new number of events to be diplayed
+                            // in the cell header
+                            header.setNumEvents(getList().size());
+                            newLabel(change.getAddedSubList());
+                        } else if (change.wasRemoved()) {
+                            header.setNumEvents(getList().size());
+                            removeLabel(change.getRemoved());
+                        } else if (change.wasUpdated()) {
+                            
+                        }
+                    }
+                }
+            });
+            updateDisplay();
+            // add special interactions for each type of label
+        }
+    }
+
+    public void updateDisplay(){
+        if (!dailyEvents.isEmpty()) {
+            for (Event event : dailyEvents) {
+                newLabel(event);
+            }
+        }
+    }
+
+    private void removeLabel(List<Event> newEvents){
+        
+    }
+    
+    private void newLabel(List<Event> newEvents){
+        for(Event event : newEvents){
+            if (event instanceof Calendar) {
+                displayCalEvent(event);
+            } else if (event instanceof Checklist) {
+                displayChe(event);
+            }
+        }
+    }
+
+    private void displayCalEvent(Event event){
+        Calendar calendarEvent = (Calendar) event;
+        CalendarCellEvent displayEvent = new CalendarCellEevent(calendarEvent);
+        eventContainer.add(displayEvent);
+    }
+
+    private void displayChckEvent(Event event){
+        Checklist checklistEvent = (Checklist) event;
+        CalendarCellEvent displayEvent = new CalendarCellEevent(checklistEvent);
+        eventContainer.add(displayEvent);
+    }
+
+    private void initializeListeners(){
         getStyleClass().add(DEFAULT_STYLE_CLASS);
         setAccessibleRole(AccessibleRole.TEXT);
 
@@ -96,59 +188,6 @@ public class CustomDateCell extends Cell<LocalDate> {
             }
         });
     }
-
-    public void addEvent(Calendar newEvent) {
-        dailyEvents.add(newEvent);
-    }
-
-    public void addChecklist(Checklist newChecklist) {
-        dailyChecklist.add(newChecklist);
-    }
-
-    public void removeEvent(Calendar event) {
-        dailyEvents.remove(event);
-    }
-
-    // getters to retrieve the data from this event
-
-    public void removeChecklist(Checklist checklist) {
-        dailyChecklist.remove(checklist);
-    }
-
-    // create a sort method
-    private void orderByDate() {
-        // get the time of each child item and sort it
-    }
-
-    //Do Not Remove
-    @Override
-    public void updateItem(LocalDate item, boolean empty) {
-        super.updateItem(item, empty);
-
-        if (empty || item == null) {
-            setGraphic(null);
-        } else {
-            if (!dailyChecklist.isEmpty()) {
-                for (Checklist checklist : dailyChecklist) {
-                    if (checklist.hasValue()) {
-                        Label label = new Label(checklist.toString());
-                        labelContainer.getChildren().add(label);
-                    }
-                }
-            }
-            if (!dailyEvents.isEmpty()) {
-                for (Calendar event : dailyEvents) {
-                    if (event.hasValue()) {
-                        Label label = new Label(event.toString());
-                        labelContainer.getChildren().add(label);
-                    }
-                }
-            }
-        }
-    }
-
-    //Do Not Remove
-
     //Do Not Remove
     @Override
     public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {

@@ -18,16 +18,15 @@ import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Calendar;
 import opslog.object.event.Log;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.controls.*;
 import opslog.util.*;
 
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import java.lang.reflect.Method;
 
 
 public class EventUI {
@@ -80,6 +79,8 @@ public class EventUI {
         });
         CustomButton calendar = new CustomButton( Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
         calendar.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             System.out.println("CalendarManager: Attempting to create calendar event");
             Calendar newCalendar = new Calendar();
             newCalendar.setTitle(tempCalendar.getTitle());
@@ -92,7 +93,7 @@ public class EventUI {
             newCalendar.setInitials(tempCalendar.getInitials());
             newCalendar.setDescription(tempCalendar.getDescription());
             if(newCalendar.hasValue()){
-                newCalendar = DBManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
+                newCalendar = dbManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
                 ListOperation.insert(newCalendar, CalendarManager.getList());
                 handleClearParam();
             }
@@ -100,6 +101,8 @@ public class EventUI {
         
         CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
         log.setOnAction(event -> {
+            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DBManager dbManager = new DBManager(databaseExecutor);
             // Create a new object refrence to store values in
             Log newLog = new Log();
             newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
@@ -112,7 +115,7 @@ public class EventUI {
             // Verify all values except id are filled
             if(newLog.hasValue()){
                 // Attempt SQL insert and get a UUID
-                newLog = DBManager.insert(newLog,"log_table",LogManager.LOG_COL);
+                newLog = dbManager.insert(newLog,"log_table",LogManager.LOG_COL);
                 // Add log to app memory if UUID is returned
                 ListOperation.insert(newLog, LogManager.getList());
                 handleClearParam();

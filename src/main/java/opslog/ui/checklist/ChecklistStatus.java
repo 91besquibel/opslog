@@ -91,7 +91,7 @@ public class ChecklistStatus {
         if (checklist.hasValue()) {
 
             // Create checklist instance for listeners to store changes
-            Checklist newChecklist = new Checklist();
+            Checklist newChecklist = new Checklist();// this should not be a new instance of cheklist this negates the observable properties
 			newChecklist.setID(checklist.getID());
 			newChecklist.setTitle(checklist.getTitle());
 			newChecklist.setStartDate(checklist.getStartDate());

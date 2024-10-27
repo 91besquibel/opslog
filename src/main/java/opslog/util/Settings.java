@@ -12,8 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
-import opslog.sql.Config;
-import opslog.sql.Connector;
+
 
 public class Settings {
 
@@ -74,13 +73,14 @@ public class Settings {
     // Border
     public static ObjectProperty<Border> dateOutOfScopeBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(selectedColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
     public static ObjectProperty<Border> dateSelectBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(dateSelectColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+    public static ObjectProperty<Border> cellBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
     public static ObjectProperty<Border> borderWindow = new SimpleObjectProperty<>(new Border(new BorderStroke(borderColorWB.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
     public static ObjectProperty<Border> borderBar = new SimpleObjectProperty<>(new Border(new BorderStroke(borderColorWB.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH_WB)));
     public static ObjectProperty<Border> primaryBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
     public static ObjectProperty<Border> secondaryBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(secondaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
     public static ObjectProperty<Border> focusBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(focusColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
     public static ObjectProperty<Border> transparentBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(transparent.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
-    public static ObjectProperty<Border> calendarBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(primaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
+    public static ObjectProperty<Border> calendarBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(secondaryColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WIDTH)));
     public static ObjectProperty<Border> badInputBorder = new SimpleObjectProperty<>(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 
     // Text

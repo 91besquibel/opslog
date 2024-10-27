@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 import opslog.interfaces.SQL;
 
 public class Log extends Event implements SQL {
-    private final StringProperty ID = new SimpleStringProperty();
+    private final StringProperty id = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalTime> time = new SimpleObjectProperty<>();
 
     // Construct: Parameterized
-    public Log(String ID, LocalDate date, LocalTime time, Type type, ObservableList<Tag> tags, String initials, String description) {
+    public Log(String id, LocalDate date, LocalTime time, Type type, ObservableList<Tag> tags, String initials, String description) {
         super(type, tags, initials, description);
-        this.ID.set(ID);
+        this.id.set(id);
         this.date.set(date);
         this.time.set(time);
     }
@@ -32,21 +32,19 @@ public class Log extends Event implements SQL {
     // Construct: Default
     public Log() {
         super();
-        this.ID.set(null);
+        this.id.set(null);
         this.date.set(null);
         this.time.set(null);
     }
 
-    // Accessor
     @Override
-    public String getID() {
-        return ID.get();
+    public void setID(String id){
+        this.id.set(id);
     }
-
-    // Mutator
+    
     @Override
-    public void setID(String newID) {
-        ID.set(newID);
+    public String getID(){
+        return id.get();
     }
 
     public LocalDate getDate() {
@@ -93,11 +91,11 @@ public class Log extends Event implements SQL {
     }
     
     @Override
-        public String toSQL(){
-            return Arrays.stream(toArray())
-                .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
-                .collect(Collectors.joining(", "));
-        }
+    public String toSQL(){
+        return Arrays.stream(toArray())
+            .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
+            .collect(Collectors.joining(", "));
+    }
 
     @Override
     public String toString() {

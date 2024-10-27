@@ -13,6 +13,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import opslog.ui.*;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.controls.Buttons;
@@ -24,26 +27,29 @@ import opslog.util.*;
 import java.io.IOException;
 import java.util.Objects;
 
+
+// Look at swaping to the Builder interface and making a ScreenBuilder class
+// https://www.pragmaticcoding.ca/javafx/nofxml
+// https://www.stefankrause.net/wp/?p=14 memory managment for java
+@SpringBootApplication
 public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();
     private static LogUI logUI;
     private static CalendarUI calendarUI;
     private static SettingsUI settingsUI;
+    private ChecklistUI checklistUI;
     private double lastX, lastY;
     private double originalWidth;
     private double originalHeight;
-    private ChecklistUI checklistUI;
 
     private AnchorPane viewArea;
     private BorderPane root;
 
-    public static void showPopup(String title, String message) {
-        PopupUI popupUI = new PopupUI();
-        popupUI.message(title, message);
-    }
-
     public static void main(String[] args) {
+        // Initialize Spring Boot
+        // SpringApplication.run(App.class, args); 
+        // Initialize JavaFX
         launch(args);
     }
 
@@ -239,5 +245,10 @@ public class App extends Application {
         AnchorPane.setRightAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setTopAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setBottomAnchor(settingsUI.getRootNode(), 0.0);
+    }
+    
+    public static void showPopup(String title, String message) {
+        PopupUI popupUI = new PopupUI();
+        popupUI.message(title, message);
     }
 }
