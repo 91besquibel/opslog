@@ -103,6 +103,7 @@ public class EventUI {
         log.setOnAction(event -> {
             DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
             DBManager dbManager = new DBManager(databaseExecutor);
+            
             // Create a new object refrence to store values in
             Log newLog = new Log();
             newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));

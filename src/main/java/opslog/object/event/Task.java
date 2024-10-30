@@ -16,20 +16,20 @@ public class Task extends Event implements SQL {
 
     private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
-    private final ObjectProperty<LocalTime> startTime = new SimpleObjectProperty<>();
-    private final ObjectProperty<LocalTime> stopTime = new SimpleObjectProperty<>();
+    private final IntegerProperty offSet = new SimpleIntegerProperty();
 
     //Constructor parameterized
     public Task(
             String id, String title,
-			LocalTime startTime, LocalTime stopTime,
+			int offSet,
 			Type type, ObservableList<Tag> tags,
 			String initials, String description) {
+
+        
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);
-        this.startTime.set(startTime);
-        this.stopTime.set(stopTime);
+        this.offSet.set(offSet);
     }
 
     //Constructor non parameterized
@@ -37,14 +37,14 @@ public class Task extends Event implements SQL {
         super();
         this.id.set(null);
         this.title.set(null);
-        this.startTime.set(null);
-        this.stopTime.set(null);
+        this.offSet.set(0);//must be greater or less then 0
     }
 
     @Override
     public void setID(String id){
         this.id.set(id);
     }
+    
     @Override
     public String getID(){
         return id.get();
@@ -54,24 +54,16 @@ public class Task extends Event implements SQL {
         return title.get();
     }
 
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
+    public void setTitle(String title) {
+        this.title.set(title);
     }
 
-    public LocalTime getStartTime() {
-        return startTime.get();
+    public int getOffSet() {
+        return offSet.get();
     }
 
-    public void setStartTime(LocalTime newStartTime) {
-        startTime.set(newStartTime);
-    }
-
-    public LocalTime getStopTime() {
-        return stopTime.get();
-    }
-
-    public void setStopTime(LocalTime newStopTime) {
-        stopTime.set(newStopTime);
+    public void setOffSet(int offSet) {
+        this.offSet.set(offSet);
     }
 
     public boolean hasID(String newID) {
@@ -82,8 +74,7 @@ public class Task extends Event implements SQL {
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
-                        startTime.get() != null &&
-                        stopTime.get() != null &&
+                        offSet.get() != 0 &&
                         super.hasValue();
     }
 
@@ -92,8 +83,7 @@ public class Task extends Event implements SQL {
         return new String[]{
                 getID(),
                 getTitle(),
-                getStartTime().format(DateTime.TIME_FORMAT),
-                getStopTime().format(DateTime.TIME_FORMAT),
+                String.valueOf(getOffSet()),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
@@ -121,7 +111,7 @@ public class Task extends Event implements SQL {
         Task otherTask = (Task) other;
         return
                 title.get().equals(otherTask.getTitle()) &&
-                        Objects.equals(getStartTime(), otherTask.getStartTime()) &&
-                        Objects.equals(getStopTime(), otherTask.getStopTime());
+                        Objects.equals(getOffSet(), otherTask.getOffSet());
+                        
     }
 }

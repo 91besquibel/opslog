@@ -119,14 +119,16 @@ public class ControlPanel extends HBox{
 	}
 
 	/*
-		Queries the database for the requested time range and adds the items into the application memeory
+		Queries the database for the requested time range and 
+		adds the items into the application memory. It alos runs a quickSort
+		to sort he data by date after data has been loaded
 	*/
 	public void handleQuery(LocalDate startDate, LocalDate stopDate){
 		DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
 		
-		System.out.println("ControlPanel: Requesting events from database from " + startDate + " to " + stopDate);
+		//System.out.println("ControlPanel: Requesting events from database from " + startDate + " to " + stopDate);
 		List<Event> events = new ArrayList<>();
-		CalendarManager.getMonthEvents().clear(); //empty the list before refilling it
+		CalendarManager.getMonthEvents().clear();
 		
 		try{
 			
@@ -138,10 +140,11 @@ public class ControlPanel extends HBox{
 			);
 			
 			for (String[] row : results) {
+				
 				Calendar item = CalendarManager.newItem(row);                  
-				if(CalendarManager.getItem(item.getID()) == null){
-					events.add(item);
-				}
+				
+				events.add(item);
+			
 			}
 			
 		}catch(SQLException e){
@@ -156,10 +159,11 @@ public class ControlPanel extends HBox{
 				stopDate
 			);
 			for (String[] row : results) {
+				
 				Checklist item = ChecklistManager.newItem(row);
-				if(ChecklistManager.getItem(item.getID()) == null){
-					events.add(item);
-				}
+				
+				events.add(item);
+				
 			}
 		}catch(SQLException e){
 			e.printStackTrace();

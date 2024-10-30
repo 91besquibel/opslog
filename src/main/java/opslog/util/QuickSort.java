@@ -12,11 +12,13 @@ public class QuickSort {
 
 	// QuickSort method for List<Event>
 	public static void quickSort(List<Event> events, int low, int high) {
+		System.out.println("QuickSort: Starting sort");
 		if (low < high) {
 			int pivotIndex = partition(events, low, high);
 			quickSort(events, low, pivotIndex - 1);
 			quickSort(events, pivotIndex + 1, high);
 		}
+		System.out.println("QuickSort: End of sort");
 	}
 
 	// Partition method to rearrange the list

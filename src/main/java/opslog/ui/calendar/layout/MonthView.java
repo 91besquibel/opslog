@@ -1,45 +1,64 @@
 package opslog.ui.calendar.layout;
 
+import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
-import javafx.scene.text.TextAlignment;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
+import javafx.stage.Popup;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.geometry.Side;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
-import opslog.object.Event;
-import opslog.object.event.Calendar;
-import opslog.object.event.Checklist;
+import opslog.App;
+import opslog.managers.LogManager;
+import opslog.object.event.Log;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
+import opslog.ui.EventUI;
+import opslog.ui.SearchUI;
 import opslog.ui.calendar.control.CalendarCell;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.util.Settings;
+import opslog.ui.controls.CustomTextField;
 
 public class MonthView extends GridPane{
 	
-	private List<CalendarCell> selectedCalendarCells = new ArrayList<>();
-	private List<LocalDate> selectedDates = new ArrayList<>();
 	private ObservableList<Label> weekNumberLabels = FXCollections.observableArrayList();
 	private CalendarMonth calendarMonth;
+	private ContextMenu contextMenu = new ContextMenu();
+	private ContextMenu contextMenuSearch = new ContextMenu(); 
 
-	// Constructor: Non-Parameterized
+	// Constructor: Parameterized
 	public MonthView(CalendarMonth calendarMonth){
 		super();
 		this.calendarMonth = calendarMonth;
 		buildMonthView();
+		createContextMenu();
+		setOnContextMenuRequested(event -> {
+			
+			contextMenu.show(
+				this,
+				event.getScreenX(),
+				event.getScreenY()
+			);
+			
+		});
 		this.setPadding(Settings.INSETS);
 		this.backgroundProperty().bind(Settings.primaryBackground);
 	}
@@ -75,7 +94,7 @@ public class MonthView extends GridPane{
 		row1To6.setVgrow(Priority.ALWAYS);
 		for (int i = 1; i < nRows; i++) {
 			this.getRowConstraints().add(row1To6);
-		}		
+		}
 
 		// Set the day names in the grid
 		String [] dayNames = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
@@ -111,6 +130,9 @@ public class MonthView extends GridPane{
 		for (int row = 0; row < 6; row++) {
 			for (int col = 0; col < 7; col++) {
 				CalendarCell calendarCell = calendarMonth.getCells().get(row * 7 + col); 
+				calendarCell.setOnContextMenuRequested(event -> {
+					contextMenu.show(calendarCell, event.getScreenX(), event.getScreenY());
+				});
 				this.add(calendarCell, col + nCols - 7, row + 1);
 			}
 		}
@@ -131,76 +153,104 @@ public class MonthView extends GridPane{
 		}
 	}
 
-	private void setupSelection(CalendarCell calendarCell) {
-		calendarCell.setOnMouseClicked(e -> {
-			LocalDate date = calendarCell.getDate();
-			calendarCell.borderProperty().unbind();
-			if (selectedCalendarCells.contains(calendarCell)) {
-				selectedCalendarCells.remove(calendarCell);
-				selectedDates.remove(date);
-				calendarCell.borderProperty().bind(Settings.cellBorder);
-			} else {
-				selectedCalendarCells.add(calendarCell);
-				selectedDates.add(date);
-				calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+	private void createContextMenu(){
+		// Search sub-ContextMenu
+		MenuItem search = new MenuItem("Search");
+		search.setOnAction(e ->{
+			contextMenuSearch.show(this,contextMenu.anchorXProperty().get(),contextMenu.anchorYProperty().get());
+		});
+		
+		MenuItem calendar = new MenuItem("Calendar");
+		calendar.setOnAction(e -> {
+			HBox searchBar = createSearchBar();
+			Popup popup = new Popup();
+			popup.getContent().add(searchBar);
+			popup.show(this, contextMenuSearch.anchorXProperty().get(),contextMenuSearch.anchorYProperty().get());
+			popup.setBackground(null);
+			//stylize the popup
+		});
+		MenuItem log = new MenuItem("Log");
+		contextMenuSearch.getItems().addAll(calendar,log);
+		
+		// Views
+		MenuItem dayView = new MenuItem("Day View");
+		MenuItem weekView = new MenuItem("Week View");
+		
+		// Month View 
+		MenuItem viewLogs = new MenuItem("View Logs");
+		viewLogs.setOnAction(e ->{
+			DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
+			List<CalendarCell> selectedCells = calendarMonth.getSelectedCells();
+			List<Log> data = new ArrayList<>();
+			
+			for(CalendarCell cell : selectedCells){
+				LocalDate cellDate = cell.getDate();
+				Date date = Date.valueOf(cellDate);
+				String sql = String.format("SELECT * FROM log_table WHERE date = '" + date.toString() +"'");
+				try{
+					System.out.println("\n MonthView: DataBase Query: " + sql);
+					List<String[]> results = executor.executeQuery(sql);
+					for(String[] row : results){
+						System.out.println("MonthView: Result: " + Arrays.toString(row));
+						Log newLog = LogManager.newItem(row);
+						data.add(newLog);
+					}
+					System.out.println("MonthView: End Query \n");
+					handleSearch(data);
+				} catch(SQLException ex){
+					System.out.println("MonthView: Error occured while attempting to retrive the cell data");
+					ex.printStackTrace();
+				}
 			}
 		});
-	}
-
-	private void dateSelectionAction() {
-		System.out.println("Selected Dates: " + selectedDates);
-	}
-
-
-	/*
-		Listeners should happen at the month level or grid level this will prevent 
-		each CalendarCell from attempting to access the observablelist. 
-
-		ChecklistManager.getList().addListener((ListChangeListener<Checklist>) change -> {
-			while (change.next()) {
-				if (change.wasAdded()) {
-					for (Checklist addedChecklist : change.getAddedSubList()) {
-						// get the date range
-						// find CalendarCells *their the event will have multiple events
-						// 
-						addChecklistIfRelevant(addedChecklist);
-					}
-				}
-				if (change.wasRemoved()) {
-					for (Checklist removedChecklist : change.getRemoved()) {
-						removeChecklistIfRelevant(removedChecklist);
-					}
-				}
-			}
+		MenuItem createEvent = new MenuItem("New Event");
+		createEvent.setOnAction(e -> {
+			EventUI eventUI = EventUI.getInstance();
+			eventUI.display();
 		});
+		
+		contextMenu.getItems().addAll(viewLogs,search,dayView,weekView,createEvent);
+	}
 
-		private void addChecklistIfRelevant(Checklist checklist) {
-			if ((checklist.getStartDate().isBefore(date) || checklist.getStartDate().isEqual(date)) &&
-				(checklist.getEndDate().isAfter(date) || checklist.getEndDate().isEqual(date))) {
-				Label checklistLabel = new Label(checklist.getName());
-				this.getChildren().add(checklistLabel);
-				checklistLabels.put(checklist, checklistLabel);
-			}
-		}
+	private HBox createSearchBar(){
+		HBox container = new HBox();
+		container.borderProperty().bind(Settings.primaryBorder);
+		container.backgroundProperty().bind(Settings.secondaryBackground);
 
-		private void removeChecklistIfRelevant(Checklist checklist) {
-			if (checklistLabels.containsKey(checklist)) {
-				this.getChildren().remove(checklistLabels.get(checklist));
-				checklistLabels.remove(checklist);
-			}
-		}
+		CustomTextField tf = new CustomTextField("Search",200,Settings.SINGLE_LINE_HEIGHT);
+		
+		MenuBar menuBar = new MenuBar();
+		menuBar.backgroundProperty().bind(Settings.secondaryBackground);
+		
+		Menu menu = new Menu("Filter");
+		
+		
+		//menu needs to stay open or make a drop down
+		
+		CheckMenuItem tag = new CheckMenuItem("Tag");
+		
+		CheckMenuItem type = new CheckMenuItem("Type");
+		
+		CheckMenuItem initials = new CheckMenuItem("Initials");
+		
+		CheckMenuItem description = new CheckMenuItem("Description");
+		
+		menu.getItems().addAll(tag,type,initials,description);
 
-		public void updateChecklist(LocalDate newStartDate, LocalDate newEndDate, String newName) {
-			for (Checklist checklist : allChecklists) {
-				if ((checklist.getStartDate().isBefore(date) || checklist.getStartDate().isEqual(date)) &&
-					(checklist.getEndDate().isAfter(date) || checklist.getEndDate().isEqual(date))) {
-					checklist.setStartDate(newStartDate);
-					checklist.setEndDate(newEndDate);
-					checklist.setName(newName);
-					break;
-				}
-			}
-			updateDisplay(); // Ensures the display is updated correctly
+		menuBar.getMenus().add(menu);
+		
+		container.getChildren().addAll(tf,menuBar);
+		return container;
+	}
+
+	private <T> void handleSearch(List<T> data){
+		try{
+			SearchUI<T> searchUI = new SearchUI<>();
+			searchUI.setList(data);
+			searchUI.display();
+		}catch(Exception e ){
+			e.printStackTrace();
 		}
-	*/
+		
+	}
 }

@@ -92,6 +92,7 @@ public class CustomTable {
         });
 
         tableView.setContextMenu(contextMenu);
+        
         tableView.widthProperty().addListener((obs, oldWidth, newWidth) -> {
             tableView.refresh();
         });

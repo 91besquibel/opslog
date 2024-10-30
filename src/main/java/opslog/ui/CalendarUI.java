@@ -2,12 +2,15 @@ package opslog.ui;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
@@ -17,6 +20,7 @@ import opslog.managers.ChecklistManager;
 import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
+import opslog.object.event.Log;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.controls.CustomListView;
@@ -32,7 +36,7 @@ public class CalendarUI{
     private AnchorPane leftTop;
     private AnchorPane leftBottom;
     private SplitPane left;
-    
+
     private VBox calendarView;
     private AnchorPane right;
         
@@ -54,23 +58,20 @@ public class CalendarUI{
     
     public void initialize() {
         try {
-
             initializeTopLeft();
             initializeBottomLeft();
             initializeLeftSide();
-            
             initializeMonthView();
             initializeRightSide();
-            
             initializeRoot();
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
     private void initializeTopLeft() {
-        CustomListView<Calendar> calendarEvents = new CustomListView<>(CalendarManager.getList(), Settings.WIDTH_LARGE, Settings.WIDTH_LARGE, SelectionMode.SINGLE);
+        CalendarListView<Event> calendarEvents = new CalendarListView<>();
+        calendarEvents.setItems(CalendarManager.getMonthEvents());
         leftTop = new AnchorPane(calendarEvents);
         leftTop.backgroundProperty().bind(Settings.primaryBackground);
         AnchorPane.setTopAnchor(calendarEvents, 0.0);
@@ -123,59 +124,78 @@ public class CalendarUI{
     }
     
     private void initializeListeners(CalendarMonth calendarMonth){
-
-        // It may be a good idea to trigger an SQL query that loads all the data 
-        // for the month range into the application to keep the memory requirments 
-        // down or have a three month range and if the user request a date outside
-        // of the three month range trigger a new sql query. However the application.
-        loadList(CalendarManager.getList(),calendarMonth);
-        loadList(ChecklistManager.getList(),calendarMonth);
-
-        ChecklistManager.getList().addListener((ListChangeListener<Checklist>) change -> {
-            while (change.next()) {
-
-                if (change.wasAdded()) {
-                    for (Checklist checklist : change.getAddedSubList()) {
-                        for(CalendarCell cell : calendarMonth.getCells()){
-                            if(inRange(checklist, cell.getDate())){
-                                cell.addEvent(checklist);
+        /*
+            For any changes that to the monthly list of events will cause the listener to check them.
+            The listener will iterate through each change and get the events dates. 
+            It will then iterate through list of cells stored in the CalendarMonth object checking
+            if the cell has the same date.
+        */
+        CalendarManager.getMonthEvents().addListener((ListChangeListener<? super Event>) change -> {
+            System.out.println("CalendarUI: MonthEvent list change detected");
+            while(change.next()){
+                
+                if(change.wasAdded()){
+                    System.out.println("CalendarUI: Adding Changes");
+                    ObservableList<Event> events = FXCollections.observableArrayList(change.getAddedSubList());
+                    for(Event event : events){
+                        
+                        LocalDate [] dates = getDates(event);
+                        System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
+                        // Add the event to the calendar day
+                        if(dates[0] != null && dates[1] != null){
+                            CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
+                            for(int i = 0; i< cells.length; i++){
+                                System.out.println("CalendarUI: Adding event to cell at: " + cells[i].getDate().toString());
+                                cells[i].addEvent(event);
                             }
                         }
                     }
                 }
 
-                if (change.wasRemoved()) {
-                    for (Checklist checklist : change.getRemoved()) {
-                        for(CalendarCell cell : calendarMonth.getCells()){
-                            if(inRange(checklist, cell.getDate())){
-                                cell.removeEvent(checklist);
+                if(change.wasRemoved()){
+                    System.out.println("CalendarUI: Removing Changes");
+                    for(Event event : change.getRemoved()){
+                        
+                        LocalDate [] dates = getDates(event);
+                        System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
+                        
+                        // Remove the event from each calendar day
+                        if(dates[0] != null && dates[1] != null){
+                            CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
+                            for(int i = 0; i < cells.length; i++){
+                                System.out.println("CalendarUI: Removing event fro cell at: " + cells[i].getDate().toString());
+                                cells[i].removeEvent(event);
                             }
                         }
                     }
                 }
-                //add in update clause to find the correct event and replace it
+
+                if(change.wasUpdated()){
+                    System.out.println("CalendarUI: Updateing Changes");
+                }
             }
         });
+    }
 
-        CalendarManager.getList().addListener((ListChangeListener<? super Calendar>) change -> {
-            while (change.next()) {
+    private LocalDate[] getDates(Event event){
+        LocalDate eventStartDate = null;
+        LocalDate eventStopDate = null;
+        LocalDate [] dates = new LocalDate[2]; 
+        if(event instanceof Calendar){
+            Calendar calendar = (Calendar) event;  
+            eventStartDate = calendar.getStartDate();
+            eventStopDate = calendar.getStopDate();
+        }  
 
-                if (change.wasAdded()) {
-                    loadList(change.getAddedSubList(),calendarMonth);
-                }
-
-                if (change.wasRemoved()) {
-                    for (Calendar calendar : change.getRemoved()) {
-                        for(CalendarCell cell : calendarMonth.getCells()){
-                            if(inRange(calendar,cell.getDate())){
-                                //cell.removeEvent(calendar);
-                            }
-                        }
-                    }
-                }
-                //add in update clause to find the correct event and replace it
-            }
-        });
+        if(event instanceof Checklist){
+            Checklist checklist = (Checklist) event;
+            eventStartDate = checklist.getStartDate();
+            eventStopDate = checklist.getStopDate();
+        }
+        
+        dates [0] = eventStartDate;
+        dates [1] = eventStopDate;
+        return dates;
     }
     
     // Checks if object is within a sepecific range
@@ -190,34 +210,6 @@ public class CalendarUI{
         return false;
     }
     
-    // Overloaded: Generic method to load lists of varying types
-    private <T extends SQL> void loadList(ObservableList<T> list, CalendarMonth calendarMonth){
-        for (T object : list) {
-            for(CalendarCell cell : calendarMonth.getCells()){
-                if(inRange(object, cell.getDate())){
-                    if (object instanceof Event) {
-                        Event event = (Event) object;
-                        cell.addEvent(event);
-                    }
-                }
-            }
-        }
-    }
-    
-    // Overloaded: Generic method to load lists of varying types
-    private <T extends SQL> void loadList(List<T> list, CalendarMonth calendarMonth){
-        for (T object : list) {
-            for(CalendarCell cell : calendarMonth.getCells()){
-                if(inRange(object, cell.getDate())){
-                    if (object instanceof Event) {
-                        Event event = (Event) object;
-                        cell.addEvent(event);
-                    }
-                }
-            }
-        }
-    } 
-
     public VBox getRootNode(){
         return root;
     }

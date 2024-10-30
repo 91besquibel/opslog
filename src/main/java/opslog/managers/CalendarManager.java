@@ -61,11 +61,14 @@ public class CalendarManager {
     }
     
     public static Calendar getItem(String ID) {
+        System.out.println("CalendarManager: Retreiving item with ID: " + ID);
         for (Calendar calendar : calendarList) {
             if (calendar.getID().equals(ID)) {
+                System.out.println("CalendarManager: Returning calendar event");
                 return calendar;
             }
         }
+        System.out.println("CalendarManager: Returning null");
         return null;
     }
 

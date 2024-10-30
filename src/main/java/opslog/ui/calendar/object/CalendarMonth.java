@@ -4,18 +4,27 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.time.DateTimeException;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
+import java.time.Period;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+
 import opslog.ui.calendar.control.CalendarCell;
 import opslog.util.Settings;
 
@@ -26,11 +35,12 @@ import opslog.util.Settings;
 	are observable to allow for updates.
 */
 public class CalendarMonth {
-	
+
 	private final int GRID_CELL_COUNT = 42;
 	private ObservableList<CalendarCell> cellList = FXCollections.observableArrayList();
 	private ObservableList<String> weekNumbers = FXCollections.observableArrayList();
 	private ObjectProperty<YearMonth> yearMonth = new SimpleObjectProperty<>();
+	private List<CalendarCell> selectedCells = new ArrayList<>();
 
 	public CalendarMonth(YearMonth yearMonth){
 		this.yearMonth.set(yearMonth);
@@ -59,6 +69,33 @@ public class CalendarMonth {
 		return weekNumbers;
 	}
 
+	public List<CalendarCell> getSelectedCells(){
+		return selectedCells;
+	}
+
+	public CalendarCell getCell(LocalDate date) {
+		for (int i = 0; i < 42; i++) {
+			if (cellList.get(i).getDate().equals(date)) {
+				return cellList.get(i);
+			}
+		}
+		return null;
+	}
+
+	public CalendarCell[] getCells(LocalDate startDate, LocalDate stopDate) {
+		System.out.println("CalendarMonth: Retrieving cells during the period of " + startDate + " to " + stopDate);
+		Period period = Period.between(startDate, stopDate);
+		int numDays = period.getDays();
+		CalendarCell[] cells = new CalendarCell[numDays + 1];
+
+		for (int i = 0; i < cells.length; i++) {
+			cells[i] = getCell(startDate.plusDays(i));
+			System.out.println("CalendarMonth: Retrieving cell at date : " + cells[i].getDate());
+		}
+
+		return cells;
+	}
+
 	private void update(YearMonth nv){
 		System.out.println("CalendarMonth: New yearmonth detected: " + nv.toString());
 		if(nv != null){
@@ -72,24 +109,6 @@ public class CalendarMonth {
 		for (int i = 0; i < GRID_CELL_COUNT; i++) {
 			CalendarCell calendarCell = new CalendarCell();
 			cellList.add(calendarCell);
-
-			calendarCell.focusedProperty().addListener((obs,ov,nv) -> {
-				calendarCell.borderProperty().unbind();
-				if(nv){
-					calendarCell.borderProperty().bind(Settings.dateSelectBorder);
-				} else{
-					calendarCell.borderProperty().bind(Settings.cellBorder);
-				}
-			});
-
-			calendarCell.hoverProperty().addListener((obs,ov,nv) -> {
-				calendarCell.borderProperty().unbind();
-				if(nv){
-					calendarCell.borderProperty().bind(Settings.dateSelectBorder);
-				} else{
-					calendarCell.borderProperty().bind(Settings.cellBorder);
-				}
-			});
 
 			calendarCell.currentMonthProperty().addListener(new ChangeListener<Boolean>() {
 				@Override
@@ -118,6 +137,37 @@ public class CalendarMonth {
 					}
 				}
 			});
+
+			calendarCell.setOnMouseClicked(e -> {
+				boolean isControlPressed = e.isControlDown();
+
+				if (e.getButton() == MouseButton.PRIMARY && isControlPressed) {
+					System.out.println("Control + Primary Button Down");
+					calendarCell.borderProperty().unbind();
+
+					if (selectedCells.contains(calendarCell)) {
+						selectedCells.remove(calendarCell);
+						calendarCell.borderProperty().bind(Settings.cellBorder);
+					} else {
+						selectedCells.add(calendarCell);
+						calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+					}
+				} else if (e.getButton() == MouseButton.PRIMARY) {
+					System.out.println("CalendarMonth: calendar cell selected");
+					resetSelected();
+					selectedCells.add(calendarCell);
+					calendarCell.borderProperty().unbind();
+					calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+				}
+			});
+		}
+	}
+
+	private void resetSelected(){
+		selectedCells.clear();
+		for(CalendarCell cell : cellList){
+			cell.borderProperty().unbind();
+			cell.borderProperty().bind(Settings.cellBorder);
 		}
 	}
 
@@ -172,6 +222,8 @@ public class CalendarMonth {
 
 				if (date.equals(LocalDate.now())) {
 					cell.setCurrentDay(true);
+				} else{
+					cell.setCurrentDay(false);
 				}
 
 			} catch (DateTimeException ex) {
@@ -180,7 +232,6 @@ public class CalendarMonth {
 			}
 		}
 	}
-
 
 	private int getFirstOfMonth(){
 		int firstDayOfWeek = WeekFields.of(Locale.getDefault(Locale.Category.FORMAT)).getFirstDayOfWeek().getValue();

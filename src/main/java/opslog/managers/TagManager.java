@@ -48,21 +48,21 @@ public class TagManager {
     }
 
     private static Tag getItem(String ID) {
-        System.out.println("TagManager: Attempting to retrive tag: " + ID);
+        //System.out.println("TagManager: Attempting to retrive tag: " + ID);
         for (Tag tag : tagList) {
             if (tag.getID().equals(ID.trim())) {
-                System.out.println("TagManager: Tag found: " + tag.getID());
+                //System.out.println("TagManager: Tag found: " + tag.getID());
                 return tag;
             }
         }
-        System.out.println("TagMangager: No tag matching: " + ID);
+        //System.out.println("TagMangager: No tag matching: " + ID);
         return null;
     }
 
     public static ObservableList<Tag> getItems(String IDs) {
         ObservableList<Tag> tags = FXCollections.observableArrayList();
         String[] tagIDs = IDs.split("\\|");
-        System.out.println("TagManager: Checking for the following IDs " + Arrays.toString(tagIDs));
+        //System.out.println("TagManager: Checking for the following IDs " + Arrays.toString(tagIDs));
         for (String ID : tagIDs) {
             Tag tag = getItem(ID);
             if(tag != null){

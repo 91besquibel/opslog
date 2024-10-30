@@ -12,6 +12,9 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,6 +39,7 @@ public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();
     private static LogUI logUI;
+    private static SearchUI searchUI;
     private static CalendarUI calendarUI;
     private static SettingsUI settingsUI;
     private ChecklistUI checklistUI;
@@ -80,6 +84,9 @@ public class App extends Application {
             StartUI startUI = StartUI.getInstance();
             startUI.display();
 
+            StartUp.loadTableData();
+            StartUp.loadCalendarData();
+
             // Display the app after the user connects to a database
             display(stage);
             
@@ -90,19 +97,28 @@ public class App extends Application {
 
     private void display(Stage stage) {
 
-        Scene scene = new Scene(root, 800, 600, Color.TRANSPARENT);
+        Scene scene = new Scene(root, 800, 600, Settings.rootColor.get());
         String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
         scene.getStylesheets().add(cssPath);
 
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setMinHeight(600);
         stage.setMinWidth(800);
+        
+        /*
+            // Define the hotkey (e.g., Ctrl + H)
+            KeyCombination hotkey = new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN);
+            scene.getAccelerators().put(hotkey, () -> {
+                System.out.println("Hotkey pressed!");
+                // Add your action here
+            });
+        */
 
         ResizeListener resizeListener = new ResizeListener(stage);
         scene.setOnMouseMoved(resizeListener);
         scene.setOnMousePressed(resizeListener);
         scene.setOnMouseDragged(resizeListener);
-        scene.setFill(Color.TRANSPARENT);
+        scene.setFill(Settings.rootColor.get());
 
         root.setOnMousePressed(event -> {
             if (event.getY() <= 30) {
@@ -127,11 +143,12 @@ public class App extends Application {
             root.setCursor(Cursor.DEFAULT);
         });
 
-		/* rounded corners future addition
-		Rectangle rect = new Rectangle(500,500);
-		rect.setArcHeight(60.0);
-		rect.setArcWidth(60.0);
-		root.setClip(rect);
+		/* 
+            rounded corners future addition
+    		Rectangle rect = new Rectangle(500,500);
+    		rect.setArcHeight(60.0);
+    		rect.setArcWidth(60.0);
+    		root.setClip(rect);
 		*/
 
         stage.setScene(scene);
@@ -159,21 +176,21 @@ public class App extends Application {
 
         CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search Window");
         search.setOnAction(e -> {
-            SearchUI searchUI = SearchUI.getInstance();
-            searchUI.display();
+            //SearchUI searchUI = new SearchUI();
+            //searchUI.display();
         });
 
-        CustomButton log_Button = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Log View");
-        log_Button.setOnAction(this::goToLog);
+        CustomButton logButton = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Log View");
+        logButton.setOnAction(this::goToLog);
 
-        CustomButton calendar_Button = new CustomButton(Directory.CALENDAR_WHITE, Directory.CALENDAR_GREY, "Calendar View");
-        calendar_Button.setOnAction(this::goToCalendar);
+        CustomButton calendarButton = new CustomButton(Directory.CALENDAR_WHITE, Directory.CALENDAR_GREY, "Calendar View");
+        calendarButton.setOnAction(this::goToCalendar);
 
-        CustomButton checklist_Button = new CustomButton(Directory.CHECKLIST_WHITE, Directory.CHECKLIST_GREY, "Checklist View");
-        checklist_Button.setOnAction(this::goToChecklist);
+        CustomButton checklistButton = new CustomButton(Directory.CHECKLIST_WHITE, Directory.CHECKLIST_GREY, "Checklist View");
+        checklistButton.setOnAction(this::goToChecklist);
 
-        CustomButton settings_Button = new CustomButton(Directory.SETTINGS_WHITE, Directory.SETTINGS_GREY, "Settings View");
-        settings_Button.setOnAction(this::goToSettings);
+        CustomButton settingsButton = new CustomButton(Directory.SETTINGS_WHITE, Directory.SETTINGS_GREY, "Settings View");
+        settingsButton.setOnAction(this::goToSettings);
 
         Separator separator = new Separator();
         separator.setOrientation(Orientation.VERTICAL);
@@ -191,8 +208,8 @@ public class App extends Application {
         windowBar.getChildren().addAll(
                 exit, minimize, maximize,
                 left_Menu_Spacer, clockLabel, right_Menu_Spacer, search,
-                log_Button, calendar_Button, checklist_Button,
-                settings_Button, separator, event_Button
+                logButton, calendarButton, checklistButton,
+                settingsButton, separator, event_Button
         );
         windowBar.backgroundProperty().bind(Settings.backgroundWindow);
         windowBar.setPadding(Settings.INSETS_WB);
@@ -209,6 +226,44 @@ public class App extends Application {
         root.setBottom(null);
         root.setLeft(null);
         root.setRight(null);
+    }
+
+    private void createMenu(){
+        VBox menuContents = new VBox();
+        menuContents.backgroundProperty().bind(Settings.secondaryBackground);
+        menuContents.borderProperty().bind(Settings.primaryBorder);
+        
+        CustomButton logButton = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Log");
+        logButton.setOnAction(this::goToLog);
+
+        CustomButton calendarButton = new CustomButton(Directory.CALENDAR_WHITE, Directory.CALENDAR_GREY, "Calendar");
+        calendarButton.setOnAction(this::goToCalendar);
+
+        CustomButton checklistButton = new CustomButton(Directory.CHECKLIST_WHITE, Directory.CHECKLIST_GREY, "Checklist");
+        checklistButton.setOnAction(this::goToChecklist);
+
+        CustomButton settingsButton = new CustomButton(Directory.SETTINGS_WHITE, Directory.SETTINGS_GREY, "Settings");
+        settingsButton.setOnAction(this::goToSettings);
+        
+        menuContents.getChildren().addAll(logButton,calendarButton,checklistButton,settingsButton);
+        menuContents.setVisible(false);
+
+        Button menuButton = new Button("Menu"); 
+        menuButton.hoverProperty().addListener((obs,nhov,hov) -> {
+            if(hov){
+                menuContents.setVisible(true);
+            }else{
+                menuContents.setVisible(false);
+            }
+        });
+    }
+
+    private void searchBar(){
+        //CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search Window");
+        //search.setOnAction(e -> {
+            //SearchUI searchUI = new SearchUI();
+            //searchUI.display();
+        //});
     }
 
     private void goToLog(ActionEvent event) {

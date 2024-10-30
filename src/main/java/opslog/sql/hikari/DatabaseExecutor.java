@@ -40,7 +40,6 @@ public class DatabaseExecutor {
 	public int executeUpdate(String sql) throws SQLException {
 		try (Connection connection = connectionProvider.getConnection();
 			 PreparedStatement statement = connection.prepareStatement(sql)) {
-
 			return statement.executeUpdate();
 		}
 	}
@@ -122,6 +121,12 @@ public class DatabaseExecutor {
 			}
 		}
 		return results;
+	}
+
+	public Boolean executeTest() throws SQLException {
+		try (Connection connection = connectionProvider.getConnection();) {
+			return true;
+		}
 	}
 }
 

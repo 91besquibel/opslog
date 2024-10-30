@@ -108,7 +108,7 @@ public class ChecklistEditor {
 
         add.setOnAction(event -> {
             if (newTask.get().hasValue()) {
-                Task tempTask = new Task(null, newTask.get().getTitle(), newTask.get().getStartTime(), newTask.get().getStopTime(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
+                Task tempTask = new Task(null, newTask.get().getTitle(), newTask.get().getOffSet(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
                 //CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(), true);
                 //Update.add(TaskManager.getList(), tempTask);
                 title.clear();
@@ -122,15 +122,14 @@ public class ChecklistEditor {
                 Task tempTask = new Task(
                     newTask.get().getID(), 
                     newTask.get().getTitle(), 
-                    newTask.get().getStartTime(), 
-                    newTask.get().getStopTime(), 
+                    newTask.get().getOffSet(), 
                     newTask.get().getType(), 
                     newTask.get().getTags(), 
                     newTask.get().getInitials(), 
                     newTask.get().getDescription()
                 );
                 //CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), tempTask.toStringArray());
-               // Update.edit(TaskManager.getList(), selector.getValue(), tempTask);
+                // Update.edit(TaskManager.getList(), selector.getValue(), tempTask);
                 title.clear();
                 type.setValue(null);
                 tag.setItems(FXCollections.observableArrayList());

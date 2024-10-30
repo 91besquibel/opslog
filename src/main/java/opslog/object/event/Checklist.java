@@ -24,7 +24,17 @@ public class Checklist extends Event implements SQL {
     private final StringProperty percentage = new SimpleStringProperty();
 
     // Constructor
-    public Checklist(String id, String title, LocalDate startDate, LocalDate stopDate, ObservableList<Boolean> statusList, ObservableList<Task> taskList, Type type, ObservableList<Tag> tags, String initials, String description, String percentage) {
+    public Checklist(String id, 
+                     String title, 
+                     LocalDate startDate, 
+                     LocalDate stopDate, 
+                     ObservableList<Boolean> statusList, 
+                     ObservableList<Task> taskList, 
+                     Type type, 
+                     ObservableList<Tag> tags, 
+                     String initials, 
+                     String description, 
+                     String percentage) {
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);

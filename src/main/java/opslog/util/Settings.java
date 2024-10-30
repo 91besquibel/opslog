@@ -45,8 +45,8 @@ public class Settings {
     public static BorderWidths BORDER_WIDTH_WB = new BorderWidths(0.0, 0.0, 1.0, 0.0);
     public static BorderWidths BORDER_WIDTH = new BorderWidths(2.0); // border width
     public static CornerRadii CORNER_RADII_WB = new CornerRadii(0.0, false); // topleft, topright, bottomright , bottomleft, boolean asPercent?
-    public static CornerRadii CORNER_RADII = new CornerRadii(4.0);// corner radius
-    public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0);// corner radius
+    public static CornerRadii CORNER_RADII = new CornerRadii(4.0); // corner radius
+    public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
 
     // Color
     public static ObjectProperty<Color> rootColor = new SimpleObjectProperty<>(Color.web("#040F0F"));

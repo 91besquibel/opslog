@@ -124,7 +124,7 @@ public class StartUI {
             // if a field is empty do nothing if no fields are not empty connect to server
             if (!emptyFields()) {
                 try {
-                    handleLoadSQL();
+                    handleConfigConnection();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -186,7 +186,7 @@ public class StartUI {
         return false;
     }
 
-    private static void handleLoadSQL() throws SQLException {
+    private static void handleConfigConnection() throws SQLException {
         System.out.println("StartUI: Createing connection URL");
 
         // Build config 
@@ -204,12 +204,7 @@ public class StartUI {
         DatabaseExecutor executor = new DatabaseExecutor(connectionProvider);
 
         try {
-            // Example: Execute a query
-            for(String tableName : DBManager.TABLE_NAMES){
-                System.out.println("StartUI: Loading table data for: " + tableName);
-                List<String[]> results = executor.executeQuery("SELECT * FROM " + tableName);
-                sendTo(tableName,results,"INSERT");             
-            }
+            Boolean status = executor.executeTest();
             popupWindow.close();
         } catch (Exception e) {
             showPopup("Connection Provider","Could not connect to the database! Verify database inforamation");
@@ -251,8 +246,6 @@ public class StartUI {
         }
     }
     */
-    
-    
 
     private static void showPopup(String title, String message) {
         PopupUI popup = new PopupUI();
@@ -331,41 +324,5 @@ public class StartUI {
         root.setLeft(null);
         root.setRight(null);
         latch.countDown();
-    }
-
-    public static void sendTo(String tableName,List<String []> results, String operation){
-        String id = "-1";
-        switch(tableName){
-            case "log_table":
-                LogManager.operation(operation, results, id);
-                break;
-            case "pinboard_table":
-                PinboardManager.operation(operation, results, id);
-                break;
-            case "calendar_table":
-                CalendarManager.operation(operation, results, id);
-                break;
-            case "checklist_table":
-                ChecklistManager.operation(operation, results, id);
-                break;
-            case "task_table":
-                TaskManager.operation(operation, results, id);
-                break;
-            case "tag_table":
-                TagManager.operation(operation, results, id);
-                break;
-            case "type_table":
-                TypeManager.operation(operation, results, id);
-                break;
-            case "format_table":
-                FormatManager.operation(operation, results, id);
-                break;
-            case "profile_table":
-                ProfileManager.operation(operation, results, id);
-                break;
-            default:
-                System.out.println("Table does not exist!");
-                break;
-        }
     }
 }

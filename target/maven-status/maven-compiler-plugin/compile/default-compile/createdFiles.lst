@@ -1,5 +1,7 @@
 opslog/util/Utilities.class
+opslog/ui/calendar/control/CalendarListView$2.class
 opslog/util/DateTime.class
+opslog/ui/calendar/control/CalendarTable$1.class
 opslog/util/QuickSort.class
 opslog/ui/checklist/ChecklistStatus.class
 opslog/sql/hikari/ConnectionManager.class
@@ -19,6 +21,7 @@ opslog/ui/calendar/layout/MonthView.class
 opslog/ui/controls/CustomTable$1.class
 opslog/object/event/Checklist.class
 opslog/ui/controls/CustomListView$1.class
+opslog/ui/controls/LogTable$3.class
 opslog/util/AppClock.class
 opslog/ui/LogUI.class
 opslog/ui/controls/CustomComboBox$3.class
@@ -28,8 +31,10 @@ module-info.class
 opslog/managers/ProfileManager.class
 opslog/object/Type.class
 opslog/sql/hikari/HikariConfigSetup.class
+opslog/ui/calendar/control/CalendarTable$3.class
 opslog/interfaces/SQL.class
 opslog/util/Settings.class
+opslog/ui/controls/LogTable$2.class
 opslog/ui/controls/Buttons.class
 opslog/ui/SettingsUI.class
 opslog/managers/CalendarManager.class
@@ -37,11 +42,14 @@ opslog/sql/hikari/DatabaseExecutor.class
 opslog/managers/TaskManager.class
 opslog/ui/controls/CustomTable$3.class
 opslog/managers/FormatManager.class
+opslog/ui/controls/LogTable.class
 opslog/ui/controls/CustomTable.class
 opslog/ui/SearchUI.class
 opslog/util/Logging.class
 opslog/object/Profile.class
 opslog/ui/controls/CustomHBox.class
+opslog/util/StartUp.class
+opslog/ui/controls/LogTable$1.class
 opslog/ui/controls/CustomTextField.class
 opslog/util/Directory.class
 opslog/managers/ChecklistManager.class
@@ -51,9 +59,12 @@ opslog/ui/calendar/control/CalendarCell.class
 opslog/ui/controls/CustomVBox.class
 opslog/ui/checklist/ChecklistUI.class
 opslog/ui/calendar/object/CalendarMonth.class
+opslog/ui/calendar/control/CalendarListView$1.class
 opslog/object/Tag.class
 opslog/ui/calendar/object/CalendarMonth$2.class
+opslog/ui/calendar/control/CalendarTable$2.class
 opslog/ui/controls/Styles.class
+opslog/ui/calendar/control/CalendarTable.class
 opslog/ui/controls/CustomLabel.class
 opslog/ui/controls/CustomListView.class
 opslog/managers/PinboardManager.class
@@ -71,6 +82,7 @@ opslog/object/event/Task.class
 opslog/managers/LogManager.class
 opslog/object/Format.class
 opslog/object/event/Log.class
+opslog/ui/calendar/control/CalendarListView.class
 opslog/util/FileSaver.class
 opslog/ui/checklist/ChecklistStatus$1.class
 opslog/ui/controls/CustomComboBox$1.class

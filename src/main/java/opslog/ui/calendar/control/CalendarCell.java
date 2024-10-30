@@ -37,6 +37,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
+
 import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
@@ -54,7 +55,7 @@ import opslog.interfaces.SQL;
 public class CalendarCell extends VBox {
     
     private final Header header = new Header();
-    private final ListView<Event> eventContainer = new ListView<>(); 
+    private final CalendarListView<Event> eventContainer = new CalendarListView<>(); 
     
     private final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();  
     private ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
@@ -67,9 +68,14 @@ public class CalendarCell extends VBox {
         this.date.set(LocalDate.now());
         this.yearMonth.set(YearMonth.now());
         this.currentMonth.set(true);
+        eventContainer.setItems(dailyEvents);
         this.getChildren().addAll(header,eventContainer);
         borderProperty().bind(Settings.cellBorder);
         backgroundProperty().bind(Settings.secondaryBackgroundZ);
+        
+        date.addListener((obs,ov,nv) -> {
+            dailyEvents.clear();
+        });
     }
 
     public void set(LocalDate newDate, YearMonth yearMonth){
