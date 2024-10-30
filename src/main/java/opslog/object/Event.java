@@ -76,6 +76,18 @@ public abstract class Event {
         return description.get();
     }
 
+    public ObjectProperty<Type> typeProperty() {
+        return type;
+    }
+
+    public StringProperty initialsProperty(){
+        return initials;
+    }
+
+    public StringProperty descriptionProperty(){
+        return description;
+    }
+
     // Checkis if all properties have a value
     public boolean hasValue() {
         System.out.println("Checking if type has a value: " + type.get().toString());

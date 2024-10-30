@@ -12,8 +12,8 @@ public class FileSaver {
 
 	// Define supported file types and their extensions in a Map
 	private static final Map<String, String> FILE_TYPES = Map.of(
-		"CSV Files", "*.csv",
-		"Text Files", "*.txt"
+			"CSV Files", ".csv",
+			"Text Files", ".txt"
 	);
 
 	public static void saveFile(Stage stage, List<String[]> data) {
@@ -21,10 +21,10 @@ public class FileSaver {
 		fileChooser.setTitle("Save File");
 
 		// Add file type filters from the FILE_TYPES map
-		FILE_TYPES.forEach((description, extension) -> 
-			fileChooser.getExtensionFilters().add(
-				new FileChooser.ExtensionFilter(description, extension)
-			)
+		FILE_TYPES.forEach((description, extension) ->
+				fileChooser.getExtensionFilters().add(
+						new FileChooser.ExtensionFilter(description, "*" + extension)
+				)
 		);
 
 		// Show save dialog
@@ -39,27 +39,29 @@ public class FileSaver {
 			// Save the data to the file
 			try (FileWriter writer = new FileWriter(file)) {
 				for (String[] row : data) {
-					writer.write(String.join(",", row) + "\n");
+					writer.write(String.join(",", row) + System.lineSeparator());
 				}
 				System.out.println("File saved successfully: " + file.getAbsolutePath());
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println("Error saving file: " + e.getMessage());
 			}
+		} else {
+			System.out.println("File save dialog was canceled.");
 		}
 	}
 
 	// Helper method to get the correct extension based on selected filter
 	private static String getSelectedExtension(FileChooser fileChooser, File file) {
 		FileChooser.ExtensionFilter selectedFilter = fileChooser.getSelectedExtensionFilter();
-		String description = selectedFilter.getDescription();
+		if (selectedFilter != null) {
+			String description = selectedFilter.getDescription();
 
-		// Get the extension from the FILE_TYPES map using the description
-		return FILE_TYPES.entrySet().stream()
-			.filter(entry -> entry.getKey().equals(description))
-			.map(Map.Entry::getValue)
-			.findFirst()
-			.orElse("");  // Default to no extension if not found
+			// Get the extension from the FILE_TYPES map using the description
+			return FILE_TYPES.getOrDefault(description, "");  // Default to no extension if not found
+		}
+		return "";  // Default to no extension if no filter is selected
 	}
 }
+
 
 

@@ -87,10 +87,11 @@ public class CalendarMonth {
 		Period period = Period.between(startDate, stopDate);
 		int numDays = period.getDays();
 		CalendarCell[] cells = new CalendarCell[numDays + 1];
-
 		for (int i = 0; i < cells.length; i++) {
 			cells[i] = getCell(startDate.plusDays(i));
-			System.out.println("CalendarMonth: Retrieving cell at date : " + cells[i].getDate());
+			if(cells[i]!= null) {
+				System.out.println("CalendarMonth: Retrieving cell at date : " + cells[i].getDate());
+			}
 		}
 
 		return cells;

@@ -39,10 +39,10 @@ import opslog.ui.controls.CustomTextField;
 
 public class MonthView extends GridPane{
 	
-	private ObservableList<Label> weekNumberLabels = FXCollections.observableArrayList();
-	private CalendarMonth calendarMonth;
-	private ContextMenu contextMenu = new ContextMenu();
-	private ContextMenu contextMenuSearch = new ContextMenu(); 
+	private final ObservableList<Label> weekNumberLabels = FXCollections.observableArrayList();
+	private final CalendarMonth calendarMonth;
+	private final ContextMenu contextMenu = new ContextMenu();
+	private final ContextMenu contextMenuSearch = new ContextMenu();
 
 	// Constructor: Parameterized
 	public MonthView(CalendarMonth calendarMonth){
@@ -157,7 +157,9 @@ public class MonthView extends GridPane{
 		// Search sub-ContextMenu
 		MenuItem search = new MenuItem("Search");
 		search.setOnAction(e ->{
-			contextMenuSearch.show(this,contextMenu.anchorXProperty().get(),contextMenu.anchorYProperty().get());
+			contextMenuSearch.show(this,
+					contextMenu.anchorXProperty().get(),
+					contextMenu.anchorYProperty().get());
 		});
 		
 		MenuItem calendar = new MenuItem("Calendar");
@@ -165,8 +167,10 @@ public class MonthView extends GridPane{
 			HBox searchBar = createSearchBar();
 			Popup popup = new Popup();
 			popup.getContent().add(searchBar);
-			popup.show(this, contextMenuSearch.anchorXProperty().get(),contextMenuSearch.anchorYProperty().get());
-			popup.setBackground(null);
+			popup.show(this,
+					contextMenuSearch.anchorXProperty().get(),
+					contextMenuSearch.anchorYProperty().get());
+			//popup.setBackground(null);
 			//stylize the popup
 		});
 		MenuItem log = new MenuItem("Log");
@@ -186,7 +190,7 @@ public class MonthView extends GridPane{
 			for(CalendarCell cell : selectedCells){
 				LocalDate cellDate = cell.getDate();
 				Date date = Date.valueOf(cellDate);
-				String sql = String.format("SELECT * FROM log_table WHERE date = '" + date.toString() +"'");
+				String sql = String.format("SELECT * FROM log_table WHERE date = '" + date +"'");
 				try{
 					System.out.println("\n MonthView: DataBase Query: " + sql);
 					List<String[]> results = executor.executeQuery(sql);
@@ -196,13 +200,16 @@ public class MonthView extends GridPane{
 						data.add(newLog);
 					}
 					System.out.println("MonthView: End Query \n");
-					handleSearch(data);
+					if(!data.isEmpty()){
+						handleSearch(data);
+					}
 				} catch(SQLException ex){
 					System.out.println("MonthView: Error occured while attempting to retrive the cell data");
 					ex.printStackTrace();
 				}
 			}
 		});
+
 		MenuItem createEvent = new MenuItem("New Event");
 		createEvent.setOnAction(e -> {
 			EventUI eventUI = EventUI.getInstance();

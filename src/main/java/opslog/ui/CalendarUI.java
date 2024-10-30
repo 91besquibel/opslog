@@ -39,8 +39,7 @@ public class CalendarUI{
 
     private VBox calendarView;
     private AnchorPane right;
-        
-    private SplitPane splitPane;
+
     private VBox root;
     
     private CalendarUI() {}
@@ -117,7 +116,7 @@ public class CalendarUI{
     
     private void initializeRoot() {
         System.out.println("3");
-        splitPane = new SplitPane(left, right);
+        SplitPane splitPane = new SplitPane(left, right);
         splitPane.setDividerPositions(0.25f, 0.75f);
         splitPane.backgroundProperty().bind(Settings.rootBackground);
         root = new VBox(splitPane);
@@ -144,9 +143,9 @@ public class CalendarUI{
                         // Add the event to the calendar day
                         if(dates[0] != null && dates[1] != null){
                             CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
-                            for(int i = 0; i< cells.length; i++){
-                                System.out.println("CalendarUI: Adding event to cell at: " + cells[i].getDate().toString());
-                                cells[i].addEvent(event);
+                            for (CalendarCell cell : cells) {
+                                System.out.println("CalendarUI: Adding event to cell at: " + cell.getDate().toString());
+                                cell.addEvent(event);
                             }
                         }
                     }
@@ -162,9 +161,11 @@ public class CalendarUI{
                         // Remove the event from each calendar day
                         if(dates[0] != null && dates[1] != null){
                             CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
-                            for(int i = 0; i < cells.length; i++){
-                                System.out.println("CalendarUI: Removing event fro cell at: " + cells[i].getDate().toString());
-                                cells[i].removeEvent(event);
+                            for (CalendarCell cell : cells) {
+                                if (cell != null) {
+                                    System.out.println("CalendarUI: Removing event from cell at: " + cell.getDate().toString());
+                                    cell.removeEvent(event);
+                                }
                             }
                         }
                     }
@@ -181,14 +182,12 @@ public class CalendarUI{
         LocalDate eventStartDate = null;
         LocalDate eventStopDate = null;
         LocalDate [] dates = new LocalDate[2]; 
-        if(event instanceof Calendar){
-            Calendar calendar = (Calendar) event;  
+        if(event instanceof Calendar calendar){
             eventStartDate = calendar.getStartDate();
             eventStopDate = calendar.getStopDate();
         }  
 
-        if(event instanceof Checklist){
-            Checklist checklist = (Checklist) event;
+        if(event instanceof Checklist checklist){
             eventStartDate = checklist.getStartDate();
             eventStopDate = checklist.getStopDate();
         }
@@ -200,11 +199,9 @@ public class CalendarUI{
     
     // Checks if object is within a sepecific range
     private <T extends SQL> boolean inRange(T object, LocalDate date) {
-        if(object instanceof Checklist){
-            Checklist checklist = (Checklist) object;
+        if(object instanceof Checklist checklist){
             return !date.isBefore(checklist.getStartDate()) && !date.isAfter(checklist.getStopDate());
-        }else if(object instanceof Calendar){
-            Calendar calendar = (Calendar) object;
+        }else if(object instanceof Calendar calendar){
             return !date.isBefore(calendar.getStartDate()) && !date.isAfter(calendar.getStopDate());
         }
         return false;

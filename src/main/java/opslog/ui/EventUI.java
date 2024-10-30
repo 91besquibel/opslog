@@ -2,15 +2,11 @@ package opslog.ui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import opslog.managers.*;
 import opslog.object.Format;
@@ -25,20 +21,13 @@ import opslog.util.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 
 
 public class EventUI {
 
-    private static final CountDownLatch latch = new CountDownLatch(1);
     private static Calendar tempCalendar = new Calendar();
     private static Log tempLog = new Log();
     private static Stage stage;
-    private static BorderPane root;
-    private static double lastX, lastY;
-    private static double originalWidth;
-    private static double originalHeight;
     
     private static DatePicker startDatePicker;
     private static ComboBox<LocalTime> startTimeSelection;
@@ -61,84 +50,70 @@ public class EventUI {
         return instance;
     }
 
-    private static HBox buildWindowBar() {
-        String sceneTitle = "Event Creator";
-        Button exit = Buttons.exitWinBtn();
-        Button minimize = Buttons.minBtn();
-        Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
 
-        Region leftSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-        CustomLabel statusLabel = new CustomLabel(sceneTitle, Settings.WIDTH_LARGE, 40);
-        Region rightSpacer = new Region();
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+        Menu menu = new Menu("Menu");
 
-        CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search");
-        search.setOnAction(event -> {
-            // I will need to comeback and update this after SQL code has come along further
-        });
-        CustomButton calendar = new CustomButton( Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Create Calendar");
-        calendar.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            System.out.println("CalendarManager: Attempting to create calendar event");
-            Calendar newCalendar = new Calendar();
-            newCalendar.setTitle(tempCalendar.getTitle());
-            newCalendar.setStartDate(tempCalendar.getStartDate());
-            newCalendar.setStopDate(tempCalendar.getStopDate());
-            newCalendar.setStartTime(tempCalendar.getStartTime());
-            newCalendar.setStopTime(tempCalendar.getStopTime());
-            newCalendar.setType(tempCalendar.getType());
-            newCalendar.setTags(tempCalendar.getTags());
-            newCalendar.setInitials(tempCalendar.getInitials());
-            newCalendar.setDescription(tempCalendar.getDescription());
-            if(newCalendar.hasValue()){
-                newCalendar = dbManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
-                ListOperation.insert(newCalendar, CalendarManager.getList());
-                handleClearParam();
-            }
-        });
-        
-        CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
-        log.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            
-            // Create a new object refrence to store values in
-            Log newLog = new Log();
-            newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
-            newLog.setTime(LocalTime.parse(DateTime.convertTime(DateTime.getTime())));
-            newLog.setType(tempLog.getType());
-            newLog.setTags(tempLog.getTags());
-            newLog.setInitials(tempLog.getInitials());
-            newLog.setDescription(tempLog.getDescription());
+        MenuItem createCalendar = new MenuItem("New Event");
+        createCalendar.setOnAction(this::handleCreateCalendar);
 
-            // Verify all values except id are filled
-            if(newLog.hasValue()){
-                // Attempt SQL insert and get a UUID
-                newLog = dbManager.insert(newLog,"log_table",LogManager.LOG_COL);
-                // Add log to app memory if UUID is returned
-                ListOperation.insert(newLog, LogManager.getList());
-                handleClearParam();
-            }else{
-                showPopup("Log Error", "Failed to input log, ensure all fields are filled");
-            }
-        });
+        MenuItem createLog = new MenuItem("New Log");
+        //CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
+        createLog.setOnAction(this::handleCreateLog);
 
-        CustomHBox windowBar = new CustomHBox();
-        windowBar.getChildren().addAll(
-                exit, minimize, maximize,
-                leftSpacer, statusLabel, rightSpacer,
-                search, log, calendar
-        );
-        windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-        windowBar.borderProperty().bind(Settings.borderBar);
-        windowBar.setPadding(Settings.INSETS_WB);
+        menu.getItems().addAll(createCalendar,createLog);
+        menuBar.getMenus().addAll(menu);
 
-        return windowBar;
+        return menuBar;
     }
 
-    public static VBox buildViewArea() {
+    private void handleCreateCalendar(ActionEvent e){
+        DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+        DBManager dbManager = new DBManager(databaseExecutor);
+        System.out.println("CalendarManager: Attempting to create calendar event");
+        Calendar newCalendar = new Calendar();
+        newCalendar.setTitle(tempCalendar.getTitle());
+        newCalendar.setStartDate(tempCalendar.getStartDate());
+        newCalendar.setStopDate(tempCalendar.getStopDate());
+        newCalendar.setStartTime(tempCalendar.getStartTime());
+        newCalendar.setStopTime(tempCalendar.getStopTime());
+        newCalendar.setType(tempCalendar.getType());
+        newCalendar.setTags(tempCalendar.getTags());
+        newCalendar.setInitials(tempCalendar.getInitials());
+        newCalendar.setDescription(tempCalendar.getDescription());
+        if(newCalendar.hasValue()){
+            newCalendar = dbManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
+            ListOperation.insert(newCalendar, CalendarManager.getList());
+            handleClearParam();
+        }
+    }
+
+    private void handleCreateLog(ActionEvent e){
+        DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+        DBManager dbManager = new DBManager(databaseExecutor);
+
+        Log newLog = new Log();
+        newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
+        newLog.setTime(LocalTime.parse(DateTime.convertTime(DateTime.getTime())));
+        newLog.setType(tempLog.getType());
+        newLog.setTags(tempLog.getTags());
+        newLog.setInitials(tempLog.getInitials());
+        newLog.setDescription(tempLog.getDescription());
+
+        // Verify all values except id are filled
+        if(newLog.hasValue()){
+            // Attempt SQL insert and get a UUID
+            newLog = dbManager.insert(newLog,"log_table",LogManager.LOG_COL);
+            // Add log to app memory if UUID is returned
+            ListOperation.insert(newLog, LogManager.getList());
+            handleClearParam();
+        }else{
+            showPopup("Log Error", "Failed to input log, ensure all fields are filled");
+        }
+    }
+
+    public VBox createRoot() {
         VBox typeCard = buildTypeCard();
         VBox tagCard = buildTagCard();
         VBox formatCard = buildFormatCard();
@@ -174,11 +149,10 @@ public class EventUI {
         scrollPane.prefViewportWidthProperty().bind(vbox.widthProperty());
         vbox.prefHeightProperty().bind(stage.heightProperty());
         vbox.prefWidthProperty().bind(stage.widthProperty());
-
         return vbox;
     }
 
-    private static HBox buildTitleCard() {
+    private HBox buildTitleCard() {
         CustomButton clearParam = new CustomButton(Directory.CLEAR_WHITE, Directory.CLEAR_GREY, "Clear Values");
         clearParam.setOnAction(e -> { handleClearParam();});
         CustomLabel logLabel = new CustomLabel(
@@ -189,7 +163,7 @@ public class EventUI {
         return titleHBox;
     }
 
-    private static VBox buildTypeCard() {
+    private VBox buildTypeCard() {
         CustomLabel label = new CustomLabel(
 				"Type", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomListView<Type> listView = new CustomListView<>(
@@ -208,7 +182,7 @@ public class EventUI {
         return vbox;
     }
 
-    private static VBox buildTagCard() {
+    private VBox buildTagCard() {
         CustomLabel label = new CustomLabel("Tag", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomListView<Tag> listView = new CustomListView<>(
 				TagManager.getList(), Settings.WIDTH_MEDIUM, Settings.HEIGHT_LARGE, SelectionMode.MULTIPLE);
@@ -226,7 +200,7 @@ public class EventUI {
         return vbox;
     }
 
-    private static VBox buildFormatCard() {
+    private VBox buildFormatCard() {
         CustomLabel label = new CustomLabel(
 				"Format", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomListView<Format> listView = new CustomListView<>(
@@ -244,7 +218,7 @@ public class EventUI {
         return vbox;
     }
 
-    private static VBox buildDescriptionCard() {
+    private VBox buildDescriptionCard() {
         CustomTextField textField = new CustomTextField(
 				"Initials", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         textField.setPromptText("Initials");
@@ -265,7 +239,7 @@ public class EventUI {
         return vbox;
     }
 
-    private static VBox buildOptionsCard() {
+    private VBox buildOptionsCard() {
 
         CustomLabel label = new CustomLabel(
 				"Schedule & Search", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
@@ -310,7 +284,7 @@ public class EventUI {
         return vbox;
     }
 
-    private static void handleClearParam() {
+    private void handleClearParam() {
         startDatePicker.setValue(null);
         stopDatePicker.setValue(null);
         startTimeSelection.setValue(null);
@@ -318,85 +292,23 @@ public class EventUI {
         descriptionTextArea.clear();
     }
 
-    public static void showPopup(String title, String message) {
+    public void showPopup(String title, String message) {
         PopupUI popup = new PopupUI();
         popup.message(title, message);
     }
 
     public void display() {
-
-        if (stage != null && stage.isShowing()) {
-            stage.toFront();
-            return;
-        }
-
-        try {
-            stage = new Stage();
-            initialize();
-            latch.await();
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initStyle(StageStyle.TRANSPARENT);
-            //stage.setMaxHeight(Settings.SCREEN_HEIGHT); this prevents the ui from expanding in rep lit check the laptop
-            stage.setMaxWidth(Settings.SCREEN_WIDTH);
-            stage.setMinHeight(429);
-            stage.setMinWidth(245);
-            stage.setWidth(245 + 440);
-            stage.setHeight(429 + 315);
-
-            Scene scene = new Scene(root, Color.TRANSPARENT);
-            String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
-            scene.getStylesheets().add(cssPath);
-
-            ResizeListener resizeListener = new ResizeListener(stage);
-            scene.setOnMouseMoved(resizeListener);
-            scene.setOnMousePressed(resizeListener);
-            scene.setOnMouseDragged(resizeListener);
-            scene.setFill(Color.TRANSPARENT);
-
-            root.setOnMousePressed(event -> {
-                if (event.getY() <= 30) {
-                    lastX = event.getScreenX();
-                    lastY = event.getScreenY();
-                    root.setCursor(Cursor.MOVE);
-                }
-            });
-
-            root.setOnMouseDragged(event -> {
-                if (root.getCursor() == Cursor.MOVE) {
-                    double deltaX = event.getScreenX() - lastX;
-                    double deltaY = event.getScreenY() - lastY;
-                    stage.setX(stage.getX() + deltaX);
-                    stage.setY(stage.getY() + deltaY);
-                    lastX = event.getScreenX();
-                    lastY = event.getScreenY();
-                }
-            });
-
-            root.setOnMouseReleased(event -> {
-                root.setCursor(Cursor.DEFAULT);
-            });
-            stage.setScene(scene);
-            stage.setResizable(true);
-            stage.showAndWait();
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private synchronized void initialize() {
-        try {
-            root = new BorderPane();
-            root.backgroundProperty().bind(Settings.rootBackground);
-            root.borderProperty().bind(Settings.borderWindow);
-            root.setTop(buildWindowBar());
-            root.setCenter(buildViewArea());
-            root.setBottom(null);
-            root.setLeft(null);
-            root.setRight(null);
-            latch.countDown();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        stage = new Stage();
+        VBox root = createRoot();
+        MenuBar menuBar = createMenuBar();
+        WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
+        windowPane.viewAreaProperty().get().getChildren().clear();
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        windowPane.setMenuBar(menuBar);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        windowPane.display();
     }
 }

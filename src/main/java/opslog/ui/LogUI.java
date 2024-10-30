@@ -10,6 +10,7 @@ import opslog.managers.PinboardManager;
 import opslog.object.*;
 import opslog.object.event.Log;
 import opslog.ui.controls.CustomTable;
+import opslog.ui.controls.LogTable;
 import opslog.util.Settings;
 
 public class LogUI {
@@ -34,13 +35,13 @@ public class LogUI {
 
     private static void create_Window() {
 
-        TableView<Log> tableView = CustomTable.logTableView();
-        tableView.setItems(LogManager.getList());
-        AnchorPane rightSide = new AnchorPane(tableView);
-        AnchorPane.setTopAnchor(tableView, 0.0);
-        AnchorPane.setBottomAnchor(tableView, 0.0);
-        AnchorPane.setLeftAnchor(tableView, 0.0);
-        AnchorPane.setRightAnchor(tableView, 0.0);
+        LogTable logTable = new LogTable();
+        logTable.setList(LogManager.getList());
+        AnchorPane rightSide = new AnchorPane(logTable);
+        AnchorPane.setTopAnchor(logTable, 0.0);
+        AnchorPane.setBottomAnchor(logTable, 0.0);
+        AnchorPane.setLeftAnchor(logTable, 0.0);
+        AnchorPane.setRightAnchor(logTable, 0.0);
 
         TableView<Log> pinTableView = CustomTable.pinTableView();
         pinTableView.setItems(PinboardManager.getList());

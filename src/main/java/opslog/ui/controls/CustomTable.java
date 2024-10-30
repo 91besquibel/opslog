@@ -181,7 +181,7 @@ public class CustomTable {
 
     private static TableColumn<Log, LocalDate> dateColumn() {
         TableColumn<Log, LocalDate> column = new TableColumn<>();
-        column.setCellValueFactory(new PropertyValueFactory<>("date"));
+        column.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
 
         Label label = new Label("Date");
         label.fontProperty().bind(Settings.fontPropertyBold);
@@ -195,7 +195,8 @@ public class CustomTable {
 
     private static TableColumn<Log, LocalTime> timeColumn() {
         TableColumn<Log, LocalTime> column = new TableColumn<>();
-        column.setCellValueFactory(new PropertyValueFactory<>("time"));
+        column.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
+
         Label label = new Label("Time");
         label.fontProperty().bind(Settings.fontPropertyBold);
         label.textFillProperty().bind(Settings.textColor);

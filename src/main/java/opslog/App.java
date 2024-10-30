@@ -2,55 +2,39 @@ package opslog;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.geometry.Orientation;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Separator;
+import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 
-import org.springframework.boot.SpringApplication;
+import javafx.stage.Stage;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import opslog.ui.*;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.controls.Buttons;
-import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomHBox;
-import opslog.ui.controls.CustomLabel;
 import opslog.util.*;
 
 import java.io.IOException;
-import java.util.Objects;
 
 
-// Look at swaping to the Builder interface and making a ScreenBuilder class
+
+// Look at swapping to the Builder interface and making a ScreenBuilder class
 // https://www.pragmaticcoding.ca/javafx/nofxml
-// https://www.stefankrause.net/wp/?p=14 memory managment for java
+// https://www.stefankrause.net/wp/?p=14 memory management for java
 @SpringBootApplication
 public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();
+
     private static LogUI logUI;
-    private static SearchUI searchUI;
     private static CalendarUI calendarUI;
     private static SettingsUI settingsUI;
-    private ChecklistUI checklistUI;
-    private double lastX, lastY;
-    private double originalWidth;
-    private double originalHeight;
+    private static ChecklistUI checklistUI;
 
-    private AnchorPane viewArea;
-    private BorderPane root;
+    private static WindowPane appWindow;
 
     public static void main(String[] args) {
+
         // Initialize Spring Boot
         // SpringApplication.run(App.class, args); 
         // Initialize JavaFX
@@ -59,7 +43,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Startup procedure
+
         try {
             
             System.out.println("Starting application");
@@ -78,197 +62,58 @@ public class App extends Application {
             checklistUI = ChecklistUI.getInstance();
             checklistUI.initialize();
 
-            createUI();
-
             // Create and display database connection UI
             StartUI startUI = StartUI.getInstance();
-            startUI.display();
+            startUI.display(()->{
 
-            StartUp.loadTableData();
-            StartUp.loadCalendarData();
+                StartUp.loadTableData();
+                StartUp.loadCalendarData();
 
-            // Display the app after the user connects to a database
-            display(stage);
-            
+                MenuBar menuBar = createMenuBar();
+                System.out.println("Displaying main application");
+                // Display the app after the user connects to a database
+                appWindow = new WindowPane(stage,Buttons.exitAppBtn());
+                appWindow.setMenuBar(menuBar);
+                appWindow.display();
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void display(Stage stage) {
+    private MenuBar createMenuBar(){
+        MenuBar menuBar = new MenuBar();
 
-        Scene scene = new Scene(root, 800, 600, Settings.rootColor.get());
-        String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
-        scene.getStylesheets().add(cssPath);
+        Menu viewMenu = new Menu("View");
 
-        stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setMinHeight(600);
-        stage.setMinWidth(800);
-        
-        /*
-            // Define the hotkey (e.g., Ctrl + H)
-            KeyCombination hotkey = new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN);
-            scene.getAccelerators().put(hotkey, () -> {
-                System.out.println("Hotkey pressed!");
-                // Add your action here
-            });
-        */
+        MenuItem logItem = new MenuItem("Log View");
+        logItem.setOnAction(this::goToLog);
 
-        ResizeListener resizeListener = new ResizeListener(stage);
-        scene.setOnMouseMoved(resizeListener);
-        scene.setOnMousePressed(resizeListener);
-        scene.setOnMouseDragged(resizeListener);
-        scene.setFill(Settings.rootColor.get());
+        MenuItem calendarItem = new MenuItem("Calendar View");
+        calendarItem.setOnAction(this::goToCalendar);
 
-        root.setOnMousePressed(event -> {
-            if (event.getY() <= 30) {
-                lastX = event.getScreenX();
-                lastY = event.getScreenY();
-                root.setCursor(Cursor.MOVE);
-            }
-        });
+        MenuItem checklistItem = new MenuItem("Checklist View");
+        checklistItem.setOnAction(this::goToChecklist);
 
-        root.setOnMouseDragged(event -> {
-            if (root.getCursor() == Cursor.MOVE) {
-                double deltaX = event.getScreenX() - lastX;
-                double deltaY = event.getScreenY() - lastY;
-                stage.setX(stage.getX() + deltaX);
-                stage.setY(stage.getY() + deltaY);
-                lastX = event.getScreenX();
-                lastY = event.getScreenY();
-            }
-        });
+        MenuItem settingsItem = new MenuItem("Settings View");
+        settingsItem.setOnAction(this::goToSettings);
 
-        root.setOnMouseReleased(event -> {
-            root.setCursor(Cursor.DEFAULT);
-        });
-
-		/* 
-            rounded corners future addition
-    		Rectangle rect = new Rectangle(500,500);
-    		rect.setArcHeight(60.0);
-    		rect.setArcWidth(60.0);
-    		root.setClip(rect);
-		*/
-
-        stage.setScene(scene);
-        stage.setResizable(true);
-        stage.setTitle("Operations Logger");
-        stage.show();
-    }
-
-    private void createUI() {
-        Button exit = Buttons.exitAppBtn();
-
-        Button minimize = Buttons.minBtn();
-
-        Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
-
-        Region left_Menu_Spacer = new Region();
-        HBox.setHgrow(left_Menu_Spacer, Priority.ALWAYS);
-
-        AppClock clock = AppClock.getInstance();
-        CustomLabel clockLabel = new CustomLabel("Clock", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-        clock.setClockLabel(clockLabel);
-
-        Region right_Menu_Spacer = new Region();
-        HBox.setHgrow(right_Menu_Spacer, Priority.ALWAYS);
-
-        CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search Window");
-        search.setOnAction(e -> {
-            //SearchUI searchUI = new SearchUI();
-            //searchUI.display();
-        });
-
-        CustomButton logButton = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Log View");
-        logButton.setOnAction(this::goToLog);
-
-        CustomButton calendarButton = new CustomButton(Directory.CALENDAR_WHITE, Directory.CALENDAR_GREY, "Calendar View");
-        calendarButton.setOnAction(this::goToCalendar);
-
-        CustomButton checklistButton = new CustomButton(Directory.CHECKLIST_WHITE, Directory.CHECKLIST_GREY, "Checklist View");
-        checklistButton.setOnAction(this::goToChecklist);
-
-        CustomButton settingsButton = new CustomButton(Directory.SETTINGS_WHITE, Directory.SETTINGS_GREY, "Settings View");
-        settingsButton.setOnAction(this::goToSettings);
-
-        Separator separator = new Separator();
-        separator.setOrientation(Orientation.VERTICAL);
-        separator.backgroundProperty().bind(Settings.transparentBackground);
-        separator.setPrefHeight(10);
-        separator.setPrefWidth(2);
-
-        CustomButton event_Button = new CustomButton(Directory.EVENT_WHITE, Directory.EVENT_GREY, "Event Window");
-        event_Button.setOnAction(e -> {
+        MenuItem eventItem = new MenuItem("Event Window");
+        eventItem.setOnAction(e -> {
             EventUI eventUI = EventUI.getInstance();
             eventUI.display();
         });
 
-        CustomHBox windowBar = new CustomHBox();
-        windowBar.getChildren().addAll(
-                exit, minimize, maximize,
-                left_Menu_Spacer, clockLabel, right_Menu_Spacer, search,
-                logButton, calendarButton, checklistButton,
-                settingsButton, separator, event_Button
-        );
-        windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-        windowBar.setPadding(Settings.INSETS_WB);
-        windowBar.borderProperty().bind(Settings.borderBar);
+        viewMenu.getItems().addAll(logItem, calendarItem, checklistItem, settingsItem, eventItem);
+        menuBar.getMenus().addAll(viewMenu);
 
-        viewArea = new AnchorPane();
-        viewArea.setPadding(Settings.INSETS);
-
-        root = new BorderPane();
-        root.backgroundProperty().bind(Settings.rootBackground);
-        root.borderProperty().bind(Settings.borderWindow);
-        root.setTop(windowBar);
-        root.setCenter(viewArea);
-        root.setBottom(null);
-        root.setLeft(null);
-        root.setRight(null);
-    }
-
-    private void createMenu(){
-        VBox menuContents = new VBox();
-        menuContents.backgroundProperty().bind(Settings.secondaryBackground);
-        menuContents.borderProperty().bind(Settings.primaryBorder);
-        
-        CustomButton logButton = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Log");
-        logButton.setOnAction(this::goToLog);
-
-        CustomButton calendarButton = new CustomButton(Directory.CALENDAR_WHITE, Directory.CALENDAR_GREY, "Calendar");
-        calendarButton.setOnAction(this::goToCalendar);
-
-        CustomButton checklistButton = new CustomButton(Directory.CHECKLIST_WHITE, Directory.CHECKLIST_GREY, "Checklist");
-        checklistButton.setOnAction(this::goToChecklist);
-
-        CustomButton settingsButton = new CustomButton(Directory.SETTINGS_WHITE, Directory.SETTINGS_GREY, "Settings");
-        settingsButton.setOnAction(this::goToSettings);
-        
-        menuContents.getChildren().addAll(logButton,calendarButton,checklistButton,settingsButton);
-        menuContents.setVisible(false);
-
-        Button menuButton = new Button("Menu"); 
-        menuButton.hoverProperty().addListener((obs,nhov,hov) -> {
-            if(hov){
-                menuContents.setVisible(true);
-            }else{
-                menuContents.setVisible(false);
-            }
-        });
-    }
-
-    private void searchBar(){
-        //CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY, "Search Window");
-        //search.setOnAction(e -> {
-            //SearchUI searchUI = new SearchUI();
-            //searchUI.display();
-        //});
+        return menuBar;
     }
 
     private void goToLog(ActionEvent event) {
-        viewArea.getChildren().clear();
-        viewArea.getChildren().add(logUI.getRootNode());
+        appWindow.viewAreaProperty().get().getChildren().clear();
+        appWindow.viewAreaProperty().get().getChildren().add(logUI.getRootNode());
         AnchorPane.setLeftAnchor(logUI.getRootNode(), 0.0);
         AnchorPane.setRightAnchor(logUI.getRootNode(), 0.0);
         AnchorPane.setTopAnchor(logUI.getRootNode(), 0.0);
@@ -276,8 +121,8 @@ public class App extends Application {
     }
 
     private void goToCalendar(ActionEvent event) {
-        viewArea.getChildren().clear();
-        viewArea.getChildren().add(calendarUI.getRootNode());
+        appWindow.viewAreaProperty().get().getChildren().clear();
+        appWindow.viewAreaProperty().get().getChildren().add(calendarUI.getRootNode());
         AnchorPane.setLeftAnchor(calendarUI.getRootNode(), 0.0);
         AnchorPane.setRightAnchor(calendarUI.getRootNode(), 0.0);
         AnchorPane.setTopAnchor(calendarUI.getRootNode(), 0.0);
@@ -285,8 +130,8 @@ public class App extends Application {
     }
 
     private void goToChecklist(ActionEvent event) {
-        viewArea.getChildren().clear();
-        viewArea.getChildren().add(checklistUI.getRoot());
+        appWindow.viewAreaProperty().get().getChildren().clear();
+        appWindow.viewAreaProperty().get().getChildren().add(checklistUI.getRoot());
         AnchorPane.setLeftAnchor(checklistUI.getRoot(), 0.0);
         AnchorPane.setRightAnchor(checklistUI.getRoot(), 0.0);
         AnchorPane.setTopAnchor(checklistUI.getRoot(), 0.0);
@@ -294,8 +139,8 @@ public class App extends Application {
     }
 
     private void goToSettings(ActionEvent event) {
-        viewArea.getChildren().clear();
-        viewArea.getChildren().add(settingsUI.getRootNode());
+        appWindow.viewAreaProperty().get().getChildren().clear();
+        appWindow.viewAreaProperty().get().getChildren().add(settingsUI.getRootNode());
         AnchorPane.setLeftAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setRightAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setTopAnchor(settingsUI.getRootNode(), 0.0);

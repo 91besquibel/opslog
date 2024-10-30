@@ -2,42 +2,16 @@ package opslog.ui;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import opslog.managers.LogManager;
 import opslog.object.event.Log;
 import opslog.ui.controls.*;
 import opslog.util.Settings;
 
-import java.util.Objects;
-
 public class PopupUI {
 
-    private double lastX, lastY;
-
-    private static HBox buildWindowBar() {
-        Button exit = Buttons.exitWinBtn();
-
-        Region leftSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
-        CustomLabel statusLabel = new CustomLabel("Edit Log", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
-        Region rightSpacer = new Region();
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-
-        CustomHBox windowBar = new CustomHBox();
-        windowBar.getChildren().addAll(exit, leftSpacer, statusLabel, rightSpacer);
-        windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-        windowBar.borderProperty().bind(Settings.borderBar);
-        windowBar.setPadding(Settings.INSETS_WB);
-        return windowBar;
-    }
+    private CustomVBox root;
 
     private static Button ackBtn(String title) {
         Button btn = new Button(title);
@@ -75,8 +49,6 @@ public class PopupUI {
     }
 
     public void message(String title, String message) {
-        BorderPane root = new BorderPane();
-
         CustomLabel label = new CustomLabel(message, 400, 200);
         label.wrapTextProperty().set(true);
 
@@ -86,28 +58,12 @@ public class PopupUI {
             stage.close();
         });
 
-        CustomVBox content = new CustomVBox();
-        content.getChildren().addAll(label, btn);
-
-        AnchorPane viewArea = new AnchorPane(content);
-        AnchorPane.setTopAnchor(content, 0.0);
-        AnchorPane.setRightAnchor(content, 0.0);
-        AnchorPane.setLeftAnchor(content, 0.0);
-        AnchorPane.setBottomAnchor(content, 0.0);
-        viewArea.setPadding(Settings.INSETS);
-
-        root.backgroundProperty().bind(Settings.rootBackground);
-        root.borderProperty().bind(Settings.borderWindow);
-        root.setTop(buildWindowBar());
-        root.setCenter(viewArea);
-        root.setBottom(null);
-        root.setLeft(null);
-        root.setRight(null);
-        display(root);
+        root = new CustomVBox();
+        root.getChildren().addAll(label, btn);
+        display();
     }
 
     public void append(Log oldLog) {
-        BorderPane root = new BorderPane();
 
         CustomLabel label = new CustomLabel(oldLog.getDescription(), 200, 200);
         label.wrapTextProperty().set(true);
@@ -139,29 +95,14 @@ public class PopupUI {
             }
         });
 
-        CustomVBox content = new CustomVBox();
-        content.getChildren().addAll(hbox, btn);
+        root = new CustomVBox();
+        root.getChildren().addAll(hbox, btn);
 
-        AnchorPane viewArea = new AnchorPane(content);
-        AnchorPane.setTopAnchor(content, 0.0);
-        AnchorPane.setRightAnchor(content, 0.0);
-        AnchorPane.setLeftAnchor(content, 0.0);
-        AnchorPane.setBottomAnchor(content, 0.0);
-        viewArea.setPadding(Settings.INSETS);
-
-        root.backgroundProperty().bind(Settings.rootBackground);
-        root.borderProperty().bind(Settings.borderWindow);
-        root.setTop(buildWindowBar());
-        root.setCenter(viewArea);
-        root.setBottom(null);
-        root.setLeft(null);
-        root.setRight(null);
-        display(root);
+        display();
     }
 
     public Boolean ackCheck(String title, String message) {
         BooleanProperty ack = new SimpleBooleanProperty(false);
-        BorderPane root = new BorderPane();
 
         CustomLabel label = new CustomLabel(message, 400, 200);
         label.wrapTextProperty().set(true);
@@ -182,62 +123,23 @@ public class PopupUI {
 
         CustomHBox btns = new CustomHBox();
         btns.getChildren().addAll(yesBtn, noBtn);
-        CustomVBox content = new CustomVBox();
-        content.getChildren().addAll(label, btns);
+        root = new CustomVBox();
+        root.getChildren().addAll(label, btns);
 
-        AnchorPane viewArea = new AnchorPane(content);
-        AnchorPane.setTopAnchor(content, 0.0);
-        AnchorPane.setRightAnchor(content, 0.0);
-        AnchorPane.setLeftAnchor(content, 0.0);
-        AnchorPane.setBottomAnchor(content, 0.0);
-        viewArea.setPadding(Settings.INSETS);
-
-        root.backgroundProperty().bind(Settings.rootBackground);
-        root.borderProperty().bind(Settings.borderWindow);
-        root.setTop(buildWindowBar());
-        root.setCenter(viewArea);
-        root.setBottom(null);
-        root.setLeft(null);
-        root.setRight(null);
-        display(root);
+        display();
 
         return ack.get();
     }
 
-    private void display(BorderPane root) {
-        Stage popupWindow = new Stage();
-        popupWindow.initModality(Modality.APPLICATION_MODAL);
-        popupWindow.initStyle(StageStyle.TRANSPARENT);
-
-        root.setOnMousePressed(event -> {
-            if (event.getY() <= 30) {
-                lastX = event.getScreenX();
-                lastY = event.getScreenY();
-                root.setCursor(Cursor.MOVE);
-            }
-        });
-
-        root.setOnMouseDragged(event -> {
-            if (root.getCursor() == Cursor.MOVE) {
-                double deltaX = event.getScreenX() - lastX;
-                double deltaY = event.getScreenY() - lastY;
-                popupWindow.setX(popupWindow.getX() + deltaX);
-                popupWindow.setY(popupWindow.getY() + deltaY);
-                lastX = event.getScreenX();
-                lastY = event.getScreenY();
-            }
-        });
-
-        root.setOnMouseReleased(event -> {
-            root.setCursor(Cursor.DEFAULT);
-        });
-
-        Scene scene = new Scene(root, 550, 300);
-        String cssPath = Objects.requireNonNull(PopupUI.class.getResource("/style.css")).toExternalForm();
-        scene.getStylesheets().add(cssPath);
-
-        popupWindow.setScene(scene);
-        popupWindow.setResizable(false);
-        popupWindow.showAndWait();
+    public void display() {
+        Stage stage = new Stage();
+        WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
+        windowPane.viewAreaProperty().get().getChildren().clear();
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        windowPane.display();
     }
 }

@@ -55,12 +55,20 @@ public class Log extends Event implements SQL {
         date.set(newDate);
     }
 
+    public ObjectProperty<LocalDate> dateProperty() {
+        return date;
+    }
+
     public LocalTime getTime() {
         return time.get();
     }
 
     public void setTime(LocalTime newTime) {
         time.set(newTime);
+    }
+
+    public ObjectProperty<LocalTime> timeProperty() {
+        return time;
     }
 
     public boolean hasID(String newID) {
@@ -121,9 +129,9 @@ public class Log extends Event implements SQL {
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true; // check if its the same reference 
-        if (!(other instanceof Log)) return false; // check if it is the same type
-        Log otherLog = (Log) other; // if same type cast type
+        if (this == other) return true; // check if it's the same reference
+        if (!(other instanceof Log otherLog)) return false; // check if it is the same type
+        // if same type cast type
         return getID().equals(otherLog.getID()); // if same id return true
     }
 }

@@ -33,10 +33,11 @@ import opslog.object.Type;
 import opslog.util.*;
 import java.util.Arrays;
 import java.util.List;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class LogTable extends TableView<Log>{
 
-	private ContextMenu contextMenu = new ContextMenu();
+	private final ContextMenu contextMenu = new ContextMenu();
 	private ObservableList<Log> list;
 	
 	public LogTable(){
@@ -139,7 +140,7 @@ public class LogTable extends TableView<Log>{
 
 	private TableColumn<Log, LocalDate> dateColumn() {
 		TableColumn<Log, LocalDate> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("date"));
+		column.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
 
 		Label label = new Label("Date");
 		label.fontProperty().bind(Settings.fontPropertyBold);
@@ -153,7 +154,7 @@ public class LogTable extends TableView<Log>{
 
 	private TableColumn<Log, LocalTime> timeColumn() {
 		TableColumn<Log, LocalTime> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("time"));
+		column.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
 		Label label = new Label("Time");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
@@ -166,7 +167,7 @@ public class LogTable extends TableView<Log>{
 
 	private TableColumn<Log, Type> typeColumn() {
 		TableColumn<Log, Type> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("type"));
+		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
 		Label label = new Label("Type");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
@@ -178,37 +179,35 @@ public class LogTable extends TableView<Log>{
 	}
 
 	private TableColumn<Log, ObservableList<Tag>> tagColumn() {
-		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("tags"));
+		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>("Tags");
+
+		column.setCellValueFactory(cellData ->
+				new SimpleObjectProperty<>(cellData.getValue().getTags())
+		);
+
 		Label label = new Label("Tags");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
 		HBox hbox = new HBox(label);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 		column.setGraphic(hbox);
+
 		column.setCellFactory(col -> new TableCell<Log, ObservableList<Tag>>() {
 			@Override
 			protected void updateItem(ObservableList<Tag> item, boolean empty) {
 				super.updateItem(item, empty);
-				if (empty || item == null) {
+				if (empty || item == null || item.isEmpty()) {
 					setGraphic(null);
 				} else {
 					VBox vbox = new VBox();
 					for (Tag tag : item) {
 						Label lbl = new Label(tag.toString());
-						lbl.setBackground(
-								new Background(
-										new BackgroundFill(
-												tag.getColor(),
-												Settings.CORNER_RADII,
-												Settings.INSETS_ZERO
-										)
-								)
-						);
+						lbl.setBackground(new Background(new BackgroundFill(tag.getColor(),
+								Settings.CORNER_RADII, Settings.INSETS_ZERO)));
 						lbl.setPadding(Settings.INSETS);
 						lbl.textFillProperty().bind(Settings.textColor);
 						lbl.setAlignment(Pos.TOP_CENTER);
-						lbl.maxHeight(30);
+						lbl.setMaxHeight(30);
 						lbl.borderProperty().bind(Settings.transparentBorder);
 						vbox.getChildren().add(lbl);
 					}
@@ -217,19 +216,19 @@ public class LogTable extends TableView<Log>{
 					vbox.setPadding(Settings.INSETS);
 					setGraphic(vbox);
 				}
-				{
-					borderProperty().bind(Settings.transparentBorder);
-					setAlignment(Pos.TOP_CENTER);
-					setPadding(Settings.INSETS);
-				}
+				borderProperty().bind(Settings.transparentBorder);
+				setAlignment(Pos.TOP_CENTER);
+				setPadding(Settings.INSETS);
 			}
 		});
+
 		return column;
 	}
 
+
 	private TableColumn<Log, String> initialsColumn() {
 		TableColumn<Log, String> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("initials"));
+		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
 		Label label = new Label("Initials");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
@@ -243,7 +242,7 @@ public class LogTable extends TableView<Log>{
 
 	private TableColumn<Log, String> descriptionColumn(String header) {
 		TableColumn<Log, String> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("description"));
+		column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
 		Label label = new Label(header);
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
