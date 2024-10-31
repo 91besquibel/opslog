@@ -50,8 +50,8 @@ public class EventUI {
         return instance;
     }
 
-    private MenuBar createMenuBar() {
-        MenuBar menuBar = new MenuBar();
+    private CustomMenuBar createMenuBar() {
+        CustomMenuBar menuBar = new CustomMenuBar();
 
         Menu menu = new Menu("Menu");
 
@@ -300,7 +300,7 @@ public class EventUI {
     public void display() {
         stage = new Stage();
         VBox root = createRoot();
-        MenuBar menuBar = createMenuBar();
+        CustomMenuBar menuBar = createMenuBar();
         WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
         windowPane.viewAreaProperty().get().getChildren().clear();
         windowPane.viewAreaProperty().get().getChildren().add(root);

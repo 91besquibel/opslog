@@ -30,10 +30,8 @@ public class CustomButton extends Button {
             borderProperty().unbind();
             if (nv) {
                 setGraphic(loadImage(imageHover));
-                setBorder(Settings.focusBorder.get());
             } else {
                 setGraphic(loadImage(image));
-                borderProperty().bind(Settings.primaryBorder);
             }
         });
 
@@ -41,10 +39,8 @@ public class CustomButton extends Button {
             borderProperty().unbind();
             if (nv) {
                 setGraphic(loadImage(imageHover));
-                setBorder(Settings.focusBorder.get());
             } else {
                 setGraphic(loadImage(image));
-                borderProperty().bind(Settings.primaryBorder);
             }
         });
     }

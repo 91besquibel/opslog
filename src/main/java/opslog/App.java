@@ -7,6 +7,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
+import opslog.ui.controls.CustomMenuBar;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import opslog.ui.*;
@@ -69,7 +70,7 @@ public class App extends Application {
                 StartUp.loadTableData();
                 StartUp.loadCalendarData();
 
-                MenuBar menuBar = createMenuBar();
+                CustomMenuBar menuBar = createMenuBar();
                 System.out.println("Displaying main application");
                 // Display the app after the user connects to a database
                 appWindow = new WindowPane(stage,Buttons.exitAppBtn());
@@ -82,8 +83,8 @@ public class App extends Application {
         }
     }
 
-    private MenuBar createMenuBar(){
-        MenuBar menuBar = new MenuBar();
+    private CustomMenuBar createMenuBar(){
+        CustomMenuBar menuBar = new CustomMenuBar();
 
         Menu viewMenu = new Menu("View");
 

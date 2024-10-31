@@ -31,7 +31,7 @@ public class Settings {
     public static final double SCREEN_WIDTH = Screen.getPrimary().getBounds().getWidth();
     public static final Insets INSETS = new Insets(5.0);
     public static final Insets INSETS_ZERO = new Insets(0.0);
-    public static final Insets INSETS_WB = new Insets(0.0, 5.0, 0.0, 5.0);
+    public static final Insets INSETS_WB = new Insets(0.0, 10.0, 0.0, 10.0);
     public static final int SINGLE_LINE_HEIGHT = 40;
     public static final int HEIGHT_SMALL = 100;
     public static final int HEIGHT_LARGE = 250;

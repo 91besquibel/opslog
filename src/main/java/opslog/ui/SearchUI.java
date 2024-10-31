@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import opslog.object.event.Log;
 import opslog.ui.controls.Buttons;
 import opslog.ui.calendar.control.CalendarTable;
+import opslog.ui.controls.CustomMenuBar;
 import opslog.ui.controls.LogTable;
 import opslog.object.event.Calendar;
 import opslog.util.FileSaver;
@@ -39,7 +40,7 @@ public class SearchUI <T>{
     public void display() {
         stage = new Stage();
         VBox root = createRoot();
-        MenuBar menuBar = createMenuBar();
+        CustomMenuBar menuBar = createMenuBar();
         WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
         windowPane.setMenuBar(menuBar);
         windowPane.viewAreaProperty().get().getChildren().clear();
@@ -82,8 +83,8 @@ public class SearchUI <T>{
         return root;
     }
 
-    private MenuBar createMenuBar(){
-        MenuBar menuBar = new MenuBar();
+    private CustomMenuBar createMenuBar(){
+        CustomMenuBar menuBar = new CustomMenuBar();
 
         Menu viewMenu = new Menu("File");
 
