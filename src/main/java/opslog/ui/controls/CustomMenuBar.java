@@ -32,9 +32,10 @@ public class CustomMenuBar extends MenuBar {
             this.borderProperty().unbind();
             if(newValue){
                 this.borderProperty().bind(Settings.focusBorder);
+                this.backgroundProperty().bind(Settings.primaryBackground);
             }else{
                 this.borderProperty().bind(Settings.secondaryBorder);
-
+                this.backgroundProperty().bind(Settings.secondaryBackground);
 
             }
         });

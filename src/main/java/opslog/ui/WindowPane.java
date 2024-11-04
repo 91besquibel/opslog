@@ -15,9 +15,12 @@ import java.util.Objects;
 
 import opslog.ui.controls.Buttons;
 import opslog.ui.controls.CustomMenuBar;
+import opslog.ui.controls.CustomMenu;
+import opslog.ui.controls.CustomMenuItem;
 import opslog.ui.controls.CustomTextField;
 import opslog.util.ResizeListener;
 import opslog.util.Settings;
+import opslog.ui.controls.SearchBar;
 
 public class WindowPane {
 
@@ -26,9 +29,10 @@ public class WindowPane {
     private double lastX, lastY;
     private double originalWidth;
     private double originalHeight;
-
+    
 
     private final Button exitButton;
+    private final SearchBar searchBar = new SearchBar();
     private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<CustomMenuBar> menuBarProperty = new SimpleObjectProperty<>();
 
@@ -98,12 +102,14 @@ public class WindowPane {
         windowBar.layout();
 
         viewAreaProperty.get().setPadding(Settings.INSETS);
+        searchBar.getTextField().prefHeightProperty().bind(menuBarProperty.get().prefHeightProperty());
 
         root = new BorderPane();
         root.setTop(windowBar);
         root.setCenter(viewAreaProperty.get());
         root.backgroundProperty().bind(Settings.windowBackground);
         root.borderProperty().bind(Settings.windowBorder);
+        root.setEffect(Settings.DROPSHADOW);
         root.layout();
     }
 
@@ -113,8 +119,6 @@ public class WindowPane {
 
         Region leftSpacer = new Region();
         HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
-        HBox searchBar = createSearchBar();
 
         Region rightSpacer = new Region();
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
@@ -139,37 +143,7 @@ public class WindowPane {
         hbox.getChildren().addAll(exitButton, minimize, maximize);
         return hbox;
     }
-
-    private HBox createSearchBar() {
-
-        HBox container = new HBox();
-        container.borderProperty().bind(Settings.primaryBorder);
-        container.backgroundProperty().bind(Settings.secondaryBackground);
-        container.setAlignment(Pos.CENTER);
-
-        CustomTextField tf = new CustomTextField("Search", 200, Settings.SINGLE_LINE_HEIGHT);
-
-        MenuBar menuBar = new MenuBar();
-
-
-
-        menuBar.setFocusTraversable(true);
-        menuBar.backgroundProperty().bind(Settings.secondaryBackground);
-
-
-        Menu menu = new Menu("Filter");
-
-        CheckMenuItem tag = new CheckMenuItem("Tag");
-        CheckMenuItem type = new CheckMenuItem("Type");
-        CheckMenuItem initials = new CheckMenuItem("Initials");
-        CheckMenuItem description = new CheckMenuItem("Description");
-        menu.getItems().addAll(tag, type, initials, description);
-        menuBar.getMenus().add(menu);
-
-        container.getChildren().addAll(tf, menuBar);
-        return container;
-    }
-
+    
     private CustomMenuBar createDefaultMenuBar() {
 
         Menu defaultMenu = new Menu();
@@ -178,6 +152,7 @@ public class WindowPane {
         defaultMenu.getItems().addAll(file);
         defaultMenuBar.getMenus().add(defaultMenu);
         defaultMenuBar.setVisible(false);
+        searchBar.setPrefHeight(defaultMenuBar.getPrefHeight());
 
         return defaultMenuBar;
     }
@@ -199,6 +174,10 @@ public class WindowPane {
             HBox windowBar = createWindowBar();
             root.setTop(windowBar);
         });
+    }
+
+    public SearchBar getSearchBar(){
+        return searchBar;
     }
 
     public ObjectProperty<AnchorPane> viewAreaProperty() {

@@ -233,4 +233,47 @@
 }
 
 
+.context-menu {
+    -fx-background-color: black;
+    -fx-background-radius: 13px;
+   
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: grey;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    
+}
 
+.menu-item:focused {
+     -fx-background-color: transparent;
+}
+
+.menu:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-bar:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-button:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-item:hover {
+     -fx-background-color: transparent;
+}
+
+.menu:hover {
+    -fx-background-color: transparent;
+}
+
+.menu-bar:hover {
+    -fx-background-color: transparent;
+}
+
+.menu-button:hover {
+    -fx-background-color: transparent;
+}

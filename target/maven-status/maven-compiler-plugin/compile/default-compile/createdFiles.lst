@@ -24,6 +24,7 @@ opslog/ui/controls/CustomListView$1.class
 opslog/ui/controls/LogTable$3.class
 opslog/util/AppClock.class
 opslog/ui/LogUI.class
+opslog/ui/controls/SearchBar.class
 opslog/ui/controls/CustomComboBox$3.class
 opslog/ui/EventUI.class
 opslog/ui/controls/CustomTable$2.class
@@ -53,10 +54,12 @@ opslog/ui/controls/LogTable$1.class
 opslog/ui/controls/CustomTextField.class
 opslog/util/Directory.class
 opslog/managers/ChecklistManager.class
+opslog/ui/WindowPane.class
 opslog/App.class
 opslog/managers/TypeManager.class
 opslog/ui/calendar/control/CalendarCell.class
 opslog/ui/controls/CustomVBox.class
+opslog/ui/controls/CustomMenu.class
 opslog/ui/checklist/ChecklistUI.class
 opslog/ui/calendar/object/CalendarMonth.class
 opslog/ui/calendar/control/CalendarListView$1.class
@@ -74,7 +77,9 @@ opslog/ui/StartUI.class
 opslog/util/CSV.class
 opslog/managers/TagManager.class
 opslog/object/Event.class
+opslog/ui/controls/CustomMenuBar.class
 opslog/ui/controls/CustomButton.class
+opslog/ui/controls/CustomMenuItem.class
 opslog/managers/ListOperation.class
 opslog/ui/calendar/control/ControlPanel.class
 opslog/ui/CalendarUI.class

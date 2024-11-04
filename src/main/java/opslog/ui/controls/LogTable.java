@@ -45,6 +45,7 @@ public class LogTable extends TableView<Log>{
 		initializeColumns();
 		initializeContextMenu();
 		initializeListeners();
+		//setEffect(Settings.DROPSHADOW);
 	}
 
 	public LogTable(ObservableList<Log> list){

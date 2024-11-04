@@ -14,7 +14,7 @@ public class CustomTextField extends TextField {
         fontProperty().bind(Settings.fontProperty);
         borderProperty().bind(Settings.secondaryBorder);
         backgroundProperty().bind(Settings.secondaryBackground);
-
+        //setEffect(Settings.INNERSHADOW);
         setStyle(Styles.getTextStyle());
 
         focusedProperty().addListener((obs, wasFocused, isFocused) -> {

@@ -29,14 +29,13 @@ public class ChecklistUI {
         return instance;
     }
 
-    //You did a bad
+    // You did a bad
     public static void showPopup(String title, String message) {
         PopupUI popup = new PopupUI();
         popup.message(title, message);
     }
 
     // create a checker to make sure the editor and status window are built before adding them to the root
-
     public void initialize() {
         Platform.runLater(() -> {
             root = new StackPane();

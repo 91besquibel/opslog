@@ -394,7 +394,6 @@ public class SettingsUI {
         profileBtn.getChildren().addAll(profileAdd, profileEdit, profileDelete);
         profileBtn.setAlignment(Pos.BASELINE_RIGHT);
 
-
         CustomVBox profileCard = new CustomVBox();
         profileCard.getChildren().addAll(
                 profileLabel, profileSelector, profileTextField,
@@ -417,11 +416,11 @@ public class SettingsUI {
             VBox typeCard = createTypeCard();
             VBox tagCard = createTagCard();
             VBox formatCard = createFormatCard();
-            VBox profileCard = createProfileCard();
+            VBox profileCard = createProfileCard();   
 
             TilePane deckOfCards = new TilePane(profileCard, typeCard, tagCard, formatCard, pathCard);
-            deckOfCards.setHgap(5);
-            deckOfCards.setVgap(5);
+            deckOfCards.setHgap(10);
+            deckOfCards.setVgap(10);
             deckOfCards.setPadding(Settings.INSETS);
             deckOfCards.setPrefColumns(4);
             deckOfCards.backgroundProperty().bind(Settings.rootBackground);

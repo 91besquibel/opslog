@@ -21,6 +21,8 @@ public class CustomListView<T> extends ListView<T> {
         borderProperty().bind(Settings.secondaryBorder);
         getSelectionModel().setSelectionMode(selectionMode);
         getFocusModel().focus(-1);
+        //setEffect(Settings.INNERSHADOW);
+        
 
         Settings.textColor.addListener((obs, oldColor, newColor) -> {
             setStyle(Styles.getTextStyle());

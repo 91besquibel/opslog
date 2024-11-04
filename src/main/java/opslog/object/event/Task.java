@@ -16,12 +16,12 @@ public class Task extends Event implements SQL {
 
     private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
-    private final IntegerProperty offSet = new SimpleIntegerProperty();
+    private final IntegerProperty offset = new SimpleIntegerProperty();
 
     //Constructor parameterized
     public Task(
             String id, String title,
-			int offSet,
+			int offset,
 			Type type, ObservableList<Tag> tags,
 			String initials, String description) {
 
@@ -29,7 +29,7 @@ public class Task extends Event implements SQL {
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);
-        this.offSet.set(offSet);
+        this.offset.set(offset);
     }
 
     //Constructor non parameterized
@@ -37,7 +37,7 @@ public class Task extends Event implements SQL {
         super();
         this.id.set(null);
         this.title.set(null);
-        this.offSet.set(0);//must be greater or less then 0
+        this.offset.set(0);//must be greater or less then 0
     }
 
     @Override
@@ -58,12 +58,12 @@ public class Task extends Event implements SQL {
         this.title.set(title);
     }
 
-    public int getOffSet() {
-        return offSet.get();
+    public int getOffset() {
+        return offset.get();
     }
 
-    public void setOffSet(int offSet) {
-        this.offSet.set(offSet);
+    public void setOffset(int offset) {
+        this.offset.set(offset);
     }
 
     public boolean hasID(String newID) {
@@ -74,7 +74,7 @@ public class Task extends Event implements SQL {
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
-                        offSet.get() != 0 &&
+                        offset.get() != 0 &&
                         super.hasValue();
     }
 
@@ -83,7 +83,7 @@ public class Task extends Event implements SQL {
         return new String[]{
                 getID(),
                 getTitle(),
-                String.valueOf(getOffSet()),
+                String.valueOf(getOffset()),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
@@ -111,7 +111,7 @@ public class Task extends Event implements SQL {
         Task otherTask = (Task) other;
         return
                 title.get().equals(otherTask.getTitle()) &&
-                        Objects.equals(getOffSet(), otherTask.getOffSet());
+                Objects.equals(getOffset(), otherTask.getOffset());
                         
     }
 }

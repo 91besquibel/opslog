@@ -8,24 +8,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
+
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Popup;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.geometry.Side;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
 
-import opslog.App;
+import opslog.ui.controls.SearchBar;
 import opslog.managers.LogManager;
 import opslog.object.event.Log;
 import opslog.sql.hikari.ConnectionManager;
@@ -35,7 +28,7 @@ import opslog.ui.SearchUI;
 import opslog.ui.calendar.control.CalendarCell;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.util.Settings;
-import opslog.ui.controls.CustomTextField;
+
 
 public class MonthView extends GridPane{
 	
@@ -48,7 +41,7 @@ public class MonthView extends GridPane{
 	public MonthView(CalendarMonth calendarMonth){
 		super();
 		this.calendarMonth = calendarMonth;
-		buildMonthView();
+		initializeView();
 		createContextMenu();
 		setOnContextMenuRequested(event -> {
 			
@@ -64,7 +57,7 @@ public class MonthView extends GridPane{
 	}
 	
 	// Month View: GridLayout
-	private void buildMonthView(){
+	private void initializeView(){
 		// 7 days in a week plus the week number column
 		int nCols = 7 + 1;
 		// 6 rows for the month plus the week name row
@@ -157,37 +150,36 @@ public class MonthView extends GridPane{
 		// Search sub-ContextMenu
 		MenuItem search = new MenuItem("Search");
 		search.setOnAction(e ->{
-			contextMenuSearch.show(this,
-					contextMenu.anchorXProperty().get(),
-					contextMenu.anchorYProperty().get());
-		});
-		
-		MenuItem calendar = new MenuItem("Calendar");
-		calendar.setOnAction(e -> {
-			HBox searchBar = createSearchBar();
+			SearchBar searchBar = new SearchBar();
+			List<LocalDate> dates = new ArrayList<>();
+			for(CalendarCell cell : calendarMonth.getSelectedCells()){
+				LocalDate cellDate = cell.getDate();
+				dates.add(cellDate);
+			}
+			searchBar.setDates(dates); 
+			searchBar.setEffect(Settings.DROPSHADOW);
 			Popup popup = new Popup();
 			popup.getContent().add(searchBar);
 			popup.show(this,
 					contextMenuSearch.anchorXProperty().get(),
 					contextMenuSearch.anchorYProperty().get());
-			//popup.setBackground(null);
-			//stylize the popup
 		});
-		MenuItem log = new MenuItem("Log");
-		contextMenuSearch.getItems().addAll(calendar,log);
 		
 		// Views
 		MenuItem dayView = new MenuItem("Day View");
+
+		// get the selected date if there is only one then 
+		// pass it to the calendarWeek
 		MenuItem weekView = new MenuItem("Week View");
+		
 		
 		// Month View 
 		MenuItem viewLogs = new MenuItem("View Logs");
 		viewLogs.setOnAction(e ->{
 			DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
-			List<CalendarCell> selectedCells = calendarMonth.getSelectedCells();
 			List<Log> data = new ArrayList<>();
 			
-			for(CalendarCell cell : selectedCells){
+			for(CalendarCell cell : calendarMonth.getSelectedCells()){
 				LocalDate cellDate = cell.getDate();
 				Date date = Date.valueOf(cellDate);
 				String sql = String.format("SELECT * FROM log_table WHERE date = '" + date +"'");
@@ -201,7 +193,7 @@ public class MonthView extends GridPane{
 					}
 					System.out.println("MonthView: End Query \n");
 					if(!data.isEmpty()){
-						handleSearch(data);
+						handleResults(data);
 					}
 				} catch(SQLException ex){
 					System.out.println("MonthView: Error occured while attempting to retrive the cell data");
@@ -219,38 +211,8 @@ public class MonthView extends GridPane{
 		contextMenu.getItems().addAll(viewLogs,search,dayView,weekView,createEvent);
 	}
 
-	private HBox createSearchBar(){
-		HBox container = new HBox();
-		container.borderProperty().bind(Settings.primaryBorder);
-		container.backgroundProperty().bind(Settings.secondaryBackground);
-
-		CustomTextField tf = new CustomTextField("Search",200,Settings.SINGLE_LINE_HEIGHT);
+	private <T> void handleResults(List<T> data){
 		
-		MenuBar menuBar = new MenuBar();
-		menuBar.backgroundProperty().bind(Settings.secondaryBackground);
-		
-		Menu menu = new Menu("Filter");
-		
-		
-		//menu needs to stay open or make a drop down
-		
-		CheckMenuItem tag = new CheckMenuItem("Tag");
-		
-		CheckMenuItem type = new CheckMenuItem("Type");
-		
-		CheckMenuItem initials = new CheckMenuItem("Initials");
-		
-		CheckMenuItem description = new CheckMenuItem("Description");
-		
-		menu.getItems().addAll(tag,type,initials,description);
-
-		menuBar.getMenus().add(menu);
-		
-		container.getChildren().addAll(tf,menuBar);
-		return container;
-	}
-
-	private <T> void handleSearch(List<T> data){
 		try{
 			SearchUI<T> searchUI = new SearchUI<>();
 			searchUI.setList(data);

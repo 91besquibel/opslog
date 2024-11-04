@@ -15,7 +15,8 @@ import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseExecutor;
 import opslog.sql.hikari.HikariConfigSetup;
 import opslog.sql.hikari.HikariConnectionProvider;
-
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 import com.zaxxer.hikari.HikariConfig;
 
 public class StartUI {
@@ -48,8 +49,11 @@ public class StartUI {
 
     public void display(Runnable onComplete) {
         stage = new Stage();
-        VBox root = buildSQLBody(onComplete);
+        VBox sqlBody = buildSQLBody(onComplete); 
+        HBox root = new HBox(sqlBody);
+        root.setAlignment(Pos.CENTER);
         WindowPane windowPane = new WindowPane(stage, Buttons.exitAppBtn());
+        windowPane.getSearchBar().setVisible(false);
         windowPane.viewAreaProperty().get().getChildren().add(root);
         AnchorPane.setTopAnchor(root, 0.0);
         AnchorPane.setBottomAnchor(root, 0.0);
@@ -82,11 +86,42 @@ public class StartUI {
         serverUsername.setText("neondb_owner");
         serverPassword.setText("0cyrEuxY3spH");
 
-        Button loadAppData = new Button("Load");
-        loadAppData.setPrefSize(50, 30);
-        loadAppData.setBackground(Settings.secondaryBackground.get());
+        Button load = createLoadButton(onComplete);
 
-        loadAppData.setOnAction(actionEvent -> {
+        VBox root = new VBox(serverType, serverAddress, serverPort, serverDBName,
+                serverUsername, serverPassword, load);
+        root.setSpacing(Settings.SPACING);
+        root.setPadding(Settings.INSETS);
+        root.backgroundProperty().bind(Settings.primaryBackground);
+        return root;
+    }
+
+    private Button createLoadButton(Runnable onComplete){
+        Button load = new Button("Load");
+        load.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
+        load.setBackground(Settings.secondaryBackground.get());
+        load.setFont(Settings.fontProperty.get());
+        load.setTextFill(Settings.textColor.get());
+
+        load.hoverProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+                load.setBackground(Settings.primaryBackground.get());
+                load.setBorder(Settings.focusBorder.get());
+            }else{
+                load.setBackground(Settings.secondaryBackground.get());
+                load.setBorder(Settings.transparentBorder.get());
+            }
+            
+        });
+        load.pressedProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+               load.setBackground(Settings.secondaryBackground.get());
+            } else {
+               load.setBackground(Settings.primaryBackground.get());
+            }
+        });
+        
+        load.setOnAction(actionEvent -> {
             if (!emptyFields()) {
                 try {
                     handleConfigConnection(onComplete);
@@ -96,12 +131,7 @@ public class StartUI {
             }
         });
 
-        VBox root = new VBox(serverType, serverAddress, serverPort, serverDBName,
-                serverUsername, serverPassword, loadAppData);
-        root.setSpacing(Settings.SPACING);
-        root.setPadding(Settings.INSETS);
-        root.backgroundProperty().bind(Settings.primaryBackground);
-        return root;
+        return load;
     }
 
     private boolean emptyFields() {
