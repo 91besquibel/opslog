@@ -2,9 +2,12 @@ package opslog.ui;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.paint.Color;
@@ -15,9 +18,6 @@ import java.util.Objects;
 
 import opslog.ui.controls.Buttons;
 import opslog.ui.controls.CustomMenuBar;
-import opslog.ui.controls.CustomMenu;
-import opslog.ui.controls.CustomMenuItem;
-import opslog.ui.controls.CustomTextField;
 import opslog.util.ResizeListener;
 import opslog.util.Settings;
 import opslog.ui.controls.SearchBar;
@@ -50,13 +50,19 @@ public class WindowPane {
     // Display method to show the window
     public void display() {
         System.out.println("Displaying new windowpane");
-        Scene scene = new Scene(root, 800, 600);
+        StackPane stackPane = new StackPane(root);
+        stackPane.setPadding(new Insets(10));
+        Rectangle2D screenSize = Screen.getPrimary().getVisualBounds();
+        double sceneHeight = screenSize.getHeight()/2+20;
+        double sceneWidth = screenSize.getWidth()/2+20;
+        Scene scene = new Scene(stackPane, sceneWidth, sceneHeight);
+        root.prefWidthProperty().bind(scene.widthProperty().subtract(20));
+        root.prefHeightProperty().bind(scene.heightProperty().subtract(20));
+
         String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
         scene.getStylesheets().add(cssPath);
 
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.setMinHeight(600);
-        stage.setMinWidth(800);
         scene.setFill(Color.TRANSPARENT);
 
         setupWindowManipulation(scene);

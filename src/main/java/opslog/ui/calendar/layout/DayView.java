@@ -52,23 +52,29 @@ public class DayView extends GridPane{
 	private ObservableList<Event> eventsProperty = FXCollections.observableArrayList();
 	
 	public DayView(){
-		int nCols = 0;
-		int nRows = 48;
 
 		// Col 0: 'Constraints' event labels
 		ColumnConstraints col0 = new ColumnConstraints();
-		col0.setMinWidth(40);
-		col0.setMaxWidth(40);
-		col0.setHgrow(Priority.NEVER);
-		//col0.setPadding(new Insets(0,0,0,10)); apply this to the label
+		col0.setHgrow(Priority.ALWAYS);
 		this.getColumnConstraints().add(col0);
 
 		// Row 0 - 48: 'Constraints' times 
-		RowConstraints row2To50 = new RowConstraints();
-		row2To50.setVgrow(Priority.ALWAYS);
-		for (int row = 2; row < nRows; row++) {
-			this.getRowConstraints().add(row2To50);
+		RowConstraints row0to48 = new RowConstraints();
+		row0to48.setVgrow(Priority.ALWAYS);
+		row0to48.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+		row0to48.setMaxHeight(Settings.SINGLE_LINE_HEIGHT);
+
+		for (int row = 0; row < 48; row++) {
+			Pane pane = new Pane();
+			if(row%2 > 0){
+				pane.backgroundProperty().bind(Settings.secondaryBackgroundZ);
+			}else{
+				pane.backgroundProperty().bind(Settings.primaryBackgroundZ);
+			}
+			this.add(pane, 0, row);
+			this.getRowConstraints().add(row0to48);
 		}
+
 	}
 
 	public ObjectProperty<LocalDate> dateProperty(){
@@ -86,8 +92,8 @@ public class DayView extends GridPane{
 				long eventLength = ChronoUnit.DAYS.between(calendar.getStartTime(), calendar.getStartTime()) + 1;
 				Label label = new Label(calendar.getStartTime() +" "+calendar.getTitle());
 				
-				// Add Method to check for over lap
-				//display if no over lap
+				// Add Method to check for overlap
+				//display if no overlap
 				
 				LocalTime startTime = calendar.getStartTime();
 				int totalOfSeconds = startTime.toSecondOfDay();

@@ -1,26 +1,38 @@
 package opslog.ui.calendar;
 
+import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import javafx.stage.Popup;
 import opslog.managers.CalendarManager;
 import opslog.managers.ChecklistManager;
+import opslog.managers.LogManager;
 import opslog.object.Event;
 import opslog.object.event.Checklist;
+import opslog.object.event.Log;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
+import opslog.ui.EventUI;
+import opslog.ui.SearchUI;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.layout.WeekView;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.ui.controls.CustomListView;
+import opslog.ui.controls.SearchBar;
 import opslog.util.Settings;
 import opslog.ui.calendar.control.ControlPanel;
 import opslog.ui.calendar.control.*;
@@ -34,10 +46,10 @@ public class CalendarUI{
     private AnchorPane leftBottom;
     private SplitPane left;
 
-    private VBox calendarView;
-    private WeekView weekView;
-    private MonthView monthView;
-    private ControlPanel controlPanel;
+    private final CalendarWeek calendarWeek = new CalendarWeek();
+    private final CalendarMonth calendarMonth = new CalendarMonth();
+    private final WeekView weekView = new WeekView();
+    private final MonthView  monthView = new MonthView();
     private AnchorPane right;
 
     private VBox root;
@@ -57,11 +69,9 @@ public class CalendarUI{
     
     public void initialize() {
         try {
-            
             initializeTopLeft();
             initializeBottomLeft();
             initializeLeftSide();
-            initializeViews();
             initializeRightSide();
             initializeRoot();
         } catch (Exception e) {
@@ -81,7 +91,12 @@ public class CalendarUI{
     }
     
     private void initializeBottomLeft() {
-        CustomListView<Checklist> calendarChecklist = new CustomListView<>(ChecklistManager.getList(), Settings.WIDTH_LARGE, Settings.WIDTH_LARGE, SelectionMode.SINGLE);
+        CustomListView<Checklist> calendarChecklist = new CustomListView<>(
+                ChecklistManager.getList(),
+                Settings.WIDTH_LARGE,
+                Settings.WIDTH_LARGE,
+                SelectionMode.SINGLE
+        );
         leftBottom = new AnchorPane(calendarChecklist);
         leftBottom.backgroundProperty().bind(Settings.primaryBackground);
         AnchorPane.setTopAnchor(calendarChecklist, 0.0);
@@ -97,6 +112,45 @@ public class CalendarUI{
     }
     
     private void initializeRightSide() {
+        // Month View
+
+        monthView.setCalendarMonth(calendarMonth);
+
+        weekView.setCalendarWeek(calendarWeek);
+
+
+        ControlPanel controlPanel = new ControlPanel(
+                monthView,
+                weekView
+        );
+
+        WeekViewControl weekViewControl = new WeekViewControl(
+                controlPanel,
+                weekView
+        );
+
+        MonthViewControl monthViewControl = new MonthViewControl(
+                controlPanel,
+                monthView
+        );
+
+        monthViewControl.initializeListeners();
+        weekViewControl.initializeListeners();
+
+        ScrollPane scrollPane = new ScrollPane(weekView);
+        weekView.visibleProperty().addListener((obs,ov,nv) -> {
+            scrollPane.setVisible(nv);
+        });
+        monthView.setVisible(true);
+        weekView.setVisible(false);
+        VBox vbox = new VBox(scrollPane);
+        weekView.prefWidthProperty().bind(scrollPane.widthProperty());
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(monthView, vbox);
+
+        VBox calendarView = new VBox(controlPanel, stackPane);
+        calendarView.backgroundProperty().bind(Settings.primaryBackground);
+
         System.out.println("2");
         right = new AnchorPane(calendarView);
         AnchorPane.setTopAnchor(calendarView, 0.0);
@@ -104,51 +158,8 @@ public class CalendarUI{
         AnchorPane.setLeftAnchor(calendarView, 0.0);
         AnchorPane.setRightAnchor(calendarView, 0.0);
     }
-    
-    private void initializeViews(){
-        
-        //MonthView
-        CalendarMonth calendarMonth = new CalendarMonth(YearMonth.now());
-        monthView = new MonthView(calendarMonth);
-        monthView.setVisible(true);
 
-        //WeekView
-        CalendarWeek calendarWeek = new CalendarWeek();
-        weekView = new WeekView();
-        weekView.setVisible(false);
-        ObservableList<DayView> dayViews = FXCollections.observableArrayList();
-        for(LocalDate date : calendarWeek.datesProperty()){
-            System.out.println("Creating a new dayview");
-            DayView dayView = new DayView();
-            dayView.dateProperty().set(date);
-            dayViews.add(dayView);
-        }
-        weekView.setDayViews(dayViews);
-        
-        // ControlPanel
-        ControlPanel controlPanel = new ControlPanel(calendarMonth,calendarWeek);
-        controlPanel.getViewSelector().valueProperty().addListener((obs, ov, nv) -> {
-            switch(nv){
-                case "Month":
-                    monthView.setVisible(true);
-                    break;
-                case "Week":
-                    weekView.setVisible(true);
-                    break;
-                case "Day":
-                    break;
-            }
-        });
-        
-        // StackPane
-        StackPane views = new StackPane();
-        views.getChildren().addAll(monthView, weekView);
-       
 
-        // Assemble the views 
-        calendarView = new VBox(controlPanel,views);
-        calendarView.backgroundProperty().bind(Settings.primaryBackground);
-    }
     
     private void initializeRoot() {
         System.out.println("3");

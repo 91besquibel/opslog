@@ -2,11 +2,15 @@ package opslog.ui.calendar.control;
 
 import java.sql.SQLException;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DecimalStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.time.LocalDate;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -19,6 +23,9 @@ import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseExecutor;
+import opslog.ui.calendar.layout.DayView;
+import opslog.ui.calendar.layout.MonthView;
+import opslog.ui.calendar.layout.WeekView;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.ui.controls.CustomButton;
@@ -30,58 +37,73 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
 
-
 /*
 	Responsible for all UI changes view listeners and user input
 */
-
 public class ControlPanel extends HBox{
 
-	private CustomComboBox<String> viewSelector = new CustomComboBox<String>("Month", 100, 40);
-	private CalendarMonth calendarMonth;
-	private CalendarWeek calendarWeek;
-	private Label yearLabel;
-	private Label monthLabel;
-	private Label weekLabel;
+	private final CustomComboBox<String> viewSelector = new CustomComboBox<String>("Month", 100, 40);
+	private final MonthView monthView;
+	private final WeekView weekView;
+	private final Label yearLabel;
+	private final Label monthLabel;
+	private final Label weekLabel;
 
-	public ControlPanel(CalendarMonth calendarMonth, CalendarWeek calendarWeek){
-		this.calendarMonth = calendarMonth;
-		this.calendarWeek = calendarWeek;
+	public ControlPanel(MonthView monthView, WeekView weekView){
+		this.monthView = monthView;
+		this.weekView = weekView;
 		this.yearLabel = new Label();
 		this.monthLabel = new Label();
 		this.weekLabel = new Label();
 		this.getChildren().addAll(buildMonthSpinner(),buildYearSpinner(),buildWeekSpinner(),viewSelector);
 		setAlignment(Pos.CENTER);
-		populateSelections();
 		initializeWeekListeners();
-		initializeMonthListeners();
-	}
-	
-	public CustomComboBox<String> getViewSelector(){
-		return viewSelector;
+		createViewSelector();
 	}
 
 	// View Selection
-	private void populateSelections(){
+	private void createViewSelector(){
 		ObservableList<String> selections = FXCollections.observableArrayList();
-		selections.add("Month");
-		selections.add("Week");
-		selections.add("Day");
+		selections.addAll("Month","Week","Day");
 		viewSelector.setItems(selections);
+		viewSelector.valueProperty().addListener((obs, ov, nv) -> {
+			switch(nv){
+				case "Month":
+					if(!monthView.isVisible()){
+						monthView.setVisible(true);
+						weekView.setVisible(false);
+					}
+					break;
+				case "Week":
+					if(!weekView.isVisible()){
+						weekView.setVisible(true);
+						monthView.setVisible(false);
+					}
+					break;
+				case "Day":
+					break;
+			}
+		});
 	}
 	
 	// Month Selection
 	private HBox buildMonthSpinner(){
 		HBox monthSpinner = new HBox();
 
-		CustomButton backwardMonth = new CustomButton(Directory.ARROW_LEFT_WHITE, Directory.ARROW_LEFT_GREY, "Back");
+		CustomButton backwardMonth = new CustomButton(
+				Directory.ARROW_LEFT_WHITE,
+				Directory.ARROW_LEFT_GREY,
+				"Back");
 		backwardMonth.setOnAction(e -> { backwardMonths(1); });
 
-		CustomButton forwardMonth = new CustomButton(Directory.ARROW_RIGHT_WHITE, Directory.ARROW_RIGHT_GREY, "Forward");
+		CustomButton forwardMonth = new CustomButton(
+				Directory.ARROW_RIGHT_WHITE,
+				Directory.ARROW_RIGHT_GREY,
+				"Forward");
 		forwardMonth.setOnAction(e -> { forwardMonths(1); });
 
 		// Change into a button that generates a popup allowing the user to pick the month
-		monthLabel.setText(String.valueOf(calendarMonth.getYearMonth().getMonth()));
+		monthLabel.setText(String.valueOf(monthView.getCalendarMonth().yearMonthProperty().get().getMonth()));
 		monthLabel.fontProperty().bind(Settings.fontCalendarBig);
 		monthLabel.textFillProperty().bind(Settings.textColor);
 		monthLabel.setTextAlignment(TextAlignment.CENTER);
@@ -92,16 +114,15 @@ public class ControlPanel extends HBox{
 		return monthSpinner;
 	}
 	private void forwardMonths(long numMonths){
-		monthChange(calendarMonth.getYearMonth().plusMonths(numMonths));
+		monthChange(monthView.getCalendarMonth().yearMonthProperty().get().plusMonths(numMonths));
 	}
 	private void backwardMonths(long numMonths){
-		monthChange(calendarMonth.getYearMonth().minusMonths(numMonths));	
+		monthChange(monthView.getCalendarMonth().yearMonthProperty().get().minusMonths(numMonths));
 	}
-	public void monthChange(YearMonth currentMonth){
-		calendarMonth.setYearMonth(currentMonth);
-		YearMonth yearMonth = calendarMonth.getYearMonth();
-		monthLabel.setText(String.valueOf(yearMonth.getMonth()));
-		List<Event> events = handleQuery(yearMonth.atDay(1), yearMonth.atEndOfMonth());
+	public void monthChange(YearMonth newYearMonth){
+		monthView.getCalendarMonth().yearMonthProperty().set(newYearMonth);
+		monthLabel.setText(String.valueOf(newYearMonth.getMonth()));
+		List<Event> events = handleQuery(newYearMonth.atDay(1), newYearMonth.atEndOfMonth());
 		// set the list as the displayed values
 		CalendarManager.getMonthEvents().setAll(events);
 	}
@@ -111,14 +132,26 @@ public class ControlPanel extends HBox{
 
 		HBox yearSpinner = new HBox();
 
-		CustomButton backwardYear = new CustomButton(Directory.ARROW_LEFT_WHITE, Directory.ARROW_LEFT_GREY, "Back");
+		CustomButton backwardYear = new CustomButton(
+				Directory.ARROW_LEFT_WHITE,
+				Directory.ARROW_LEFT_GREY,
+				"Back"
+		);
 		backwardYear.setOnAction(e -> { backwardYears(1); });
 
-		CustomButton forwardYear = new CustomButton(Directory.ARROW_RIGHT_WHITE, Directory.ARROW_RIGHT_GREY, "Forward");
+		CustomButton forwardYear = new CustomButton(
+				Directory.ARROW_RIGHT_WHITE,
+				Directory.ARROW_RIGHT_GREY,
+				"Forward"
+		);
 		forwardYear.setOnAction(e -> { forwardYears(1); });
 
 		// Change into a button that generates a popup allowing the user to pick the year
-		yearLabel.setText(String.valueOf(calendarMonth.getYearMonth().getYear()));
+		yearLabel.setText(
+				String.valueOf(
+						monthView.getCalendarMonth().yearMonthProperty().get().getYear()
+				)
+		);
 		yearLabel.fontProperty().bind(Settings.fontCalendarBig);
 		yearLabel.textFillProperty().bind(Settings.textColor);
 		yearLabel.setTextAlignment(TextAlignment.CENTER);
@@ -129,17 +162,23 @@ public class ControlPanel extends HBox{
 		return yearSpinner;
 	}
 	private void forwardYears(long numYears){
-		yearChange(calendarMonth.getYearMonth().plusYears(numYears));
+		yearChange(
+				monthView.getCalendarMonth().yearMonthProperty().get().plusYears(numYears)
+		);
 	}
 	private void backwardYears(long numYears){
-		yearChange(calendarMonth.getYearMonth().minusYears(numYears));
-		
+		yearChange(
+				monthView.getCalendarMonth().yearMonthProperty().get().minusYears(numYears)
+		);
 	}
 	public void yearChange(YearMonth currentYear){
-		calendarMonth.setYearMonth(currentYear);
-		YearMonth yearMonth = calendarMonth.getYearMonth();
+		monthView.getCalendarMonth().yearMonthProperty().set(currentYear);
+		YearMonth yearMonth = monthView.getCalendarMonth().yearMonthProperty().get();
 		yearLabel.setText(String.valueOf(yearMonth.getYear()));
-		List<Event> events = handleQuery(yearMonth.atDay(1), yearMonth.atEndOfMonth());
+		List<Event> events = handleQuery(
+				yearMonth.atDay(1),
+				yearMonth.atEndOfMonth()
+		);
 		// set the list as the displayed values
 		CalendarManager.getMonthEvents().setAll(events);
 	}
@@ -148,14 +187,26 @@ public class ControlPanel extends HBox{
 	private HBox buildWeekSpinner(){
 		HBox weekSpinner = new HBox();
 
-		CustomButton backwardWeek = new CustomButton(Directory.ARROW_LEFT_WHITE, Directory.ARROW_LEFT_GREY, "Back");
-		backwardMonth.setOnAction(e -> { backwardWeek(1); });
+		CustomButton backwardWeek = new CustomButton(
+				Directory.ARROW_LEFT_WHITE,
+				Directory.ARROW_LEFT_GREY,
+				"Back");
+		backwardWeek.setOnAction(e -> { backwardWeek(7); });
 
-		CustomButton forwardWeek = new CustomButton(Directory.ARROW_RIGHT_WHITE, Directory.ARROW_RIGHT_GREY, "Forward");
-		forwardMonth.setOnAction(e -> { forwardWeek(1); });
+		CustomButton forwardWeek = new CustomButton(
+				Directory.ARROW_RIGHT_WHITE, Directory.
+				ARROW_RIGHT_GREY,
+				"Forward");
+		forwardWeek.setOnAction(e -> { forwardWeek(7); });
 
-		// Change into a button that generates a popup allowing the user to pick the month
-		weekLabel.setText(String.valueOf(calendarMonth.getYearMonth().getMonth()));
+		// Change into a button that generates a popup allowing the user to pick the week
+		Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+		weekLabel.setText(
+				DateTimeFormatter.ofPattern("w").withLocale(locale)
+						.withDecimalStyle(DecimalStyle.of(locale))
+						.format(weekView.getCalendarWeek().dateProperty().get())
+		);
+
 		weekLabel.fontProperty().bind(Settings.fontCalendarBig);
 		weekLabel.textFillProperty().bind(Settings.textColor);
 		weekLabel.setTextAlignment(TextAlignment.CENTER);
@@ -165,120 +216,54 @@ public class ControlPanel extends HBox{
 
 		return weekSpinner;
 	}
-	private void forwardWeek(long numWeeks){
-		weekChange(calendarWeek.dateProperty().get().plusDays(numWeeks));
+	private void forwardWeek(long numDays){
+		System.out.println("Forward week view by: " + numDays);
+		weekChange(weekView.getCalendarWeek().dateProperty().get().plusDays(numDays));
 	}
-	private void backwardWeek(long numWeeks){
-		weekChange(calendarWeek.dateProperty().get().minusDays(numWeeks));
+	private void backwardWeek(long numDays){
+		System.out.println("Backward week view by: " + numDays);
+		weekChange(weekView.getCalendarWeek().dateProperty().get().minusDays(numDays));
 	}
 	public void weekChange(LocalDate date){
-		calendarWeek.dateProperty().set(date);
+		// Change the date in calendarWeek to start notification changes
+		weekView.getCalendarWeek().dateProperty().set(date);
+		// Get the week number to display in the ControlPanel UI
 		int weekNumber = date.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
-		weekLabel.setText(weekNumber);
-
+		System.out.println("Changeing week number to: " + weekNumber);
+		weekLabel.setText(String.valueOf(weekNumber));
+		// Calculate a new set of dates for the week
 		for(int day = 0; day < 6; day++){
-			LocalDate date = calendarWeek.datesProperty().get(day);
-			weekView.getDayViews().dateProperty.set(date);
+			LocalDate newDate = weekView.getCalendarWeek().datesProperty().get(day);
+			System.out.println("New Date: " + newDate + " for week day: " + day );
+			weekView.getDayViews().get(day).dateProperty().set(newDate);
 		}
-		
-		handleQuery(calendarWeek.datesProperty().get(0), calendarWeek.datesProperty().get(0));
+
+		List<Event> events = handleQuery(weekView.getCalendarWeek().datesProperty().get(0), weekView.getCalendarWeek().datesProperty().get(0));
 		CalendarManager.getWeekEvents().setAll(events);
 	}
 
-	// Month Changes
-	private void initializeMonthListeners(CalendarMonth calendarMonth){
-		/*
-			For any changes that to the monthly list of events will cause the listener to check them.
-			The listener will iterate through each change and get the events dates. 
-			It will then iterate through list of cells stored in the CalendarMonth object checking
-			if the cell has the same date.
-		*/
-		CalendarManager.getMonthEvents().addListener((ListChangeListener<? super Event>) change -> {
-			System.out.println("CalendarUI: MonthEvent list change detected");
-			while(change.next()){
+	public void dayChange(LocalDate date ){
 
-				if(change.wasAdded()){
-					System.out.println("CalendarUI: Adding Changes");
-					ObservableList<Event> events = FXCollections.observableArrayList(change.getAddedSubList());
-					for(Event event : events){
-
-						LocalDate [] dates = getDates(event);
-						System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
-						// Add the event to the calendar day
-						if(dates[0] != null && dates[1] != null){
-							CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
-							for (CalendarCell cell : cells) {
-								System.out.println("CalendarUI: Adding event to cell at: " + cell.getDate().toString());
-								cell.addEvent(event);
-							}
-						}
-					}
-				}
-
-				if(change.wasRemoved()){
-					System.out.println("CalendarUI: Removing Changes");
-					for(Event event : change.getRemoved()){
-
-						LocalDate [] dates = getDates(event);
-						System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
-
-						// Remove the event from each calendar day
-						if(dates[0] != null && dates[1] != null){
-							CalendarCell [] cells = calendarMonth.getCells(dates[0], dates[1]);
-							for (CalendarCell cell : cells) {
-								if (cell != null) {
-									System.out.println("CalendarUI: Removing event from cell at: " + cell.getDate().toString());
-									cell.removeEvent(event);
-								}
-							}
-						}
-					}
-				}
-
-				if(change.wasUpdated()){
-					System.out.println("CalendarUI: Updateing Changes");
-				}
-			}
-		});
 	}
-	
+
 	// Week Changes
-	private void initializeWeekListeners(CalendarWeek calendarWeek){
-		calendarWeek.datesProperty().addListener((ListChangeListener<LocalDate>) change -> {
+	private void initializeWeekListeners(){
+		weekView.getCalendarWeek().datesProperty().addListener((ListChangeListener<LocalDate>) change -> {
 			while(change.next()){
 				if(change.wasUpdated()){
 					for(int day = 0; day < 6; day++){
-						LocalDate date = calendarWeek.datesProperty().get(day);
-						weekView.getDayViews().dateProperty.set(date);
+						LocalDate newDate = weekView.getCalendarWeek().datesProperty().get(day);
+						weekView.getDayViews().get(day).dateProperty().set(newDate);
 					}
 
-					handleQuery(calendarWeek.datesProperty().get(0), calendarWeek.datesProperty().get(0));
+					List<Event> events = handleQuery(weekView.getCalendarWeek().datesProperty().get(0), weekView.getCalendarWeek().datesProperty().get(0));
 					CalendarManager.getWeekEvents().setAll(events);
 				}
 			}
 		});
-
-		
 	}
 
-	private LocalDate[] getDates(Event event){
-		LocalDate eventStartDate = null;
-		LocalDate eventStopDate = null;
-		LocalDate [] dates = new LocalDate[2]; 
-		if(event instanceof Calendar calendar){
-			eventStartDate = calendar.getStartDate();
-			eventStopDate = calendar.getStopDate();
-		}  
 
-		if(event instanceof Checklist checklist){
-			eventStartDate = checklist.getStartDate();
-			eventStopDate = checklist.getStopDate();
-		}
-
-		dates [0] = eventStartDate;
-		dates [1] = eventStopDate;
-		return dates;
-	}
 
 	private List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
 		DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());

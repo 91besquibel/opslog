@@ -1,63 +1,86 @@
 package opslog.ui.calendar.layout;
 
-import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.ObservableList;
 
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Popup;
 
-import opslog.ui.controls.SearchBar;
-import opslog.managers.LogManager;
-import opslog.object.event.Log;
-import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
-import opslog.ui.EventUI;
-import opslog.ui.SearchUI;
 import opslog.ui.calendar.control.CalendarCell;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.util.Settings;
 
-
 public class MonthView extends GridPane{
-	
-	private final ObservableList<Label> weekNumberLabels = FXCollections.observableArrayList();
-	private final CalendarMonth calendarMonth;
-	private final ContextMenu contextMenu = new ContextMenu();
-	private final ContextMenu contextMenuSearch = new ContextMenu();
 
-	// Constructor: Parameterized
-	public MonthView(CalendarMonth calendarMonth){
+    private final List<CalendarCell> cellList = new ArrayList<>();
+	private final ObservableList<Label> weekLabels = FXCollections.observableArrayList();
+	private final ObservableList<CalendarCell> selectedCellsProperty = FXCollections.observableArrayList();
+	private CalendarMonth calendarMonth;
+
+	public MonthView(){
 		super();
-		this.calendarMonth = calendarMonth;
-		initializeView();
-		createContextMenu();
-		setOnContextMenuRequested(event -> {
-			
-			contextMenu.show(
-				this,
-				event.getScreenX(),
-				event.getScreenY()
-			);
-			
-		});
+		initializeGridPane();
 		this.setPadding(Settings.INSETS);
 		this.backgroundProperty().bind(Settings.primaryBackground);
 	}
-	
-	// Month View: GridLayout
-	private void initializeView(){
+
+	public void setCalendarMonth(CalendarMonth calendarMonth){
+		this.calendarMonth = calendarMonth ;
+	}
+
+	public CalendarMonth getCalendarMonth(){
+		return calendarMonth;
+	}
+
+	public ObservableList<CalendarCell> selectedCellsProperty(){
+		return selectedCellsProperty;
+	}
+
+	public ObservableList<Label> weekLabelsProperty(){
+		return weekLabels;
+	}
+
+	public List<CalendarCell> getCells(){
+		return cellList;
+	}
+
+	public CalendarCell getCell(LocalDate date) {
+		for (int i = 0; i < 42; i++) {
+			if (cellList.get(i).getDate().equals(date)) {
+				return cellList.get(i);
+			}
+		}
+		return null;
+	}
+
+	public CalendarCell[] getCells(LocalDate startDate, LocalDate stopDate) {
+		System.out.println("CalendarMonth: Retrieving cells during the period of " +
+				startDate + " to " + stopDate
+		);
+		Period period = Period.between(startDate, stopDate);
+		int numDays = period.getDays();
+		CalendarCell[] cells = new CalendarCell[numDays + 1];
+		for (int i = 0; i < cells.length; i++) {
+			cells[i] = getCell(startDate.plusDays(i));
+			if(cells[i]!= null) {
+				System.out.println("CalendarMonth: Retrieving cell at date : " +
+						cells[i].getDate())
+				;
+			}
+		}
+
+		return cells;
+	}
+
+	private void initializeGridPane(){
 		// 7 days in a week plus the week number column
 		int nCols = 7 + 1;
 		// 6 rows for the month plus the week name row
@@ -97,35 +120,25 @@ public class MonthView extends GridPane{
 			dayName.textFillProperty().bind(Settings.textColor);
 			this.add(dayName, i + nCols - 7, 0);  // col, row
 		}
-
-		yearMonthListener();
 		
-		// create the labels for the weeknumbers
+		// create the labels for the week numbers
 		for (int i = 0; i < 6; i++) {
 			System.out.println("Creating a new label " + i);
 			Label label = new Label("0");
 			label.fontProperty().bind(Settings.fontCalendarSmall);
 			label.textFillProperty().bind(Settings.textColor);
-			weekNumberLabels.add(label);
+			weekLabels.add(label);
 		}
 
 		for(int row = 1; row < 6 ; row++){
-			this.add(weekNumberLabels.get(row-1),0,row);
+			this.add(weekLabels.get(row-1),0,row);
 		}
 
-		updateWeekNumberLabels();
+		createCells();
 
-		/** 
-		 * Adds the CalendarCells stored in the CalendarMonth to the grid layout.
-		 * The calendarcells auto update when a new yearmonth is applied to the 
-		 * CalendarMonth object that they are stored in.
-		 */
 		for (int row = 0; row < 6; row++) {
 			for (int col = 0; col < 7; col++) {
-				CalendarCell calendarCell = calendarMonth.getCells().get(row * 7 + col); 
-				calendarCell.setOnContextMenuRequested(event -> {
-					contextMenu.show(calendarCell, event.getScreenX(), event.getScreenY());
-				});
+				CalendarCell calendarCell = getCells().get(row * 7 + col);
 				this.add(calendarCell, col + nCols - 7, row + 1);
 			}
 		}
@@ -133,93 +146,63 @@ public class MonthView extends GridPane{
 		this.backgroundProperty().bind(Settings.primaryBackground);
 	}
 
-	private void yearMonthListener(){
-		calendarMonth.yearMonthProperty().addListener((obs,ov,nv) -> {
-			updateWeekNumberLabels();
-		});
-	}
+	private void createCells(){
+        for (int i = 0; i < 42; i++) {
+			CalendarCell calendarCell = new CalendarCell();
+			cellList.add(calendarCell);
 
-	private void updateWeekNumberLabels(){
-		for(int i = 0; i < weekNumberLabels.size(); i++){
-			String weekNumber = calendarMonth.getWeekNumbers().get(i);
-			weekNumberLabels.get(i).setText(weekNumber);
-		}
-	}
-
-	private void createContextMenu(){
-		// Search sub-ContextMenu
-		MenuItem search = new MenuItem("Search");
-		search.setOnAction(e ->{
-			SearchBar searchBar = new SearchBar();
-			List<LocalDate> dates = new ArrayList<>();
-			for(CalendarCell cell : calendarMonth.getSelectedCells()){
-				LocalDate cellDate = cell.getDate();
-				dates.add(cellDate);
-			}
-			searchBar.setDates(dates); 
-			searchBar.setEffect(Settings.DROPSHADOW);
-			Popup popup = new Popup();
-			popup.getContent().add(searchBar);
-			popup.show(this,
-					contextMenuSearch.anchorXProperty().get(),
-					contextMenuSearch.anchorYProperty().get());
-		});
-		
-		// Views
-		MenuItem dayView = new MenuItem("Day View");
-
-		// get the selected date if there is only one then 
-		// pass it to the calendarWeek
-		MenuItem weekView = new MenuItem("Week View");
-		
-		
-		// Month View 
-		MenuItem viewLogs = new MenuItem("View Logs");
-		viewLogs.setOnAction(e ->{
-			DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
-			List<Log> data = new ArrayList<>();
-			
-			for(CalendarCell cell : calendarMonth.getSelectedCells()){
-				LocalDate cellDate = cell.getDate();
-				Date date = Date.valueOf(cellDate);
-				String sql = String.format("SELECT * FROM log_table WHERE date = '" + date +"'");
-				try{
-					System.out.println("\n MonthView: DataBase Query: " + sql);
-					List<String[]> results = executor.executeQuery(sql);
-					for(String[] row : results){
-						System.out.println("MonthView: Result: " + Arrays.toString(row));
-						Log newLog = LogManager.newItem(row);
-						data.add(newLog);
-					}
-					System.out.println("MonthView: End Query \n");
-					if(!data.isEmpty()){
-						handleResults(data);
-					}
-				} catch(SQLException ex){
-					System.out.println("MonthView: Error occured while attempting to retrive the cell data");
-					ex.printStackTrace();
+			calendarCell.currentMonthProperty().addListener((observable, oldValue, newValue) -> {
+				calendarCell.backgroundProperty().unbind();
+				if (newValue) {
+					calendarCell.backgroundProperty().bind(Settings.secondaryBackgroundZ);
+				} else {
+					calendarCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
 				}
-			}
-		});
+			});
 
-		MenuItem createEvent = new MenuItem("New Event");
-		createEvent.setOnAction(e -> {
-			EventUI eventUI = EventUI.getInstance();
-			eventUI.display();
-		});
-		
-		contextMenu.getItems().addAll(viewLogs,search,dayView,weekView,createEvent);
+			calendarCell.currentDayProperty().addListener((obs, ov, nv) -> {
+				calendarCell.backgroundProperty().unbind();
+				if (nv){
+					calendarCell.backgroundProperty().bind(Settings.dateSelectBackground);
+				} else {
+					if(calendarCell.currentMonthProperty().get()){
+						calendarCell.backgroundProperty().bind(Settings.secondaryBackgroundZ);
+					}else{
+						calendarCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
+					}
+				}
+			});
+
+			calendarCell.setOnMouseClicked(e -> {
+				boolean isControlPressed = e.isControlDown();
+
+				if (e.getButton() == MouseButton.PRIMARY && isControlPressed) {
+					System.out.println("Control + Primary Button Down");
+					calendarCell.borderProperty().unbind();
+
+					if (selectedCellsProperty.contains(calendarCell)) {
+						selectedCellsProperty.remove(calendarCell);
+						calendarCell.borderProperty().bind(Settings.cellBorder);
+					} else {
+						selectedCellsProperty.add(calendarCell);
+						calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+					}
+				} else if (e.getButton() == MouseButton.PRIMARY) {
+					System.out.println("CalendarMonth: calendar cell selected");
+					resetSelected();
+					selectedCellsProperty.add(calendarCell);
+					calendarCell.borderProperty().unbind();
+					calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+				}
+			});
+		}
 	}
 
-	private <T> void handleResults(List<T> data){
-		
-		try{
-			SearchUI<T> searchUI = new SearchUI<>();
-			searchUI.setList(data);
-			searchUI.display();
-		}catch(Exception e ){
-			e.printStackTrace();
+	private void resetSelected(){
+		selectedCellsProperty.clear();
+		for(CalendarCell cell : cellList){
+			cell.borderProperty().unbind();
+			cell.borderProperty().bind(Settings.cellBorder);
 		}
-		
 	}
 }

@@ -8,7 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
+
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -24,8 +24,6 @@ import opslog.util.FileSaver;
 public class SearchUI <T>{
 
     private Stage stage;
-    private CalendarTable calendarTable;
-    private LogTable logTable;
 
     private List<T> list;
 
@@ -41,7 +39,9 @@ public class SearchUI <T>{
         stage = new Stage();
         VBox root = createRoot();
         CustomMenuBar menuBar = createMenuBar();
-        WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
+        WindowPane windowPane = new WindowPane(
+                stage,
+                Buttons.exitWinBtn());
         windowPane.setMenuBar(menuBar);
         windowPane.viewAreaProperty().get().getChildren().clear();
         windowPane.viewAreaProperty().get().getChildren().add(root);

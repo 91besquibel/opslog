@@ -7,6 +7,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
+import opslog.ui.calendar.CalendarUI;
 import opslog.ui.controls.CustomMenuBar;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

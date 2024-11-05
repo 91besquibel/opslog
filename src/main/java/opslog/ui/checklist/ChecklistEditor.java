@@ -108,7 +108,14 @@ public class ChecklistEditor {
 
         add.setOnAction(event -> {
             if (newTask.get().hasValue()) {
-                Task tempTask = new Task(null, newTask.get().getTitle(), newTask.get().getOffSet(), newTask.get().getType(), newTask.get().getTags(), newTask.get().getInitials(), newTask.get().getDescription());
+                Task tempTask = new Task(
+                        null,
+                        newTask.get().getTitle(),
+                        newTask.get().getOffset(),
+                        newTask.get().getType(),
+                        newTask.get().getTags(),
+                        newTask.get().getInitials(),
+                        newTask.get().getDescription());
                 //CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(), true);
                 //Update.add(TaskManager.getList(), tempTask);
                 title.clear();
@@ -122,7 +129,7 @@ public class ChecklistEditor {
                 Task tempTask = new Task(
                     newTask.get().getID(), 
                     newTask.get().getTitle(), 
-                    newTask.get().getOffSet(), 
+                    newTask.get().getOffset(),
                     newTask.get().getType(), 
                     newTask.get().getTags(), 
                     newTask.get().getInitials(), 
