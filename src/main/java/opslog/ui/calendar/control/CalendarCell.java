@@ -58,10 +58,10 @@ public class CalendarCell extends VBox {
     private final CalendarListView<Event> eventContainer = new CalendarListView<>(); 
     
     private final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();  
-    private ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
-    private ObjectProperty<YearMonth> yearMonth = new SimpleObjectProperty<>(); 
-    private BooleanProperty currentMonth = new SimpleBooleanProperty();
-    private BooleanProperty currentDay = new SimpleBooleanProperty();
+    private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
+    private final ObjectProperty<YearMonth> yearMonth = new SimpleObjectProperty<>();
+    private final BooleanProperty currentMonth = new SimpleBooleanProperty();
+    private final BooleanProperty currentDay = new SimpleBooleanProperty();
 
     public CalendarCell() {
         super();

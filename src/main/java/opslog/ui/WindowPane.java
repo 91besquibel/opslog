@@ -69,6 +69,8 @@ public class WindowPane {
 
         stage.setScene(scene);
         stage.setResizable(true);
+        stage.setMinWidth(sceneWidth);
+        stage.setMinHeight(sceneHeight);
         stage.setTitle("Operations Logger");
         stage.show();
         stage.toFront();

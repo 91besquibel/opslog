@@ -22,7 +22,6 @@ public class CalendarWeek {
 	
 	public CalendarWeek(){
 		this.dateProperty.set(LocalDate.now());
-		// Generate the initial set of dates
 		newWeek(dateProperty.get());
 	}
 
@@ -35,14 +34,15 @@ public class CalendarWeek {
 	}
 
 	public void newWeek(LocalDate newDate){
+		// create tem container
 		ObservableList<LocalDate> dates = FXCollections.observableArrayList();
-		
+		// get the first day of the week
 		LocalDate startOfWeek = newDate.with(DayOfWeek.MONDAY);
-		
+		// add dates to temp container
 		for (int i = 0; i < 7; i++) {
 			dates.add(startOfWeek.plusDays(i));
 		}
-	
+		// override datesProperty with new dates
 		datesProperty.setAll(dates);
 	}
 }

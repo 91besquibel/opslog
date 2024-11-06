@@ -8,6 +8,8 @@ import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
 import opslog.ui.calendar.CalendarUI;
+import opslog.ui.calendar.control.MonthViewControl;
+import opslog.ui.calendar.control.WeekViewControl;
 import opslog.ui.controls.CustomMenuBar;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -77,6 +79,10 @@ public class App extends Application {
                 appWindow = new WindowPane(stage,Buttons.exitAppBtn());
                 appWindow.setMenuBar(menuBar);
                 appWindow.display();
+
+                // Force Update to set the ui
+                MonthViewControl.update();
+                WeekViewControl.update();
             });
 
         } catch (Exception e) {

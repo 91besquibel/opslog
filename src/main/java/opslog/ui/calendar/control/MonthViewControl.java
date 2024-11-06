@@ -4,9 +4,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Popup;
 import opslog.managers.CalendarManager;
+import opslog.managers.ChecklistManager;
 import opslog.managers.LogManager;
 import opslog.object.Event;
 import opslog.object.event.Calendar;
@@ -17,7 +21,9 @@ import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.EventUI;
 import opslog.ui.SearchUI;
 import opslog.ui.calendar.layout.MonthView;
+import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.controls.SearchBar;
+import opslog.util.QuickSort;
 import opslog.util.Settings;
 
 import java.sql.Date;
@@ -34,106 +40,50 @@ import java.util.Locale;
 
 public class MonthViewControl {
 
-    private final MonthView monthView;
-    private final ControlPanel controlPanel;
+    public static CalendarMonth calendarMonth;
+    private static MonthView monthView;
+    private static ControlPanel controlPanel;
 
-    public MonthViewControl(ControlPanel controlPanel, MonthView monthView){
-        this.monthView = monthView;
-        this.controlPanel = controlPanel;
+    public static void setCalendarMonth(CalendarMonth newCalendarMonth){
+        calendarMonth = newCalendarMonth;
     }
 
-    public void initializeListeners(){
-        calendarMonthListener();
-        eventListener();
+    public static void setMonthView(MonthView newMonthView){
+        monthView = newMonthView;
     }
 
-    private void calendarMonthListener(){
-        monthView.getCalendarMonth().yearMonthProperty().addListener((observable, oldValue, newValue) -> {
-
-            // update the month view cells with new dates
-            System.out.println("Creating a new set of dates for " + newValue.toString());
-            for (int i = 0; i < 42; i++) {
-                try {
-                    CalendarCell cell = monthView.getCells().get(i);
-                    YearMonth cellMonth= newValue;
-                    int firstOffMonth = monthView.getCalendarMonth().getFirstOfMonth();
-                    int daysInCurMonth = newValue.lengthOfMonth();
-                    int cellDayNumber = i - firstOffMonth + 1; // Day number calculation for current month.
-
-                    if (i < firstOffMonth) {  // Previous month case
-                        YearMonth prevMonth = cellMonth.minusMonths(1);
-                        int daysInPrevMonth = prevMonth.lengthOfMonth();
-                        cellMonth = prevMonth;
-                        cellDayNumber = daysInPrevMonth + (i - firstOffMonth) + 1; // Adjusted index calculation
-                        cell.setCurrentMonth(false);
-                    } else if (i >= firstOffMonth + daysInCurMonth) { // Next month case
-                        cellMonth = cellMonth.plusMonths(1);
-                        cellDayNumber = (i - firstOffMonth) - daysInCurMonth + 1; // Adjusted index calculation
-                        cell.setCurrentMonth(false);
-                    } else {
-                        cell.setCurrentMonth(true);
-                    }
-
-                    // Get the date corresponding to the current cell.
-                    LocalDate date = cellMonth.atDay(cellDayNumber);
-                    cell.set(date, newValue);
-                    cell.getHeader().setDate(date);
-
-                    cell.setCurrentDay(date.equals(LocalDate.now()));
-
-                } catch (DateTimeException ex) {
-                    ex.printStackTrace();
-                    // Handle out-of-range dates
-                }
-            }
-
-            // Create new week numbers
-            Locale locale = Locale.getDefault(Locale.Category.FORMAT);
-            LocalDate firstCalendarCellDate = monthView.getCells().get(0).getDate();
-            monthView.getCalendarMonth().weekNumbersProperty().clear();
-            for(int i = 0;i < 6; i++){
-                String number =
-                        DateTimeFormatter.ofPattern("w").withLocale(locale)
-                                .withDecimalStyle(DecimalStyle.of(locale))
-                                .format(firstCalendarCellDate.plusWeeks(i));
-
-                System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
-                monthView.getCalendarMonth().weekNumbersProperty().add(i,number);
-            }
-
-            // update the month view displayed week labels
-            for(int i = 0; i < monthView.weekLabelsProperty().size(); i++){
-                String weekNumber = monthView.getCalendarMonth().weekNumbersProperty().get(i);
-                monthView.weekLabelsProperty().get(i).setText(weekNumber);
-            }
-        });
+    public static void setControlPanel(ControlPanel newControlPanel){
+        controlPanel = newControlPanel;
     }
 
     /*
-    For any changes that to the monthly list of events will cause the listener to check them.
-    The listener will iterate through each change and get the events dates.
-    It will then iterate through list of cells stored in the CalendarMonth object checking
-    if the cell has the same date
-    */
-    private void eventListener(){
+    * Starts the following Listeners:
+    * YearMonth change listener for UI updates
+    * CalendarManager monthEvents change listener for new data
+    * */
+    public static void initializeListeners(){
+        // Calls the update method to update ui
+        calendarMonth.yearMonthProperty().addListener((ob, ov, nv) -> {
+            update();
+        });
+        // Tracks changes to the in application memory and adjusts the UI to reflect data
         CalendarManager.getMonthEvents().addListener((ListChangeListener<? super Event>) change -> {
-            System.out.println("CalendarUI: MonthEvent list change detected");
+            System.out.println("MonthViewControl: MonthEvent list change detected");
             while(change.next()){
-
                 if(change.wasAdded()){
-                    System.out.println("CalendarUI: Adding Changes");
+                    System.out.println("MonthViewControl: Adding Changes");
                     ObservableList<Event> events = FXCollections.observableArrayList(change.getAddedSubList());
 
                     for(Event event : events){
                         LocalDate [] dates = getDates(event);
-                        System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
+                        System.out.println("MonthViewControl: Event dates: " + Arrays.toString(dates));
 
                         // Add the event to the calendar day
                         if(dates[0] != null && dates[1] != null){
                             CalendarCell [] cells = monthView.getCells(dates[0], dates[1]);
 
                             for (CalendarCell cell : cells) {
-                                System.out.println("CalendarUI: Adding event to cell at: " + cell.getDate().toString());
+                                System.out.println("MonthViewControl: Adding event to cell at: " + cell.getDate().toString());
                                 cell.addEvent(event);
                             }
                         }
@@ -165,9 +115,142 @@ public class MonthViewControl {
                 }
             }
         });
+        // Set the CalendarCell listeners
+        for(CalendarCell calendarCell : monthView.getCells()){
+            calendarCell.currentMonthProperty().addListener((observable, oldValue, newValue) -> {
+                calendarCell.backgroundProperty().unbind();
+                if (newValue) {
+                    calendarCell.backgroundProperty().bind(Settings.secondaryBackgroundZ);
+                } else {
+                    calendarCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
+                }
+            });
+
+            calendarCell.currentDayProperty().addListener((obs, ov, nv) -> {
+                calendarCell.backgroundProperty().unbind();
+                if (nv){
+                    calendarCell.backgroundProperty().bind(Settings.dateSelectBackground);
+                } else {
+                    if(calendarCell.currentMonthProperty().get()){
+                        calendarCell.backgroundProperty().bind(Settings.secondaryBackgroundZ);
+                    }else{
+                        calendarCell.backgroundProperty().bind(Settings.dateOutOfScopeBackground);
+                    }
+                }
+            });
+
+            calendarCell.setOnMouseClicked(e -> {
+                System.out.println("Mouse event detected: ");
+                boolean isControlPressed = e.isControlDown();
+                if (e.getButton() == MouseButton.PRIMARY && isControlPressed) {
+                    System.out.print(" Control + Primary Button Down \n");
+                    calendarCell.borderProperty().unbind();
+
+                    if (monthView.selectedCellsProperty().contains(calendarCell)) {
+                        monthView.selectedCellsProperty().remove(calendarCell);
+                        calendarCell.borderProperty().bind(Settings.cellBorder);
+                    } else {
+                        monthView.selectedCellsProperty().add(calendarCell);
+                        calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+                    }
+                } else if (e.getButton() == MouseButton.PRIMARY) {
+                    System.out.print(" Primary Button Down \n");
+                    monthView.selectedCellsProperty().clear();
+                    for(CalendarCell cell : monthView.getCells()){
+                        cell.borderProperty().unbind();
+                        cell.borderProperty().bind(Settings.cellBorder);
+                    }
+                    monthView.selectedCellsProperty().add(calendarCell);
+                    calendarCell.borderProperty().unbind();
+                    calendarCell.borderProperty().bind(Settings.dateSelectBorder);
+                }
+            });
+        }
     }
 
-    private LocalDate[] getDates(Event event){
+    /*
+    * When a new YearMonth value is passed this method will:
+    * Update the CalendarCell; dates and current status
+    * Update the week numbers and week number labels
+    * Update the control panel year and month labels
+    * */
+    public static void update(){
+        YearMonth newValue = calendarMonth.yearMonthProperty().get();
+        // update the month view cells with new dates
+        System.out.println("Creating a new set of dates for " + newValue.toString());
+        for (int i = 0; i < 42; i++) {
+            try {
+                CalendarCell cell = monthView.getCells().get(i);
+                YearMonth cellMonth= newValue;
+                int firstOffMonth = calendarMonth.getFirstOfMonth();
+                int daysInCurMonth = newValue.lengthOfMonth();
+                int cellDayNumber = i - firstOffMonth + 1; // Day number calculation for current month.
+
+                if (i < firstOffMonth) {  // Previous month case
+                    YearMonth prevMonth = cellMonth.minusMonths(1);
+                    int daysInPrevMonth = prevMonth.lengthOfMonth();
+                    cellMonth = prevMonth;
+                    cellDayNumber = daysInPrevMonth + (i - firstOffMonth) + 1; // Adjusted index calculation
+                    cell.setCurrentMonth(false);
+                } else if (i >= firstOffMonth + daysInCurMonth) { // Next month case
+                    cellMonth = cellMonth.plusMonths(1);
+                    cellDayNumber = (i - firstOffMonth) - daysInCurMonth + 1; // Adjusted index calculation
+                    cell.setCurrentMonth(false);
+                } else {
+                    cell.setCurrentMonth(true);
+                }
+
+                LocalDate date = cellMonth.atDay(cellDayNumber);
+                cell.set(date, newValue);
+                cell.getHeader().setDate(date);
+                cell.setCurrentDay(date.equals(LocalDate.now()));
+            } catch (DateTimeException ex) {
+                ex.printStackTrace();
+                // Handle out-of-range dates
+            }
+        }
+
+        // Create new week numbers
+        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        LocalDate firstCalendarCellDate = monthView.getCells().get(0).getDate();
+        calendarMonth.weekNumbersProperty().clear();
+        for(int i = 0;i < 6; i++){
+            String number =
+                    DateTimeFormatter.ofPattern("w").withLocale(locale)
+                            .withDecimalStyle(DecimalStyle.of(locale))
+                            .format(firstCalendarCellDate.plusWeeks(i));
+
+            System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
+            calendarMonth.weekNumbersProperty().add(i,number);
+        }
+
+        // update the month view displayed week labels
+        for(int i = 0; i < monthView.weekLabelsProperty().size(); i++){
+            String weekNumber = calendarMonth.weekNumbersProperty().get(i);
+            monthView.weekLabelsProperty().get(i).setText(weekNumber);
+        }
+
+        // Update the controlPanel displayed Month and Year
+        Label yearLabel = controlPanel.getYearLabel();
+        yearLabel.setText(String.valueOf(newValue.getYear()));
+        Label monthLabel = controlPanel.getMonthLabel();
+        monthLabel.setText(String.valueOf(newValue.getMonth()));
+
+        // get data
+        List<Event> events = handleQuery(
+                newValue.atDay(1),
+                newValue.atEndOfMonth()
+        );
+        // display data
+        CalendarManager.getMonthEvents().setAll(events);
+    }
+
+    /**
+     *  Utility method for the monthEvent listener
+     *  gets the start and stop dates of incoming data for
+     *  UI placement
+     */
+    private static LocalDate[] getDates(Event event){
         LocalDate eventStartDate = null;
         LocalDate eventStopDate = null;
         LocalDate [] dates = new LocalDate[2];
@@ -186,116 +269,62 @@ public class MonthViewControl {
         return dates;
     }
 
-    private void setContextMenu(){
-        // Context Menu
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem search = getSearch(contextMenu);
-        MenuItem dayView = new MenuItem("Day View");
-        dayView.setOnAction(e-> handleDayView(
-                monthView.selectedCellsProperty()
-        ));
-        MenuItem weekView = new MenuItem("Week View");
-        weekView.setOnAction(e -> handleWeekView(
-                monthView.selectedCellsProperty()
-        ));
-        MenuItem viewLogs = new MenuItem("View Logs");
-        viewLogs.setOnAction(e -> handleViewLogs() );
-        MenuItem createEvent = new MenuItem("New Event");
-        createEvent.setOnAction(e -> {
-            EventUI eventUI = EventUI.getInstance();
-            eventUI.display();
-        });
-        contextMenu.getItems().addAll(viewLogs,search,dayView,weekView,createEvent);
-        monthView.setOnContextMenuRequested(event ->
-                contextMenu.show(
-                        monthView,
-                        event.getScreenX(),
-                        event.getScreenY()
-                )
-        );
-
-        for(CalendarCell cell : monthView.getCells()) {
-            cell.setOnContextMenuRequested(event ->
-                    contextMenu.show(
-                            cell,
-                            event.getScreenX(),
-                            event.getScreenY()
-                    )
-            );
-        }
-    }
-
-    private MenuItem getSearch(ContextMenu contextMenu) {
-        MenuItem search = new MenuItem("Search");
-        search.setOnAction(e ->{
-            SearchBar searchBar = new SearchBar();
-            List<LocalDate> dates = new ArrayList<>();
-            for(CalendarCell cell : monthView.selectedCellsProperty()){
-                LocalDate cellDate = cell.getDate();
-                dates.add(cellDate);
-            }
-            searchBar.setDates(dates);
-            searchBar.setEffect(Settings.DROPSHADOW);
-            Popup popup = new Popup();
-            popup.getContent().add(searchBar);
-            popup.show(searchBar,
-                    contextMenu.anchorXProperty().get(),
-                    contextMenu.anchorYProperty().get()
-            );
-        });
-        return search;
-    }
-
-    private void handleWeekView(List<CalendarCell> selectedCells){
-        if (selectedCells.size() == 1){
-            CalendarCell cell = selectedCells.get(0);
-            LocalDate date = cell.getDate();
-            controlPanel.weekChange(date);
-        }
-    }
-
-    private void handleDayView(List<CalendarCell> selectedCells){
-        if (selectedCells.size() == 1){
-            CalendarCell cell = selectedCells.get(0);
-            LocalDate date = cell.getDate();
-            controlPanel.dayChange(date);
-        }
-    };
-
-    private void handleViewLogs() {
+    /**
+     * Queries the database in relation to the month view
+     * @param startDate start date of the events being queried from the DB
+     * @param stopDate the end date of the event being queried from the DB
+     * @return Lis<Event> returns the list of event from the Database to be placed
+     * in the application UI.
+     */
+    private static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
         DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
-        List<Log> data = new ArrayList<>();
 
-        for (CalendarCell cell : monthView.selectedCellsProperty()) {
-            LocalDate cellDate = cell.getDate();
-            Date date = Date.valueOf(cellDate);
-            String sql = String.format("SELECT * FROM log_table WHERE date = '" + date + "'");
-            try {
-                System.out.println("\n MonthView: DataBase Query: " + sql);
-                List<String[]> results = executor.executeQuery(sql);
-                for (String[] row : results) {
-                    System.out.println("MonthView: Result: " + Arrays.toString(row));
-                    Log newLog = LogManager.newItem(row);
-                    data.add(newLog);
-                }
-                System.out.println("MonthView: End Query \n");
-                if (!data.isEmpty()) {
-                    handleResults(data);
-                }
-            } catch (SQLException ex) {
-                System.out.println("MonthView: Error occurred while attempting to retrieve the cell data");
-                ex.printStackTrace();
-            }
-        }
-    };
+        //System.out.println("ControlPanel: Requesting events from database from " + startDate + " to " + stopDate);
+        List<Event> events = new ArrayList<>();
+        CalendarManager.getMonthEvents().clear();
 
-    private <T> void handleResults(List<T> data){
         try{
-            SearchUI<T> searchUI = new SearchUI<>();
-            searchUI.setList(data);
-            searchUI.display();
-        }catch(Exception e ){
+
+            List<String[]> results = executor.executeBetweenQuery(
+                    "calendar_table",
+                    "start_date",
+                    startDate,
+                    stopDate
+            );
+
+            for (String[] row : results) {
+
+                Calendar item = CalendarManager.newItem(row);
+
+                events.add(item);
+
+            }
+
+        }catch(SQLException e){
             e.printStackTrace();
         }
+
+        try{
+            List<String[]> results = executor.executeBetweenQuery(
+                    "checklist_table",
+                    "start_date",
+                    startDate,
+                    stopDate
+            );
+            for (String[] row : results) {
+
+                Checklist item = ChecklistManager.newItem(row);
+
+                events.add(item);
+
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        // sort the events by date range for faster processing
+        QuickSort.quickSort(events, 0, events.size() - 1);
+
+        return events;
     }
 }
