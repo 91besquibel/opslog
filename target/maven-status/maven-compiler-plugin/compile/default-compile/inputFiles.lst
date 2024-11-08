@@ -3,6 +3,7 @@
 /home/runner/opslog/src/main/java/opslog/util/ResizeListener.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomColorPicker.java
 /home/runner/opslog/src/main/java/opslog/interfaces/SQL.java
+/home/runner/opslog/src/main/java/opslog/ui/calendar/object/CalendarWeek.java
 /home/runner/opslog/src/main/java/opslog/util/DateTime.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/ChecklistEditor.java
 /home/runner/opslog/src/main/java/opslog/util/CSV.java
@@ -13,6 +14,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/StartUI.java
 /home/runner/opslog/src/main/java/opslog/App.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/control/CalendarListView.java
+/home/runner/opslog/src/main/java/opslog/ui/calendar/layout/WeekView.java
 /home/runner/opslog/src/main/java/opslog/ui/PopupUI.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/control/ControlPanel.java
 /home/runner/opslog/src/main/java/opslog/ui/WindowPane.java
@@ -20,6 +22,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomHBox.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomComboBox.java
 /home/runner/opslog/src/main/java/opslog/managers/FormatManager.java
+/home/runner/opslog/src/main/java/opslog/ui/calendar/layout/DayView.java
 /home/runner/opslog/src/main/java/module-info.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/cell/Item.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/object/CalendarMonth.java
@@ -33,6 +36,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomTable.java
 /home/runner/opslog/src/main/java/opslog/util/Directory.java
 /home/runner/opslog/src/main/java/opslog/managers/TypeManager.java
+/home/runner/opslog/src/main/java/opslog/ui/calendar/control/MonthViewControl.java
 /home/runner/opslog/src/main/java/opslog/object/Type.java
 /home/runner/opslog/src/main/java/opslog/object/Profile.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/layout/MonthView.java
@@ -43,6 +47,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/calendar/control/CalendarTable.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomVBox.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomMenuBar.java
+/home/runner/opslog/src/main/java/opslog/ui/calendar/control/WeekViewControl.java
 /home/runner/opslog/src/main/java/opslog/util/Logging.java
 /home/runner/opslog/src/main/java/opslog/ui/EventUI.java
 /home/runner/opslog/src/main/java/opslog/managers/ListOperation.java
