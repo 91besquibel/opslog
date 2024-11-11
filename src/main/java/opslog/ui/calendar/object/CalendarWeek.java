@@ -34,15 +34,14 @@ public class CalendarWeek {
 	}
 
 	public void newWeek(LocalDate newDate){
-		// create tem container
 		ObservableList<LocalDate> dates = FXCollections.observableArrayList();
-		// get the first day of the week
-		LocalDate startOfWeek = newDate.with(DayOfWeek.MONDAY);
-		// add dates to temp container
+		LocalDate startOfWeek = newDate.with(DayOfWeek.SUNDAY);
+
 		for (int i = 0; i < 7; i++) {
+			System.out.println("CalendarWeek: Adding the date " + startOfWeek + " from the week containing " + newDate);
 			dates.add(startOfWeek.plusDays(i));
 		}
-		// override datesProperty with new dates
+
 		datesProperty.setAll(dates);
 	}
 }

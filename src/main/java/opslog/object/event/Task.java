@@ -5,6 +5,9 @@ import javafx.collections.ObservableList;
 import opslog.object.Event;
 import opslog.object.Tag;
 import opslog.object.Type;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.Objects;
@@ -14,22 +17,22 @@ public class Task extends Event implements SQL {
 
     private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
-    private final IntegerProperty [] offset = new SimpleIntegerProperty[2];
-    private final IntegerProperty [] duration = new SimpleIntegerProperty[2];
-    
+    private final IntegerProperty[] offset = { new SimpleIntegerProperty(), new SimpleIntegerProperty() };
+    private final IntegerProperty[] duration = { new SimpleIntegerProperty(), new SimpleIntegerProperty() };
+
     //Constructor parameterized
     public Task(
             String id, String title,
 			int [] offset, int [] duration,
 			Type type, ObservableList<Tag> tags,
 			String initials, String description) {
-
-        
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);
-        this.offset.set(offset);
-        this.duration.set(duration);
+        this.offset[0] = new SimpleIntegerProperty(offset[0]);
+        this.offset[1] = new SimpleIntegerProperty(offset[1]);
+        this.duration[0] = new SimpleIntegerProperty(duration[0]);
+        this.duration[1] = new SimpleIntegerProperty(duration[1]);
     }
 
     //Constructor non parameterized
@@ -37,8 +40,10 @@ public class Task extends Event implements SQL {
         super();
         this.id.set(null);
         this.title.set(null);
-        this.offset.set({0,0}); //must be greater or less then 0
-        this.duration.set({0,0}); // must be greater then 0
+        this.offset[0] = new SimpleIntegerProperty(-1);
+        this.offset[1] = new SimpleIntegerProperty(-1);
+        this.duration[0] = new SimpleIntegerProperty(-1);
+        this.duration[1] = new SimpleIntegerProperty(-1);
     }
 
     @Override
@@ -59,43 +64,43 @@ public class Task extends Event implements SQL {
         this.title.set(title);
     }
 
-    public int [] getOffset() {
-        return offset.get();
+    public IntegerProperty [] getOffset() {
+        return offset;
     }
 
     public void setOffset(int [] offset) {
-        this.offset.set(offset);
+        this.offset[0].set(offset[0]);
+        this.offset[1].set(offset[1]);
     }
     
-    public int [] getDuration( ){
-        return duration.get();
+    public IntegerProperty [] getDuration( ){
+        return duration;
     }
 
     public void setDuration(int [] duration){
-        this.duration.set(duration);
+        this.duration[0].set(duration[0]);
+        this.duration[1].set(duration[1]);
     }
     
     public boolean hasID(String newID) {
         return getID().contains(newID);
     }
 
-    public LocalTime [] calculateTime(){
+    public LocalTime[] calculateTime(){
+        // calculates the time relative to the offset of
         LocalTime [] times = new LocalTime[2];
-        
-        // calulate the starttime 
         LocalTime quadZ = LocalTime.of(0,0);
-        int hours = offset.get(0);
-        int minutes = offset.get(1);
-        LocalTime quadZplusH = quadz.plusHours(hours);
+        int hours = offset[0].get();
+        int minutes = offset[1].get();
+        LocalTime quadZplusH = quadZ.plusHours(hours);
         LocalTime startTime = quadZplusH.plusMinutes(minutes);
-        times.set(startTime,0);
-        
+        times[0] = startTime;
+
         // calculate the stoptime
-        int hours = duration.get(0);
-        int minutes = offset.get(1);
-        LocalTime startTimePlusH = startTime.plusHours(hours);
-        LocalTime stopTime = startTimePlusH.plusMinutes(minutes);
-        times.set(stopTime,1);
+        LocalTime stopTime = startTime.plusHours(
+                duration[0].get()).plusMinutes(duration[1].get()
+        );
+        times[1] = stopTime;
         return times;
     }
 
@@ -103,7 +108,8 @@ public class Task extends Event implements SQL {
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
-                        offset.get() != 0 &&
+                        offset[0].get() != 0 && offset[1].get() != 0 &&
+                        duration[0].get() != 0 && duration[1].get() != 0 &&
                         super.hasValue();
     }
 
@@ -112,7 +118,8 @@ public class Task extends Event implements SQL {
         return new String [] {
                 getID(),
                 getTitle(),
-                String.valueOf(getOffset()),
+                Arrays.toString(getOffset()),
+                Arrays.toString(getDuration()),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials

@@ -19,6 +19,7 @@ import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.EventUI;
 import opslog.ui.SearchUI;
 import opslog.ui.calendar.control.*;
+import opslog.ui.calendar.layout.DayView;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.layout.WeekView;
 import opslog.ui.calendar.object.CalendarMonth;
@@ -117,6 +118,7 @@ public class CalendarUI{
         ControlPanel controlPanel = new ControlPanel();
         MonthView monthView = new MonthView();
         WeekView weekView = new WeekView();
+        //DayView dayView = new DayView();
 
         // initialize the controllers for user interaction
         MonthViewControl.setCalendarMonth(calendarMonth);
@@ -136,15 +138,24 @@ public class CalendarUI{
                         case"Month":
                             monthView.setVisible(true);
                             weekView.setVisible(false);
+                            //dayView.setVisible(false);
                             break;
                         case"Week":
                             monthView.setVisible(false);
                             weekView.setVisible(true);
+                            //dayView.setVisible(false);
                         case "Day":
+                            //monthView.setVisible(false);
+                            //weekView.setVisible(false);
+                            //dayView.setVisible(true);
                             break;
                     }
                 }
         );
+
+
+
+
         monthView.setVisible(true);
         setMonthMenu(monthView, calendarWeek);
 
@@ -155,6 +166,7 @@ public class CalendarUI{
             vbox.setVisible(nv);
         });
         weekView.setVisible(false);
+
         weekView.prefWidthProperty().bind(scrollPane.widthProperty());
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(monthView, vbox);

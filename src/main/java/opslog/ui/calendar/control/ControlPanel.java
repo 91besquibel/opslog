@@ -55,7 +55,9 @@ public class ControlPanel extends HBox{
 		CustomButton backwardMonth = new CustomButton(
 				Directory.ARROW_LEFT_WHITE,
 				Directory.ARROW_LEFT_GREY,
-				"Back");
+				"Back"
+		);
+
 		backwardMonth.setOnAction(e -> {
 			CalendarMonth calendarMonth = MonthViewControl.calendarMonth;
 			YearMonth newYearMonth = calendarMonth.yearMonthProperty().get().minusMonths(1);
@@ -65,7 +67,9 @@ public class ControlPanel extends HBox{
 		CustomButton forwardMonth = new CustomButton(
 				Directory.ARROW_RIGHT_WHITE,
 				Directory.ARROW_RIGHT_GREY,
-				"Forward");
+				"Forward"
+		);
+
 		forwardMonth.setOnAction(e -> {
 			CalendarMonth calendarMonth = MonthViewControl.calendarMonth;
 			YearMonth newYearMonth = calendarMonth.yearMonthProperty().get().plusMonths(1);
@@ -73,7 +77,6 @@ public class ControlPanel extends HBox{
 		});
 
 		// Change into a button that generates a popup allowing the user to pick the month
-
 		monthLabel.fontProperty().bind(Settings.fontCalendarBig);
 		monthLabel.textFillProperty().bind(Settings.textColor);
 		monthLabel.setTextAlignment(TextAlignment.CENTER);
@@ -82,6 +85,7 @@ public class ControlPanel extends HBox{
 
 		return monthSpinner;
 	}
+
 	// Year Selection
 	private HBox buildYearSpinner(){
 
@@ -92,6 +96,7 @@ public class ControlPanel extends HBox{
 				Directory.ARROW_LEFT_GREY,
 				"Back"
 		);
+
 		backwardYear.setOnAction(e -> {
 			CalendarMonth calendarMonth = MonthViewControl.calendarMonth;
 			YearMonth newYearMonth = calendarMonth.yearMonthProperty().get().minusYears(1);
@@ -103,6 +108,7 @@ public class ControlPanel extends HBox{
 				Directory.ARROW_RIGHT_GREY,
 				"Forward"
 		);
+
 		forwardYear.setOnAction(e -> {
 			CalendarMonth calendarMonth = MonthViewControl.calendarMonth;
 			YearMonth newYearMonth = calendarMonth.yearMonthProperty().get().plusYears(1);
@@ -118,6 +124,7 @@ public class ControlPanel extends HBox{
 
 		return yearSpinner;
 	}
+
 	// Week Selection
 	private HBox buildWeekSpinner(){
 		HBox weekSpinner = new HBox();
@@ -125,7 +132,9 @@ public class ControlPanel extends HBox{
 		CustomButton backwardWeek = new CustomButton(
 				Directory.ARROW_LEFT_WHITE,
 				Directory.ARROW_LEFT_GREY,
-				"Back");
+				"Back"
+		);
+
 		backwardWeek.setOnAction(e -> {
 			CalendarWeek calendarWeek = WeekViewControl.calendarWeek;
 			LocalDate currentDate = calendarWeek.dateProperty().get();
@@ -136,7 +145,8 @@ public class ControlPanel extends HBox{
 		CustomButton forwardWeek = new CustomButton(
 				Directory.ARROW_RIGHT_WHITE, Directory.
 				ARROW_RIGHT_GREY,
-				"Forward");
+				"Forward"
+		);
 		forwardWeek.setOnAction(e -> {
 			CalendarWeek calendarWeek = WeekViewControl.calendarWeek;
 			LocalDate currentDate = calendarWeek.dateProperty().get();
@@ -152,5 +162,4 @@ public class ControlPanel extends HBox{
 
 		return weekSpinner;
 	}
-
 }

@@ -66,6 +66,7 @@ public class MonthViewControl {
         calendarMonth.yearMonthProperty().addListener((ob, ov, nv) -> {
             update();
         });
+
         // Tracks changes to the in application memory and adjusts the UI to reflect data
         CalendarManager.getMonthEvents().addListener((ListChangeListener<? super Event>) change -> {
             System.out.println("MonthViewControl: MonthEvent list change detected");
@@ -279,7 +280,7 @@ public class MonthViewControl {
     private static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
         DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
 
-        //System.out.println("ControlPanel: Requesting events from database from " + startDate + " to " + stopDate);
+        System.out.println("MonthViewControl: DB Query for dates:  " + startDate + " to " + stopDate);
         List<Event> events = new ArrayList<>();
         CalendarManager.getMonthEvents().clear();
 
@@ -293,9 +294,9 @@ public class MonthViewControl {
             );
 
             for (String[] row : results) {
-
+                System.out.println("MonthViewControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-
+                System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
 
             }
@@ -312,9 +313,9 @@ public class MonthViewControl {
                     stopDate
             );
             for (String[] row : results) {
-
+                System.out.println("MonthViewControl: " + Arrays.toString(row));
                 Checklist item = ChecklistManager.newItem(row);
-
+                System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
 
             }
@@ -324,7 +325,6 @@ public class MonthViewControl {
 
         // sort the events by date range for faster processing
         QuickSort.quickSort(events, 0, events.size() - 1);
-
         return events;
     }
 }

@@ -37,9 +37,11 @@ public class TaskManager {
     }
     
     public static Task newItem(String [] row){
+        String [] intStr = row[1].split(":");
+        int [] offset = {Integer.parseInt(intStr[0]), Integer.parseInt(intStr[1])};
         Task task = new Task();
         task.setID(row[0]);
-        task.setOffset(Integer.parseInt(row[1]));
+        task.setOffset(offset);
         task.setType(TypeManager.getItem(row[2]));
         task.setTags(TagManager.getItems(row[3]));
         task.setInitials(row[4]);

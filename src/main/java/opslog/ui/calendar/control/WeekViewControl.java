@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,8 +49,9 @@ public class WeekViewControl {
         // Listen for a new date
         calendarWeek.dateProperty().addListener((observable, oldValue, newValue) -> {
             // CalendarWeek new dates created
+            System.out.println("WeekViewControl: Creating a new set of dates for the week view: " + newValue.toString());
             calendarWeek.newWeek(newValue);
-            System.out.println("Creating a new set of dates for the week view: " + newValue.toString());
+
             // UI update
             update();
         });
@@ -58,13 +60,47 @@ public class WeekViewControl {
         CalendarManager.getWeekEvents().addListener((ListChangeListener<? super Event>) change -> {
             System.out.println("WeekViewControl:  WeekEvent list change detected ");
             while(change.next()){
+
                 if(change.wasAdded()){
                     System.out.println("WeekViewControl: Adding Changes");
                     ObservableList<Event> events = FXCollections.observableArrayList(change.getAddedSubList());
-                    // get event dates
+
+                    for(Event event : events){
+                        if(event instanceof Calendar calendar){
+                            LocalDate startDate = calendar.getStartDate();
+                            LocalDate stopDate = calendar.getStopDate();
+                            // the 6th index of the day view list in weekview has a null date value
+                            // also the weekview query is wrong it needs to be restructured to search tables
+                            // for any items with the week dates falling between the stored items date
+                            for(DayView dayView : weekView.getDayViews()){
+                                LocalDate dayViewDate = dayView.dateProperty().get();
+                                System.out.println("WeekViewControl: Checking if  " + dayViewDate + " is between "+startDate+ " and "+ stopDate);
+
+                                if(startDate.isEqual(dayViewDate) || stopDate.isEqual(dayViewDate) ||
+                                        dayViewDate.isAfter(startDate) && dayViewDate.isBefore(stopDate)){
+                                    System.out.println("WeekViewControl: Adding the checklist to the dayview at "+ dayViewDate);
+                                    dayView.eventsProperty().add(calendar);
+                                }
+                            }
+                        }
+
+                        if(event instanceof Checklist checklist){
+                            LocalDate startDate = checklist.getStartDate();
+                            LocalDate stopDate = checklist.getStopDate();
+                            for(DayView dayView : weekView.getDayViews()){
+                                LocalDate dayViewDate = dayView.dateProperty().get();
+                                System.out.println("WeekViewControl: Checking if  " + dayViewDate + " is between "+startDate+ " and "+ stopDate);
+                                if(startDate.isEqual(dayViewDate) || stopDate.isEqual(dayViewDate) ||
+                                        dayViewDate.isAfter(startDate) && dayViewDate.isBefore(stopDate)){
+                                    System.out.println("WeekViewControl: Adding the checklist to the dayview at "+ dayViewDate);
+                                    dayView.eventsProperty().add(checklist);
+                                }
+                            }
+                        }
+                    }
 
                     // if event is multi-day
-                    // use the weekView.addMultiDay
+                    // use the weekView.addMultiDay()
                     // multiDay will not display tasks only cal and checks
                     // else display event as single day
                     // if event is instance of calendar
@@ -106,9 +142,10 @@ public class WeekViewControl {
         LocalDate newDate = calendarWeek.dateProperty().get();
 
         //  DayViews updated with new dates
-        for(int weekDay = 0; weekDay < 6; weekDay++){
+        for(int weekDay = 0; weekDay < 7; weekDay++){
             DayView dayView = weekView.getDayViews().get(weekDay);
             LocalDate date =calendarWeek.datesProperty().get(weekDay);
+            System.out.println("WeekViewControl: Updating DayView at " + weekDay + " with " + date);
             dayView.dateProperty().set(date);
         }
 
@@ -118,63 +155,62 @@ public class WeekViewControl {
         label.setText(String.valueOf(weekNumber));
 
         // Query the database
-        List<Event> events = handleQuery(
-                calendarWeek.datesProperty().get(0),
-                calendarWeek.datesProperty().get(6)
-        );
-
-        // Manager updated with new data
-        CalendarManager.getWeekEvents().setAll(events);
+        for(LocalDate date : calendarWeek.datesProperty()) {
+            List<Event> events = handleQuery(date);
+            CalendarManager.getWeekEvents().addAll(events);
+        }
     }
 
     /**
-     * Queries the database in relation to the week view
-     * @param startDate start date of the events being queried from the DB
-     * @param stopDate the end date of the event being queried from the DB
-     * @return Lis<Event> returns the list of event from the Database to be placed
+     * Queries the database in relation to a specific date
+     * @param date the date to to be queried from the database
+     * @return List<Event> returns the list of event from the Database to be placed
      * in the application UI.
      */
-    private static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
+    private static List<Event> handleQuery(LocalDate date){
+        System.out.println("WeekViewControl: DB Query for entries matching: " + date);
         DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
-
-        //System.out.println("ControlPanel: Requesting events from database from " + startDate + " to " + stopDate);
         List<Event> events = new ArrayList<>();
-        CalendarManager.getMonthEvents().clear();
+        CalendarManager.getWeekEvents().clear();
+        String dateStr = " '" + date +"' ";
 
+        // query the calendar table
         try{
 
-            List<String[]> results = executor.executeBetweenQuery(
-                    "calendar_table",
-                    "start_date",
-                    startDate,
-                    stopDate
+            String sql = String.format(
+                    "SELECT * FROM calendar_table WHERE start_date <= %s AND stop_date >= %s;"
+                    , dateStr
+                    , dateStr
             );
 
+            System.out.println("WeekViewControl: DB Query: " + sql);
+
+            List<String[]> results = executor.executeQuery(sql);
             for (String[] row : results) {
-
+                System.out.println("WeekVeiwControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-
+                System.out.println("WeekViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
-
             }
 
         }catch(SQLException e){
             e.printStackTrace();
         }
 
+        // query checklist table
         try{
-            List<String[]> results = executor.executeBetweenQuery(
-                    "checklist_table",
-                    "start_date",
-                    startDate,
-                    stopDate
+            String sql = String.format(
+                    "SELECT * FROM checklist_table WHERE start_date <= %s AND stop_date >= %s;"
+                    , dateStr
+                    , dateStr
             );
+            System.out.println("WeekViewControl: DB Query: " + sql);
+            List<String[]> results = executor.executeQuery(sql);
             for (String[] row : results) {
-
+                System.out.println("WeekVeiwControl: " + Arrays.toString(row));
                 Checklist item = ChecklistManager.newItem(row);
-
+                System.out.println("WeekViewControl: adding checklist event " + item.getTitle());
                 events.add(item);
-
             }
         }catch(SQLException e){
             e.printStackTrace();
@@ -182,8 +218,6 @@ public class WeekViewControl {
 
         // sort the events by date range for faster processing
         QuickSort.quickSort(events, 0, events.size() - 1);
-
         return events;
     }
-
 }

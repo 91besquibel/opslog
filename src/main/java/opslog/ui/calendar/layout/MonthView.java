@@ -61,7 +61,6 @@ public class MonthView extends GridPane{
 				;
 			}
 		}
-
 		return cells;
 	}
 

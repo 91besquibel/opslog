@@ -108,15 +108,20 @@ public class ChecklistEditor {
 
         add.setOnAction(event -> {
             if (newTask.get().hasValue()) {
+                int [] offset = {newTask.get().getOffset()[0].get(), newTask.get().getOffset()[1].get()};
+                int [] duration = {newTask.get().getDuration()[0].get(), newTask.get().getDuration()[1].get()};
                 Task tempTask = new Task(
                         null,
                         newTask.get().getTitle(),
-                        newTask.get().getOffset(),
+                        offset,
+                        duration,
                         newTask.get().getType(),
                         newTask.get().getTags(),
                         newTask.get().getInitials(),
-                        newTask.get().getDescription());
-                //CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(), true);
+                        newTask.get().getDescription()
+                );
+
+                // CSV.write(Directory.Task_Dir.get(), tempTask.toStringArray(), true);
                 //Update.add(TaskManager.getList(), tempTask);
                 title.clear();
                 type.setValue(null);
@@ -126,16 +131,20 @@ public class ChecklistEditor {
         });
         edit.setOnAction(event -> {
             if (newTask.get().hasValue() && selector.getValue().hasValue()) {
+                int [] offset = {newTask.get().getOffset()[0].get(), newTask.get().getOffset()[1].get()};
+                int [] duration = {newTask.get().getDuration()[0].get(), newTask.get().getDuration()[1].get()};
                 Task tempTask = new Task(
                     newTask.get().getID(), 
-                    newTask.get().getTitle(), 
-                    newTask.get().getOffset(),
+                    newTask.get().getTitle(),
+                        offset,
+                    duration,
                     newTask.get().getType(), 
                     newTask.get().getTags(), 
                     newTask.get().getInitials(), 
                     newTask.get().getDescription()
                 );
-                //CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), tempTask.toStringArray());
+
+                // CSV.edit(Directory.Task_Dir.get(), selector.getValue().toStringArray(), tempTask.toStringArray());
                 // Update.edit(TaskManager.getList(), selector.getValue(), tempTask);
                 title.clear();
                 type.setValue(null);

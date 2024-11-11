@@ -30,7 +30,6 @@ public class WeekView extends GridPane{
 	public WeekView(){
 		super();
 		initializeGrid();
-		this.backgroundProperty().bind(Settings.primaryBackground);
 	}
 	
 	private void initializeGrid(){
@@ -106,7 +105,7 @@ public class WeekView extends GridPane{
 	private void createDayViews(){
 		// Create a new DayView for every day of the week
 		for(int dayCol = 0; dayCol < 7; dayCol ++){
-			System.out.println("Createing and setting dayview number: " + dayCol);
+			System.out.println("WeekView: Createing and setting DayView at column: " + dayCol);
 			DayView dayView = new DayView();
 			getDayViews().add(dayView);
 			this.add(dayView, dayCol+1, 2);
@@ -126,6 +125,7 @@ public class WeekView extends GridPane{
 		row0to48.setMaxHeight(Settings.SINGLE_LINE_HEIGHT);
 
 		LocalTime time = LocalTime.of(0, 0);
+
 		for(int row = 0; row < 48; row++){
 			Label timeLabel = new Label();
 			timeLabel.fontProperty().bind(Settings.fontProperty);
@@ -148,17 +148,12 @@ public class WeekView extends GridPane{
 			timeGrid.getRowConstraints().add(row0to48);
 		}
 
-		this.add(timeGrid, 0, 2); // Grid, col, row
-	}
+		// add the last lable at
+		Label lastRow = new Label();
+		lastRow.setText(String.valueOf(LocalTime.of(23,30)));
+		timeGrid.add(lastRow,0,47);
 
-	public CalendarWeek getCalendarWeek(){
-		return calendarWeek;
-	}
-	
-	public void setDayViews(ObservableList<DayView> dayViews){
-		for(int col = 1; col < 7; col++){
-			this.add(dayViews.get(col-1), col, 2);
-		}
+		this.add(timeGrid, 0, 2); // Grid, col, row
 	}
 
 	public ObservableList<DayView> getDayViews(){

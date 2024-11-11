@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.time.LocalDate;
 import opslog.managers.*;
@@ -82,8 +83,8 @@ public class DatabaseExecutor {
 	 *
 	 * @param tableName  The name of the table to query.
 	 * @param column     The name of the column to apply the BETWEEN clause on.
-	 * @param lowerBound The lower bound of the range (inclusive).
-	 * @param upperBound The upper bound of the range (inclusive).
+	 * @param startDate The lower bound of the range (inclusive).
+	 * @param stopDate The upper bound of the range (inclusive).
 	 * @return A List of String arrays, where each array is a row from the result set.
 	 * @throws SQLException If a database access error occurs or the SQL statement is invalid.
 	 */
@@ -95,6 +96,7 @@ public class DatabaseExecutor {
 			"SELECT * FROM %s WHERE %s BETWEEN ? AND ?", 
 			tableName, column
 		);
+		System.out.println(sql);
 
 		List<String[]> results = new ArrayList<>();
 
@@ -103,19 +105,18 @@ public class DatabaseExecutor {
 			 PreparedStatement statement = connection.prepareStatement(sql)) {
 			
 			// Set the parameters for the query.
-			
 			statement.setDate(1, Date.valueOf(startDate));
 			statement.setDate(2, Date.valueOf(stopDate));
 
 			// Execute the query and process the ResultSet.
 			try (ResultSet resultSet = statement.executeQuery()) {
 				int columnCount = resultSet.getMetaData().getColumnCount();  // Get the number of columns.
-
 				while (resultSet.next()) {
 					String[] row = new String[columnCount];
 					for (int i = 0; i < columnCount; i++) {
 						row[i] = resultSet.getString(i + 1);  // Columns are 1-indexed.
 					}
+					System.out.println(Arrays.toString(row));
 					results.add(row);
 				}
 			}
