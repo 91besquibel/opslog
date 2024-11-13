@@ -51,7 +51,7 @@ public class WeekViewControl {
             // CalendarWeek new dates created
             System.out.println("WeekViewControl: Creating a new set of dates for the week view: " + newValue.toString());
             calendarWeek.newWeek(newValue);
-
+            // weekView.updateLabelText(calendarWeek);
             // UI update
             update();
         });
@@ -153,6 +153,7 @@ public class WeekViewControl {
         Label label = controlPanel.getWeekLabel();
         int weekNumber = newDate.get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
         label.setText(String.valueOf(weekNumber));
+        weekView.updateLabelText(calendarWeek);
 
         // Query the database
         for(LocalDate date : calendarWeek.datesProperty()) {

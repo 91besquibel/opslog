@@ -4,15 +4,22 @@ import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import java.time.LocalTime;
-
 import javafx.collections.ObservableList;
-
 import javafx.scene.control.Label;
-
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.util.Settings;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+
+import java.time.LocalDate;
+import java.time.chrono.ChronoLocalDate;
+import java.time.format.DateTimeFormatter;
+import javafx.scene.layout.Priority;
+import java.util.Locale;
 
 
 /*
@@ -25,6 +32,8 @@ public class WeekView extends GridPane{
 	
 	private final GridPane timeGrid = new GridPane();
 	private final ObservableList<DayView> dayViews = FXCollections.observableArrayList();
+	private final ObservableList<Label> labelProperty = FXCollections.observableArrayList();
+	private final String [] dayNames = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 	private CalendarWeek calendarWeek;
 
 	public WeekView(){
@@ -42,7 +51,7 @@ public class WeekView extends GridPane{
 		col0.setHalignment(HPos.CENTER);
 		col0.setHgrow(Priority.NEVER);
 		this.getColumnConstraints().add(col0);
-
+		
 		// main grid : Col 1 - 7: 'Constraints' days
 		ColumnConstraints col1To7 = new ColumnConstraints();
 		col1To7.setHgrow(Priority.ALWAYS);
@@ -70,6 +79,17 @@ public class WeekView extends GridPane{
 			this.add(multiPane,col,1);
 		}
 
+		// create day of week labels and add them to the grid and storage
+		for(int col = 0; col < 7; col++){
+			System.out.println("WeekView: Creating a new label at column " + col+ " and row 0");
+			Label label = new Label();
+			label.fontProperty().bind(Settings.fontProperty);
+			label.textFillProperty().bind(Settings.textColor);
+			label.prefHeight(Settings.SINGLE_LINE_HEIGHT);
+			labelProperty.add(label);
+			this.add(label, col + nCols - 7, 0);
+		}
+
 		// main grid : Row 1 and Col 0: Multi day 'Label'
 		Label multiDay = new Label("Multi-Day");
 		multiDay.fontProperty().bind(Settings.fontProperty);
@@ -77,16 +97,6 @@ public class WeekView extends GridPane{
 		multiDay.prefHeight(100);
 		multiDay.setAlignment(Pos.CENTER);
 		this.add(multiDay, 0, 1);// label, col, row
-		
-		// main grid : Row 0 and Col 1-7: Days of the week 'Labels'
-		String [] dayNames = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-		for (int col = 0; col < 7; col++) {
-			Label dayName = new Label(dayNames[col]);
-			dayName.fontProperty().bind(Settings.fontProperty);
-			dayName.textFillProperty().bind(Settings.textColor);
-			dayName.prefHeight(Settings.SINGLE_LINE_HEIGHT);
-			this.add(dayName, col + nCols - 7, 0);// label, col, row
-		}
 
 		// main grid : Row 2
 		RowConstraints row2 = new RowConstraints();
@@ -102,10 +112,41 @@ public class WeekView extends GridPane{
 		this.calendarWeek = calendarWeek;
 	}
 
+	public void updateLabelText(CalendarWeek calWeek){
+		int col = 0;
+		for(Label label : labelProperty){
+			LocalDate date = calWeek.datesProperty().get(col);
+			label.setGraphic(formatDate(dayNames[col], date));
+			col++;
+		}
+	}
+	
+	private TextFlow formatDate(String dayName, LocalDate newDate){
+		ChronoLocalDate cDate = ChronoLocalDate.from(newDate);
+		Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+
+		// Create text layout for both Gregorian and Ordinal
+		Text day  = new Text(dayName + " "); 
+		Text gregText = new Text(DateTimeFormatter.ofPattern("d").withLocale(locale).format(cDate));
+		gregText.fillProperty().bind(Settings.textColor);
+		gregText.fontProperty().bind(Settings.fontCalendarSmall);
+
+		Text divider = new Text("/");
+		divider.fillProperty().bind(Settings.textColor);
+		divider.fontProperty().bind(Settings.fontCalendarSmall);
+
+		Text ordText = new Text(DateTimeFormatter.ofPattern("D").withLocale(locale).format(cDate));
+		ordText.fillProperty().bind(Settings.textColor);
+		ordText.fontProperty().bind(Settings.fontCalendarSmall);
+
+		TextFlow textFlow = new TextFlow(day,gregText,divider,ordText);
+		return textFlow;
+	}
+
 	private void createDayViews(){
 		// Create a new DayView for every day of the week
 		for(int dayCol = 0; dayCol < 7; dayCol ++){
-			System.out.println("WeekView: Createing and setting DayView at column: " + dayCol);
+			System.out.println("WeekView: Creating and setting DayView at column: " + dayCol);
 			DayView dayView = new DayView();
 			getDayViews().add(dayView);
 			this.add(dayView, dayCol+1, 2);

@@ -128,6 +128,14 @@ public class Settings {
                     new Border(
                             new BorderStroke(windowBorderColor.get(), BorderStrokeStyle.SOLID, WINDOW_BAR_CORNERS, WINDOW_BAR_BORDER_WIDTH)));
         
+        // DropShadow background
+        public static ObjectProperty<Background> shadowBackground =
+            new SimpleObjectProperty<>(
+                    new Background(
+                            new BackgroundFill(primaryColor.get(), CORNER_RADII_BG, new Insets(0,1,1,2))
+                    )
+            );
+    
         
         // Background
         public static ObjectProperty<Background> rootBackground =

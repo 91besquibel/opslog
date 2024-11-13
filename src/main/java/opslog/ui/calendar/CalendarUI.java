@@ -118,7 +118,7 @@ public class CalendarUI{
         ControlPanel controlPanel = new ControlPanel();
         MonthView monthView = new MonthView();
         WeekView weekView = new WeekView();
-        //DayView dayView = new DayView();
+        DayView dayView = new DayView();
 
         // initialize the controllers for user interaction
         MonthViewControl.setCalendarMonth(calendarMonth);
@@ -138,27 +138,39 @@ public class CalendarUI{
                         case"Month":
                             monthView.setVisible(true);
                             weekView.setVisible(false);
-                            //dayView.setVisible(false);
+                            dayView.setVisible(false);
                             break;
                         case"Week":
                             monthView.setVisible(false);
                             weekView.setVisible(true);
-                            //dayView.setVisible(false);
+                            dayView.setVisible(false);
+                            break;
                         case "Day":
-                            //monthView.setVisible(false);
-                            //weekView.setVisible(false);
-                            //dayView.setVisible(true);
+                            monthView.setVisible(false);
+                            weekView.setVisible(false);
+                            dayView.setVisible(true);
+                            break;
+                        default:
                             break;
                     }
                 }
         );
 
+        // DayView
+        ScrollPane dayScroll = new ScrollPane(dayView);
+        VBox dayBox = new VBox(dayScroll);
+        dayView.visibleProperty().addListener((obs,ov,nv) -> {
+            dayScroll.setVisible(nv);
+            dayBox.setVisible(nv);
+        });
+        dayView.setVisible(false);
+        dayView.prefWidthProperty().bind(dayScroll.widthProperty());
 
-
-
+        // MonthView
         monthView.setVisible(true);
-        setMonthMenu(monthView, calendarWeek);
+        setMonthMenu(monthView, calendarWeek,dayView, weekView, controlPanel);
 
+        // WeekView
         ScrollPane scrollPane = new ScrollPane(weekView);
         VBox vbox = new VBox(scrollPane);
         weekView.visibleProperty().addListener((obs,ov,nv) -> {
@@ -166,10 +178,11 @@ public class CalendarUI{
             vbox.setVisible(nv);
         });
         weekView.setVisible(false);
-
         weekView.prefWidthProperty().bind(scrollPane.widthProperty());
+        
         StackPane stackPane = new StackPane();
-        stackPane.getChildren().addAll(monthView, vbox);
+        stackPane.getChildren().addAll(monthView, vbox, dayBox);
+        
         VBox calendarView = new VBox(controlPanel, stackPane);
         calendarView.backgroundProperty().bind(Settings.primaryBackground);
         right = new AnchorPane(calendarView);
@@ -187,7 +200,10 @@ public class CalendarUI{
         root = new VBox(splitPane);
     }
 
-    private void setMonthMenu(MonthView monthView,CalendarWeek calendarWeek){
+    private void setMonthMenu(
+        MonthView monthView,CalendarWeek calendarWeek,
+        DayView dayView, WeekView weekView, ControlPanel controlPanel){
+        
         // Context Menu
         ContextMenu contextMenu = new ContextMenu();
         MenuItem search = new MenuItem("Search");
@@ -208,20 +224,26 @@ public class CalendarUI{
             );
         });
 
-        MenuItem dayView = new MenuItem("Day View");
-        dayView.setOnAction(e-> {
+        MenuItem goToDayView = new MenuItem("Day View");
+        goToDayView.setOnAction(e-> {
             if (monthView.selectedCellsProperty().size() == 1){
                 CalendarCell cell = monthView.selectedCellsProperty().get(0);
                 LocalDate date = cell.getDate();
+                dayView.dateProperty().set(date);
+
+                controlPanel.getSelector().setValue("Day");
             }
         });
 
-        MenuItem weekView = new MenuItem("Week View");
-        weekView.setOnAction(e ->{
+        MenuItem goToWeekView = new MenuItem("Week View");
+        goToWeekView.setOnAction(e ->{
             if (monthView.selectedCellsProperty().size() == 1){
+                System.out.println("CalendarUI: Switching to week view");
                 CalendarCell cell = monthView.selectedCellsProperty().get(0);
                 LocalDate date = cell.getDate();
+                System.out.println("CalendarUI: Week view date " + date);
                 calendarWeek.dateProperty().set(date);
+                controlPanel.getSelector().setValue("Week");
             }
         });
 
@@ -265,7 +287,7 @@ public class CalendarUI{
             eventUI.display();
         });
 
-        contextMenu.getItems().addAll(viewLogs,search,dayView,weekView,createEvent);
+        contextMenu.getItems().addAll(viewLogs,search,goToDayView,goToWeekView,createEvent);
 
         monthView.setOnContextMenuRequested(event ->
                 contextMenu.show(

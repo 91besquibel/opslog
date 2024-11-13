@@ -225,11 +225,11 @@
 }
 
 .tooltip{
- -fx-text-fill:              black;
- -fx-background-radius:      0px;
- -fx-background-color:       white;
- -fx-background-insets:      0, 1, 2;
- -fx-effect:                 null;
+    -fx-background-insets:      0, 1, 2;
+    -fx-border-color: grey;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
 }
 
 
@@ -243,7 +243,11 @@
     -fx-border-width: 2px;
     -fx-border-radius: 10px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
-    
+}
+
+.popup{
+    -fx-background-insets:      0, 1, 2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
 }
 
 .menu-item:focused {

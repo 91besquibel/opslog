@@ -176,7 +176,11 @@ public class MonthViewControl {
     * Update the control panel year and month labels
     * */
     public static void update(){
+        if(calendarMonth.yearMonthProperty().get() == null){
+            calendarMonth.yearMonthProperty().set(YearMonth.now());
+        }
         YearMonth newValue = calendarMonth.yearMonthProperty().get();
+        
         // update the month view cells with new dates
         System.out.println("Creating a new set of dates for " + newValue.toString());
         for (int i = 0; i < 42; i++) {
