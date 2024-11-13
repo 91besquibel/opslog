@@ -1,0 +1,283 @@
+.root{
+    -fx-background-color: transparent;
+}
+
+.anchor-pane{
+    -fx-background-color: transparent;
+}
+
+.stack-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent; /* Background color of the scrollbar */
+}
+.scroll-bar:horizontal {
+    -fx-background-color: transparent; /* Background color of the scrollbar */
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #60606060;
+    -fx-background-radius: 4; /* Rounded corners */
+}
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+.corner {
+    -fx-background-color: transparent;
+}
+.scroll-bar .track,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-button {
+    -fx-background-color: transparent;
+}
+.scroll-bar .decrement-arrow,
+.scroll-bar .increment-arrow {
+    -fx-background-color: #60606060;
+}
+
+
+.split-pane:horizontal > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+.split-pane:vertical > .split-pane-divider {
+    -fx-background-color: transparent;
+}
+
+.table-view .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+.table-view .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+.table-view .scroll-bar:vertical .increment-button,
+.table-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.table-view .scroll-bar:horizontal .increment-button,
+.table-view .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.table-view .scroll-bar:vertical .increment-arrow,
+.table-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.table-view .scroll-bar:horizontal .increment-arrow,
+.table-view .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+.table-view .column-header-background {
+    -fx-background-color: transparent; 
+}
+.table-view .column-header {
+    -fx-background-color: transparent; 
+}
+.table-view .filler {
+    -fx-background-color: transparent;
+}
+.table-view .column-resize-line {
+    -fx-background-color: transparent; /* Gray color for resize line */
+    -fx-border-color: transparent; /* Darker border color */
+    -fx-border-width: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding:0;
+}
+.table-view .column-separator {
+    -fx-background-color: transparent; /* Or any desired color */
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding:0;
+}
+.table-view .table-column {
+    -fx-padding: 0; /* Adjust padding around columns */
+    -fx-margin: 0;  /* Adjust margin around columns, if applicable */
+}
+
+.combo-box .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+.combo-box .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+.combo-box .scroll-bar:vertical .increment-button,
+.combo-box .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.combo-box .scroll-bar:horizontal .increment-button,
+.combo-box .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.combo-box .scroll-bar:vertical .increment-arrow,
+.combo-box .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.combo-box .scroll-bar:horizontal .increment-arrow,
+.combo-box .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.list-view .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+.list-view .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+.list-view .scroll-bar:vertical .increment-button,
+.list-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.list-view .scroll-bar:horizontal .increment-button,
+.list-view .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.list-view .scroll-bar:vertical .increment-arrow,
+.list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+.list-view .scroll-bar:horizontal .increment-arrow,
+.list-view .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+
+/* Makes the content area of TextArea transparent */
+
+.text-area .content {
+    -fx-background-color: transparent;
+}
+.text-area .scroll-pane .viewport{
+    -fx-background-color: transparent;
+}
+
+
+.text-area .scroll-pane .content{
+    -fx-background-color: transparent;
+}
+
+/* Hides vertical scroll bar */
+.text-area .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+
+/* Hides horizontal scroll bar */
+.text-area .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Hides buttons on vertical scroll bar */
+.text-area .scroll-bar:vertical .increment-button,
+.text-area .scroll-bar:vertical .decrement-button,
+/* Hides buttons on horizontal scroll bar */
+.text-area .scroll-bar:horizontal .increment-button,
+.text-area .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+}
+
+/* Hides arrows on vertical scroll bar */
+.text-area .scroll-bar:vertical .increment-arrow,
+.text-area .scroll-bar:vertical .decrement-arrow,
+/* Hides arrows on horizontal scroll bar */
+.text-area .scroll-bar:horizontal .increment-arrow,
+.text-area .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.tooltip{
+    -fx-background-insets:      0, 1, 2;
+    -fx-border-color: grey;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+}
+
+
+.context-menu {
+    -fx-background-color: black;
+    -fx-background-radius: 13px;
+   
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: grey;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+}
+
+.popup{
+    -fx-background-insets:      0, 1, 2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+}
+
+.menu-item:focused {
+     -fx-background-color: transparent;
+}
+
+.menu:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-bar:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-button:focused {
+    -fx-background-color: transparent;
+}
+
+.menu-item:hover {
+     -fx-background-color: transparent;
+}
+
+.menu:hover {
+    -fx-background-color: transparent;
+}
+
+.menu-bar:hover {
+    -fx-background-color: transparent;
+}
+
+.menu-button:hover {
+    -fx-background-color: transparent;
+}
