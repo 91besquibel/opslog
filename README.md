@@ -27,9 +27,8 @@ Why was this application created? The mission was simple: replace **Microsoft On
 ## 🔧 **Technical Details**
 
 - **Platform:** ![JavaFX](https://img.shields.io/badge/JavaFX-17-blue.svg) ![OpenJDK](https://img.shields.io/badge/OpenJDK-17-red.svg)
-- **Data Management:** Utilizes CSV files stored on a secure file share.
+- **Data Management:** Currently utilizes PostgresSQL
 - **UI Design:** Programmatically built without FXML, focusing on a sleek and intuitive interface.
-- **Security:** Complies with strict network security protocols, using local file storage instead of cloud services.
 
 ---
 
