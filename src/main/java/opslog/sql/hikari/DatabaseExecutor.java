@@ -96,7 +96,6 @@ public class DatabaseExecutor {
 			"SELECT * FROM %s WHERE %s BETWEEN ? AND ?", 
 			tableName, column
 		);
-		System.out.println(sql);
 
 		List<String[]> results = new ArrayList<>();
 

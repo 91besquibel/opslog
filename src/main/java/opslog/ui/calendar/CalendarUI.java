@@ -1,15 +1,15 @@
 package opslog.ui.calendar;
 
-
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
 import opslog.managers.CalendarManager;
 import opslog.managers.ChecklistManager;
-
 import opslog.managers.LogManager;
 import opslog.object.Event;
 import opslog.object.event.Checklist;
@@ -18,16 +18,18 @@ import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.EventUI;
 import opslog.ui.SearchUI;
+import opslog.ui.calendar.cell.CalendarCell;
+import opslog.ui.calendar.cell.CalendarListView;
 import opslog.ui.calendar.control.*;
 import opslog.ui.calendar.layout.DayView;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.layout.WeekView;
+import opslog.ui.calendar.object.CalendarDay;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.ui.controls.CustomListView;
 import opslog.ui.controls.SearchBar;
 import opslog.util.Settings;
-
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -120,14 +122,31 @@ public class CalendarUI{
         WeekView weekView = new WeekView();
         DayView dayView = new DayView();
 
-        // initialize the controllers for user interaction
+        CalendarDay calendarDay = new CalendarDay();
+
         MonthViewControl.setCalendarMonth(calendarMonth);
         MonthViewControl.setMonthView(monthView);
         MonthViewControl.setControlPanel(controlPanel);
+
         WeekViewControl.setCalendarWeek(calendarWeek);
         WeekViewControl.setControlPanel(controlPanel);
         WeekViewControl.setWeekView(weekView);
 
+        List<DayViewControl> dayViewControls = new ArrayList<>();
+        List<DayView> dayViews = new ArrayList<>();
+        for(int days = 0; days < 7; days++){
+            System.out.println("CalendarUI: Creating day view " + (days+1));
+            DayView weekViewDayView = new DayView();
+            dayViews.add(weekViewDayView);
+            CalendarDay weekCalendarDay = new CalendarDay();
+            DayViewControl weekDayViewControl = new DayViewControl();
+            weekDayViewControl.setDayView(weekViewDayView);
+            weekDayViewControl.setCalendarDay(weekCalendarDay);
+            dayViewControls.add(weekDayViewControl);
+            weekDayViewControl.initializeListeners();
+        }
+        WeekViewControl.setDayViewControls(dayViewControls);
+        weekView.setDayViews(dayViews);
         // Initialize the listeners
         MonthViewControl.initializeListeners();
         WeekViewControl.initializeListeners();
@@ -163,15 +182,17 @@ public class CalendarUI{
             dayScroll.setVisible(nv);
             dayBox.setVisible(nv);
         });
-        dayView.setVisible(false);
-        dayView.prefWidthProperty().bind(dayScroll.widthProperty());
+       dayView.setVisible(false);
+       dayView.prefWidthProperty().bind(dayScroll.widthProperty());
+
 
         // MonthView
         monthView.setVisible(true);
-        setMonthMenu(monthView, calendarWeek,dayView, weekView, controlPanel);
+        setMonthMenu(monthView, calendarWeek, calendarDay, controlPanel);
 
         // WeekView
         ScrollPane scrollPane = new ScrollPane(weekView);
+        scrollPane.setFitToHeight(true);
         VBox vbox = new VBox(scrollPane);
         weekView.visibleProperty().addListener((obs,ov,nv) -> {
             scrollPane.setVisible(nv);
@@ -193,7 +214,6 @@ public class CalendarUI{
     }
 
     private void initializeRoot() {
-        System.out.println("3");
         SplitPane splitPane = new SplitPane(left, right);
         splitPane.setDividerPositions(0.25f, 0.75f);
         splitPane.backgroundProperty().bind(Settings.rootBackground);
@@ -202,9 +222,8 @@ public class CalendarUI{
 
     private void setMonthMenu(
         MonthView monthView,CalendarWeek calendarWeek,
-        DayView dayView, WeekView weekView, ControlPanel controlPanel){
-        
-        // Context Menu
+        CalendarDay calendarDay,ControlPanel controlPanel){
+
         ContextMenu contextMenu = new ContextMenu();
         MenuItem search = new MenuItem("Search");
         search.setOnAction(e ->{
@@ -218,7 +237,9 @@ public class CalendarUI{
             searchBar.setEffect(Settings.DROPSHADOW);
             Popup popup = new Popup();
             popup.getContent().add(searchBar);
-            popup.show(searchBar,
+            Stage mainStage = (Stage) monthView.getScene().getWindow();
+            popup.show(
+                    mainStage,
                     contextMenu.anchorXProperty().get(),
                     contextMenu.anchorYProperty().get()
             );
@@ -226,11 +247,11 @@ public class CalendarUI{
 
         MenuItem goToDayView = new MenuItem("Day View");
         goToDayView.setOnAction(e-> {
+            System.out.println("CalendarUI: Switching to DayView");
             if (monthView.selectedCellsProperty().size() == 1){
                 CalendarCell cell = monthView.selectedCellsProperty().get(0);
                 LocalDate date = cell.getDate();
-                dayView.dateProperty().set(date);
-
+                calendarDay.dateProperty().set(date);
                 controlPanel.getSelector().setValue("Day");
             }
         });

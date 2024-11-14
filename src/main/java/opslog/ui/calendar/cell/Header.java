@@ -59,7 +59,7 @@ public class Header extends HBox {
 	}
 
 	public void setDate(LocalDate date) {
-		System.out.println("Header: changeing date to: " + date.toString());
+		//System.out.println("Header: changeing date to: " + date.toString());
 		dateDisplay.setGraphic(formatDate(date));
 		this.date.set(date);
 	}

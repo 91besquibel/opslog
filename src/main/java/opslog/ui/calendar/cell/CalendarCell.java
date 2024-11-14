@@ -23,7 +23,7 @@
  * questions.
  */
 
-package opslog.ui.calendar.control;
+package opslog.ui.calendar.cell;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -34,17 +34,12 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 
 import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
-import opslog.ui.calendar.cell.Header;
-import opslog.ui.controls.CustomListView;
 import opslog.util.Settings;
-import opslog.interfaces.SQL;
 
 /*
 	The CalendarCell is responsible for storeing, tracking, and maniputlating
@@ -55,7 +50,7 @@ import opslog.interfaces.SQL;
 public class CalendarCell extends VBox {
     
     private final Header header = new Header();
-    private final CalendarListView<Event> eventContainer = new CalendarListView<>(); 
+    private final CalendarListView<Event> eventContainer = new CalendarListView<>();
     
     private final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();  
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();

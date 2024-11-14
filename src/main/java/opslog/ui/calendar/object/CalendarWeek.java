@@ -1,6 +1,5 @@
 package opslog.ui.calendar.object;
 
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -20,33 +19,31 @@ import opslog.util.Settings;
 */
 public class CalendarWeek {
 	
-	private final ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>();
-	private final ObservableList<LocalDate> datesProperty = FXCollections.observableArrayList();
+	private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
+	private final ObservableList<LocalDate> dates = FXCollections.observableArrayList();
 	
 	public CalendarWeek(){
-		this.dateProperty.set(LocalDate.now());
-		newWeek(dateProperty.get());
 	}
 
 	public ObjectProperty<LocalDate> dateProperty(){
-		return dateProperty;
+		return date;
 	}
 	
 	public ObservableList<LocalDate> datesProperty(){
-		return datesProperty;
+		return dates;
 	}
 
 	public void newWeek(LocalDate newDate){
-		ObservableList<LocalDate> dates = FXCollections.observableArrayList();
+		ObservableList<LocalDate> newDates = FXCollections.observableArrayList();
 		LocalDate monday = newDate.with(DayOfWeek.MONDAY);
 		LocalDate startOfWeek = monday.minusDays(1);
 
 		for (int i = 0; i < 7; i++) {
 			LocalDate date = startOfWeek.plusDays(i);
-			System.out.println("CalendarWeek: Adding the date " + date + " from the week containing " + newDate);
-			dates.add(date);
+			System.out.println("CalendarWeek: Adding new value" + date);
+			newDates.add(date);
 		}
 		
-		datesProperty.setAll(dates);
+		dates.setAll(newDates);
 	}
 }

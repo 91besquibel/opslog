@@ -49,7 +49,7 @@ public class WindowPane {
 
     // Display method to show the window
     public void display() {
-        System.out.println("Displaying new windowpane");
+        //System.out.println("WindowPane: Displaying new window");
         StackPane stackPane = new StackPane(root);
         stackPane.setPadding(new Insets(10));
         Rectangle2D screenSize = Screen.getPrimary().getVisualBounds();
@@ -168,7 +168,7 @@ public class WindowPane {
     private void setupMenuBarListener() {
         // Listener to update the top bar when the menu bar changes
         menuBarProperty.addListener((obs, oldMenuBar, newMenuBar) -> {
-            System.out.println("MenuBar updated!");
+            //System.out.println("WindowPane: MenuBar updated!");
 
             // put this in the CustomMenu then create a CustomMenuItem class
             String title = newMenuBar.getMenus().get(0).getText();
@@ -193,9 +193,9 @@ public class WindowPane {
     }
 
     public void setMenuBar(CustomMenuBar menuBar) {
-        System.out.println("Setting new MenuBar");
+        //System.out.println("WindowPane: Setting new MenuBar");
         menuBarProperty.set(menuBar);
-        root.layout();// This triggers the listener to update the UI
+        root.layout();
     }
 
 }

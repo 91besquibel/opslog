@@ -68,7 +68,8 @@ public class Settings {
         // Button Size
         public static DoubleProperty buttonSize = new SimpleDoubleProperty(20.0);
         public static BorderWidths BORDER_WIDTH = new BorderWidths(2.0); // border width
-
+        public static BorderWidths BORDER_WEEKVIEW =
+                new BorderWidths(0.0, 2.0, 0.0, 0.0);
         public static CornerRadii CORNER_RADII_BG = new CornerRadii(6.0); 
         public static CornerRadii CORNER_RADII = new CornerRadii(4.0); // corner radius
         public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
@@ -109,7 +110,7 @@ public class Settings {
             new SimpleObjectProperty<>(
                     new Border(
                             new BorderStroke(windowBorderColor.get(), BorderStrokeStyle.SOLID, WINDOW_CORNERS, WINDOW_BORDER_WIDTH)));
-        
+
         public static BorderWidths WINDOW_BAR_BORDER_WIDTH =
             new BorderWidths(0.0, 0.0, 2.0, 0.0);
         
@@ -189,6 +190,11 @@ public class Settings {
                             new BackgroundFill(dateSelectColor.get(), CORNER_RADII_ZERO, INSETS_ZERO)));
         
         // Border
+        public static ObjectProperty<Border> weekViewBorder =
+                new SimpleObjectProperty<>(
+                        new Border(
+                                new BorderStroke(selectedColor.get(), BorderStrokeStyle.SOLID, CORNER_RADII_ZERO, BORDER_WEEKVIEW)));
+
         public static ObjectProperty<Border> dateOutOfScopeBorder =
             new SimpleObjectProperty<>(
                     new Border(

@@ -3,30 +3,21 @@ package opslog.ui.calendar.control;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
-import javafx.stage.Popup;
 import opslog.managers.CalendarManager;
 import opslog.managers.ChecklistManager;
-import opslog.managers.LogManager;
 import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
-import opslog.object.event.Log;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseExecutor;
-import opslog.ui.EventUI;
-import opslog.ui.SearchUI;
+import opslog.ui.calendar.cell.CalendarCell;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.object.CalendarMonth;
-import opslog.ui.controls.SearchBar;
 import opslog.util.QuickSort;
 import opslog.util.Settings;
 
-import java.sql.Date;
 import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -81,11 +72,15 @@ public class MonthViewControl {
 
                         // Add the event to the calendar day
                         if(dates[0] != null && dates[1] != null){
-                            CalendarCell [] cells = monthView.getCells(dates[0], dates[1]);
+                            CalendarCell[] cells = monthView.getCells(dates[0], dates[1]);
 
                             for (CalendarCell cell : cells) {
-                                System.out.println("MonthViewControl: Adding event to cell at: " + cell.getDate().toString());
-                                cell.addEvent(event);
+                                if (cell != null && cell.getDate() != null) {  // Adding null check for cell
+                                    System.out.println("MonthViewControl: Adding event to cell at: " + cell.getDate().toString());
+                                    cell.addEvent(event);
+                                } else {
+                                    System.out.println("MonthViewControl: Skipping null cell.");
+                                }
                             }
                         }
                     }
@@ -182,7 +177,7 @@ public class MonthViewControl {
         YearMonth newValue = calendarMonth.yearMonthProperty().get();
         
         // update the month view cells with new dates
-        System.out.println("Creating a new set of dates for " + newValue.toString());
+        System.out.println("\nMonthView Control: Creating a new set of dates for " + newValue.toString());
         for (int i = 0; i < 42; i++) {
             try {
                 CalendarCell cell = monthView.getCells().get(i);
@@ -225,7 +220,7 @@ public class MonthViewControl {
                             .withDecimalStyle(DecimalStyle.of(locale))
                             .format(firstCalendarCellDate.plusWeeks(i));
 
-            System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
+            //System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
             calendarMonth.weekNumbersProperty().add(i,number);
         }
 

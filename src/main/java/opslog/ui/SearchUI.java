@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 
 import opslog.object.event.Log;
 import opslog.ui.controls.Buttons;
-import opslog.ui.calendar.control.CalendarTable;
+import opslog.ui.controls.CalendarTable;
 import opslog.ui.controls.CustomMenuBar;
 import opslog.ui.controls.LogTable;
 import opslog.object.event.Calendar;

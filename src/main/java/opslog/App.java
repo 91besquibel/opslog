@@ -50,7 +50,7 @@ public class App extends Application {
 
         try {
             
-            System.out.println("Starting application");
+            System.out.println("App: Starting application");
             DateTime.timeListPopulate();
 
             // Create and initialize each UI
@@ -74,7 +74,7 @@ public class App extends Application {
                 StartUp.loadCalendarData();
 
                 CustomMenuBar menuBar = createMenuBar();
-                System.out.println("Displaying main application");
+                //System.out.println("App: Displaying main application");
                 // Display the app after the user connects to a database
                 appWindow = new WindowPane(stage,Buttons.exitAppBtn());
                 appWindow.setMenuBar(menuBar);
@@ -82,7 +82,6 @@ public class App extends Application {
 
                 // Force Update to set the ui
                 MonthViewControl.update();
-                WeekViewControl.update();
             });
 
         } catch (Exception e) {

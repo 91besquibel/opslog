@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
+import opslog.ui.calendar.object.CalendarDay;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.util.Settings;
 import javafx.scene.layout.Region;
@@ -19,6 +20,8 @@ import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
 import java.time.format.DateTimeFormatter;
 import javafx.scene.layout.Priority;
+
+import java.util.List;
 import java.util.Locale;
 
 
@@ -34,7 +37,6 @@ public class WeekView extends GridPane{
 	private final ObservableList<DayView> dayViews = FXCollections.observableArrayList();
 	private final ObservableList<Label> labelProperty = FXCollections.observableArrayList();
 	private final String [] dayNames = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-	private CalendarWeek calendarWeek;
 
 	public WeekView(){
 		super();
@@ -55,6 +57,7 @@ public class WeekView extends GridPane{
 		// main grid : Col 1 - 7: 'Constraints' days
 		ColumnConstraints col1To7 = new ColumnConstraints();
 		col1To7.setHgrow(Priority.ALWAYS);
+		col1To7.minWidthProperty().bind(this.widthProperty().subtract(100).divide(7));
 		for (int i = 1; i < nCols; i++) {
 			this.getColumnConstraints().add(col1To7);
 		}
@@ -75,13 +78,14 @@ public class WeekView extends GridPane{
 
 		for(int col = 0; col < 8; col++){
 			Pane multiPane = new Pane();
+			multiPane.borderProperty().bind(Settings.weekViewBorder);
 			multiPane.backgroundProperty().bind(Settings.secondaryBackgroundZ);
 			this.add(multiPane,col,1);
 		}
 
 		// create day of week labels and add them to the grid and storage
 		for(int col = 0; col < 7; col++){
-			System.out.println("WeekView: Creating a new label at column " + col+ " and row 0");
+			//System.out.println("WeekView: Creating a new label at column " + col+ " and row 0");
 			Label label = new Label();
 			label.fontProperty().bind(Settings.fontProperty);
 			label.textFillProperty().bind(Settings.textColor);
@@ -100,16 +104,18 @@ public class WeekView extends GridPane{
 
 		// main grid : Row 2
 		RowConstraints row2 = new RowConstraints();
-		row2.setVgrow(Priority.ALWAYS);
+		row2.setVgrow(Priority.NEVER);
 		this.getRowConstraints().add(row2);
-
-		createDayViews();
 
 		createTimeGrid();
 	}
 
-	public void setCalendarWeek(CalendarWeek calendarWeek){
-		this.calendarWeek = calendarWeek;
+	public void setDayViews(List<DayView> dayViews){
+		int dayCol = 1;
+		for(DayView dayView: dayViews){
+			this.add(dayView, dayCol, 2);
+			dayCol++;
+		}
 	}
 
 	public void updateLabelText(CalendarWeek calWeek){
@@ -126,7 +132,10 @@ public class WeekView extends GridPane{
 		Locale locale = Locale.getDefault(Locale.Category.FORMAT);
 
 		// Create text layout for both Gregorian and Ordinal
-		Text day  = new Text(dayName + " "); 
+		Text day  = new Text(dayName + " ");
+		day.fillProperty().bind(Settings.textColor);
+		day.fontProperty().bind(Settings.fontCalendarSmall);
+
 		Text gregText = new Text(DateTimeFormatter.ofPattern("d").withLocale(locale).format(cDate));
 		gregText.fillProperty().bind(Settings.textColor);
 		gregText.fontProperty().bind(Settings.fontCalendarSmall);
@@ -141,16 +150,6 @@ public class WeekView extends GridPane{
 
 		TextFlow textFlow = new TextFlow(day,gregText,divider,ordText);
 		return textFlow;
-	}
-
-	private void createDayViews(){
-		// Create a new DayView for every day of the week
-		for(int dayCol = 0; dayCol < 7; dayCol ++){
-			System.out.println("WeekView: Creating and setting DayView at column: " + dayCol);
-			DayView dayView = new DayView();
-			getDayViews().add(dayView);
-			this.add(dayView, dayCol+1, 2);
-		}
 	}
 
 	private void createTimeGrid(){
@@ -191,13 +190,12 @@ public class WeekView extends GridPane{
 
 		// add the last lable at
 		Label lastRow = new Label();
+		lastRow.fontProperty().bind(Settings.fontProperty);
+		lastRow.textFillProperty().bind(Settings.textColor);
 		lastRow.setText(String.valueOf(LocalTime.of(23,30)));
 		timeGrid.add(lastRow,0,47);
 
+		timeGrid.borderProperty().bind(Settings.weekViewBorder);
 		this.add(timeGrid, 0, 2); // Grid, col, row
-	}
-
-	public ObservableList<DayView> getDayViews(){
-		return dayViews;
 	}
 }

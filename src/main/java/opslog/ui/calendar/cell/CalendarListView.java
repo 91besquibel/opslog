@@ -1,7 +1,6 @@
-package opslog.ui.calendar.control;
+package opslog.ui.calendar.cell;
 
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.ContextMenu;
@@ -18,13 +17,10 @@ import javafx.scene.layout.HBox;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
-import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomHBox;
 import opslog.ui.controls.CustomLabel;
 import opslog.ui.controls.Styles;
 import opslog.util.Settings;
-import javafx.scene.layout.CornerRadii;
-import javafx.geometry.Insets;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.MenuItem;
 

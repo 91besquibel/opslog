@@ -39,7 +39,7 @@ public class CalendarMonth {
 	}
 
 	private void updateWeekNumbers(YearMonth newYearMonth){
-		System.out.println("CalendarMonth: Updating week numbers");
+		//System.out.println("CalendarMonth: Updating week numbers");
 		Locale locale = Locale.getDefault(Locale.Category.FORMAT);
 		LocalDate firstOfMonth = newYearMonth.atDay(1);
 
@@ -53,7 +53,7 @@ public class CalendarMonth {
 				.withDecimalStyle(DecimalStyle.of(locale))
 				.format(firstOfMonth.plusWeeks(i));
 
-			System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
+			//System.out.println("CalendarMonth: MonthView row: " + i + " = " + number);
 			weekNumbers.set(i,number);
 		}
 	}

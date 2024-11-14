@@ -1,4 +1,4 @@
-package opslog.ui.calendar.control;
+package opslog.ui.controls;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TableView;

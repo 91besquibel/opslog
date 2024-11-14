@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
 import javafx.scene.layout.GridPane;
-import opslog.ui.calendar.control.CalendarCell;
+import opslog.ui.calendar.cell.CalendarCell;
 import opslog.util.Settings;
 
 public class MonthView extends GridPane{
@@ -47,18 +47,18 @@ public class MonthView extends GridPane{
 	}
 
 	public CalendarCell[] getCells(LocalDate startDate, LocalDate stopDate) {
-		System.out.println("CalendarMonth: Retrieving cells during the period of " +
-				startDate + " to " + stopDate
-		);
+		//System.out.println("CalendarMonth: Retrieving cells during the period of " +
+				//startDate + " to " + stopDate
+		//);
 		Period period = Period.between(startDate, stopDate);
 		int numDays = period.getDays();
 		CalendarCell[] cells = new CalendarCell[numDays + 1];
 		for (int i = 0; i < cells.length; i++) {
 			cells[i] = getCell(startDate.plusDays(i));
 			if(cells[i]!= null) {
-				System.out.println("CalendarMonth: Retrieving cell at date : " +
-						cells[i].getDate())
-				;
+				//System.out.println("CalendarMonth: Retrieving cell at date : " +
+						//cells[i].getDate())
+				//;
 			}
 		}
 		return cells;
@@ -107,7 +107,7 @@ public class MonthView extends GridPane{
 		
 		// create the labels for the week numbers
 		for (int i = 0; i < 6; i++) {
-			System.out.println("Creating a new label " + i);
+			//System.out.println("MonthView: Creating a new label " + i);
 			Label label = new Label("0");
 			label.fontProperty().bind(Settings.fontCalendarSmall);
 			label.textFillProperty().bind(Settings.textColor);
