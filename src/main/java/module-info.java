@@ -1,4 +1,5 @@
 module test.opslog {
+    requires javafx.base;
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
@@ -6,8 +7,17 @@ module test.opslog {
     requires org.kordamp.bootstrapfx.core;
     requires java.prefs;
     requires java.logging;
+    requires org.postgresql.jdbc;
+    
+    // Add the required Spring modules.
+    requires spring.boot;
+    requires spring.boot.autoconfigure;
+    requires spring.web;
+    requires spring.webmvc;
 
-    opens opslog.objects to javafx.base;
+    requires com.zaxxer.hikari;
+    
+    opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 
 
     exports opslog; 

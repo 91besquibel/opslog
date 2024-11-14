@@ -11,50 +11,46 @@ import java.io.InputStream;
 
 public class CustomButton extends Button {
 
-	public CustomButton(String image, String imageHover, String toolTip) {
-		Tooltip.install(this, Utilities.createTooltip(toolTip));
-		setFocusTraversable(true);
-		setPadding(Settings.INSETS_ZERO);
-		prefWidthProperty().bind(Settings.buttonSize);
-		prefHeightProperty().bind(Settings.buttonSize);
-		backgroundProperty().bind(Settings.primaryBackground);
-		borderProperty().bind(Settings.primaryBorder);
-		
-		try {
-			setGraphic(loadImage(image));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    public CustomButton(String image, String imageHover, String toolTip) {
+        Tooltip.install(this, Utilities.createTooltip(toolTip));
+        setFocusTraversable(true);
+        setPadding(Settings.INSETS_ZERO);
+        prefWidthProperty().bind(Settings.buttonSize);
+        prefHeightProperty().bind(Settings.buttonSize);
+        backgroundProperty().bind(Settings.primaryBackground);
+        borderProperty().bind(Settings.primaryBorder);
 
-		focusedProperty().addListener((ob, ov, nv) -> {
-			borderProperty().unbind();
-			if (nv) {
-				setGraphic(loadImage(imageHover));
-				setBorder(Settings.focusBorder.get());
-			} else {
-				setGraphic(loadImage(image));
-				borderProperty().bind(Settings.primaryBorder);
-			}
-		});
-		
-		hoverProperty().addListener((obs,ov,nv) -> {
-			borderProperty().unbind();
-			if (nv) {
-				setGraphic(loadImage(imageHover));
-				setBorder(Settings.focusBorder.get());
-			} else {
-				setGraphic(loadImage(image));
-				borderProperty().bind(Settings.primaryBorder);
-			}
-		});
-	}
+        try {
+            setGraphic(loadImage(image));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	private ImageView loadImage(String imagePath) {
-		InputStream imageStream = getClass().getResourceAsStream(imagePath);
-		if (imageStream == null) {
-			throw new NullPointerException("Image not found: " + imagePath);
-		}
-		return new ImageView(new Image(imageStream, Settings.buttonSize.get(), Settings.buttonSize.get(), true, true));
-	}
-	
+        focusedProperty().addListener((ob, ov, nv) -> {
+            borderProperty().unbind();
+            if (nv) {
+                setGraphic(loadImage(imageHover));
+            } else {
+                setGraphic(loadImage(image));
+            }
+        });
+
+        hoverProperty().addListener((obs, ov, nv) -> {
+            borderProperty().unbind();
+            if (nv) {
+                setGraphic(loadImage(imageHover));
+            } else {
+                setGraphic(loadImage(image));
+            }
+        });
+    }
+
+    private ImageView loadImage(String imagePath) {
+        InputStream imageStream = getClass().getResourceAsStream(imagePath);
+        if (imageStream == null) {
+            throw new NullPointerException("Image not found: " + imagePath);
+        }
+        return new ImageView(new Image(imageStream, Settings.buttonSize.get(), Settings.buttonSize.get(), true, true));
+    }
+
 }

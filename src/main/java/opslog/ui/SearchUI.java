@@ -1,193 +1,122 @@
 package opslog.ui;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Menu;
+
+import javafx.scene.control.MenuItem;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import opslog.managers.SearchManager;
-import opslog.objects.Log;
+
+import opslog.object.event.Log;
 import opslog.ui.controls.Buttons;
-import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomHBox;
-import opslog.ui.controls.CustomLabel;
-import opslog.ui.controls.CustomTable;
-import opslog.util.CSV;
-import opslog.util.DateTime;
-import opslog.util.Directory;
-import opslog.util.ResizeListener;
-import opslog.util.Settings;
+import opslog.ui.controls.CalendarTable;
+import opslog.ui.controls.CustomMenuBar;
+import opslog.ui.controls.LogTable;
+import opslog.object.event.Calendar;
+import opslog.util.FileSaver;
+
+public class SearchUI <T>{
+
+    private Stage stage;
+
+    private List<T> list;
+
+    public SearchUI() {
+        this.list = null;
+    }
+
+    public void setList(List<T> list){
+        this.list = list;
+    }
+
+    public void display() {
+        stage = new Stage();
+        VBox root = createRoot();
+        CustomMenuBar menuBar = createMenuBar();
+        WindowPane windowPane = new WindowPane(
+                stage,
+                Buttons.exitWinBtn());
+        windowPane.setMenuBar(menuBar);
+        windowPane.viewAreaProperty().get().getChildren().clear();
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        windowPane.display();
+    }
+
+    private VBox createRoot() {
+        VBox root = new VBox();
+        if(!list.isEmpty()) {
+            if (list.get(0) instanceof Calendar) {
+                ObservableList<Calendar> calList = FXCollections.observableArrayList();
+                calList.setAll(list.stream()
+                        .filter(item -> item instanceof Calendar)
+                        .map(item -> (Calendar) item)
+                        .collect(Collectors.toList())
+                );
+                CalendarTable calendarTable = new CalendarTable();
+                calendarTable.setList(calList);
+                root.getChildren().addAll(calendarTable);
+            }
 
 
-public class SearchUI {
+            if (list.get(0) instanceof Log) {
+                ObservableList<Log> logList = FXCollections.observableArrayList();
+                logList.setAll(list.stream()
+                        .filter(item -> item instanceof Log)
+                        .map(item -> (Log) item)
+                        .collect(Collectors.toList())
+                );
+                LogTable logTable = new LogTable();
+                logTable.setList(logList);
+                root.getChildren().addAll(logTable);
+            }
+        }
+        return root;
+    }
 
-	private static volatile SearchUI instance;
-	private static Stage stage;
-	private static BorderPane root;
-	private static double lastX, lastY;
-	private static double originalWidth;
-	private static double originalHeight;
-	private static final CountDownLatch latch = new CountDownLatch(1);
+    private CustomMenuBar createMenuBar(){
+        CustomMenuBar menuBar = new CustomMenuBar();
 
-	private SearchUI() {}
+        Menu viewMenu = new Menu("File");
 
-	public static SearchUI getInstance() {
-		if (instance == null) {
-			synchronized (SearchUI.class) {
-				if (instance == null) {
-					instance = new SearchUI();
-				}
-			}
-		}
-		return instance;
-	}
+        MenuItem save = new MenuItem("Save All");
+        save.setOnAction(this::saveSelections);
 
-	public void display() {
-		
-		if (stage != null && stage.isShowing()) {
-			stage.toFront();
-			return;
-		}
-		
-		try {
-			
-			initialize();
-			latch.await();
-			
-			stage = new Stage();
-			stage.initModality(Modality.NONE);
-			stage.initStyle(StageStyle.TRANSPARENT);
+        viewMenu.getItems().addAll(save);
+        menuBar.getMenus().addAll(viewMenu);
 
-			Scene scene = new Scene(root);
-			String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
-			scene.getStylesheets().add(cssPath);
-			scene.setFill(Color.TRANSPARENT);
-			
-			ResizeListener resizeListener = new ResizeListener(stage);
-			scene.setOnMouseMoved(resizeListener);
-			scene.setOnMousePressed(resizeListener);
-			scene.setOnMouseDragged(resizeListener);
+        return menuBar;
+    }
 
-			root.setOnMousePressed(event -> {
-				if (event.getY() <= 30) {
-					lastX = event.getScreenX();
-					lastY = event.getScreenY();
-					root.setCursor(Cursor.MOVE);
-				}
-			});
+    private void saveSelections(ActionEvent actionEvent) {
+        List<String[]> data = new ArrayList<>();
+        if(list.get(0) instanceof Log){
+            for(T t: list){
+                Log log = (Log) t;
+                String [] row = log.toArray();
+                data.add(row);
+            }
+            FileSaver.saveFile(stage,data);
+        }
 
-			root.setOnMouseDragged(event -> {
-				if (root.getCursor() == Cursor.MOVE) {
-					double deltaX = event.getScreenX() - lastX;
-					double deltaY = event.getScreenY() - lastY;
-					stage.setX(stage.getX() + deltaX);
-					stage.setY(stage.getY() + deltaY);
-					lastX = event.getScreenX();
-					lastY = event.getScreenY();
-				}
-			});
-
-			root.setOnMouseReleased(event -> { root.setCursor(Cursor.DEFAULT); });
-			stage.setScene(scene);
-			stage.setResizable(false);
-			stage.showAndWait();
-
-		} catch (InterruptedException e) {e.printStackTrace();}
-	}
-
-	private void initialize() {
-		root = new BorderPane();
-		root.backgroundProperty().bind(Settings.rootBackground);
-		root.borderProperty().bind(Settings.borderWindow);
-		root.setTop(createWindowBar());
-		root.setCenter(createTable());
-		root.setBottom(null);
-		root.setLeft(null);
-		root.setRight(null);
-		latch.countDown();
-	}
-
-	private HBox createWindowBar() {
-		
-		Button exit = Buttons.exitWinBtn();
-
-		Button minimize = Buttons.minBtn();
-
-		Button maximize = Buttons.maxBtn(originalWidth, originalHeight);
-
-		Region leftSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-		
-		CustomLabel searchLabel = new CustomLabel("Search Results", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-		
-		Region rightSpacer = new Region();
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-
-		CustomButton search = new CustomButton(Directory.SEARCH_WHITE, Directory.SEARCH_GREY,"Search");
-		search.setOnAction(e -> {
-			EventUI eventUI = EventUI.getInstance();
-			eventUI.display();
-		});
-		search.backgroundProperty().bind(Settings.primaryBackground);
-
-		CustomButton export = new CustomButton(Directory.EXPORT_WHITE, Directory.EXPORT_GREY,"Export data to CSV");
-		export.setOnAction(e -> {
-			Path basePath = Directory.Export_Dir.get();
-			Path fileName = Paths.get(
-				DateTime.convertDate(DateTime.getDate()) +
-				"_" +
-				DateTime.convertTime(DateTime.getTime()) + 
-				".csv"
-			);
-			Path newPath = basePath.resolve(fileName);
-			Directory.build(newPath);
-			List<String[]> data = new ArrayList<>();
-			for(Log log : SearchManager.getList()){
-				data.add(log.toStringArray());
-			}
-			CSV.write(newPath, data,false);
-		});
-		export.backgroundProperty().bind(Settings.primaryBackground);
-
-		CustomHBox windowBar = new CustomHBox();
-		windowBar.getChildren().addAll(
-			exit, minimize, maximize, 
-			leftSpacer, searchLabel, rightSpacer,
-			search, export
-		);
-
-		windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-		windowBar.borderProperty().bind(Settings.borderBar);
-		windowBar.setPadding(Settings.INSETS_WB);
-		
-		return windowBar;
-	}
-
-	private AnchorPane createTable() {
-		TableView<Log> tableView = CustomTable.logTableView();
-		tableView.setItems(SearchManager.getList());
-		AnchorPane tableHolder = new AnchorPane(tableView);
-		AnchorPane.setLeftAnchor(tableView, 0.0);
-		AnchorPane.setRightAnchor(tableView, 0.0);
-		AnchorPane.setTopAnchor(tableView, 0.0);
-		AnchorPane.setBottomAnchor(tableView, 0.0);
-		tableHolder.setPadding(Settings.INSETS);
-		return tableHolder;
-	}
+        if(list.get(0) instanceof Calendar) {
+            for (T t : list) {
+                Calendar calendar = (Calendar) t;
+                String[] row = calendar.toArray();
+                data.add(row);
+            }
+            FileSaver.saveFile(stage, data);
+        }
+    }
 }
+
 

@@ -1,62 +1,65 @@
 package opslog.managers;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.objects.Tag;
-import opslog.objects.Task;
-import opslog.objects.Type;
-import opslog.util.CSV;
+import opslog.object.event.Task;
 
-public class TaskManager{
+import java.time.LocalTime;
+import java.util.List;
 
-	// Definition
-	private static final ObservableList<Task> taskList = FXCollections.observableArrayList();
+public class TaskManager {
 
-	// Instance 
-	private static TaskManager instance;
+    private static final ObservableList<Task> taskList = FXCollections.observableArrayList();
+    private static final String TASK_COL = "id, title, start_time, stop_time, typeID, tagIDs, initials, descrption";
+    
+    public static void operation(String operation, List<String[]> rows, String ID) {
+        switch (operation) {
+            case "INSERT":
+                for (String[] row : rows) {
+                    Task item = newItem(row);
+                    if(getItem(item.getID()) == null){
+                        ListOperation.insert(item,getList());
+                    }
+                }
+                break;
+            case "DELETE":
+                ListOperation.delete(getItem(ID),getList());
+                break;
+            case "UPDATE":
+                for (String[] row : rows) {
+                    Task item = newItem(row);
+                    ListOperation.update(getItem(item.getID()),getList());
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    public static Task newItem(String [] row){
+        String [] intStr = row[1].split(":");
+        int [] offset = {Integer.parseInt(intStr[0]), Integer.parseInt(intStr[1])};
+        Task task = new Task();
+        task.setID(row[0]);
+        task.setOffset(offset);
+        task.setType(TypeManager.getItem(row[2]));
+        task.setTags(TagManager.getItems(row[3]));
+        task.setInitials(row[4]);
+        task.setDescription(row[5]);
+        return task;
+    }
 
-	// Constructor 
-	private TaskManager(){}
+    public static Task getItem(String ID) {
+        for (Task task : taskList) {
+            if (task.getID().equals(ID)) {
+                return task;
+            }
+        }
+        return null;
+    }
 
-	// Singleton 
-	public static TaskManager getInstance(){
-		if(instance == null){
-			instance = new TaskManager();
-		}
-		return instance;
-	}
-
-	public static Task valueOf(String title) {
-		return taskList.stream()
-			.filter(task -> {
-				String taskTitle = task.getTitle();
-				return taskTitle != null && taskTitle.equals(title);
-			})
-			.findFirst()
-			.orElse(null);
-	}
-
-	// Get Data
-	public static List<Task> getCSVData(Path path){
-		List<String[]> csvList = CSV.read(path);
-		List<Task> csvTaskList = new ArrayList<>();
-
-		for (String[] row : csvList) {
-			String title = row[0];
-			Type type = TypeManager.valueOf(row[1]);
-			Tag tag = TagManager.valueOf(row[2]);
-			String description = row[3];
-			Task task = new Task(title,type,tag,description);
-			csvTaskList.add(task);
-		}
-		return csvTaskList;
-
-	}
-
-	// Accessor
-	public static ObservableList<Task> getList(){return taskList;}
+    // Accessor
+    public static ObservableList<Task> getList() {
+        return taskList;
+    }
 }

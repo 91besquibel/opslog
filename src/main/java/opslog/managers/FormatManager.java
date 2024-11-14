@@ -1,38 +1,59 @@
 package opslog.managers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.objects.Format;
-import opslog.util.CSV;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import opslog.object.Format;
+
 import java.util.List;
 
 public class FormatManager {
 
-	private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
-	private static FormatManager instance;
+    private static final ObservableList<Format> formatList = FXCollections.observableArrayList();
+    public static final String FORMAT_COL = "id, title, format"; 
 
-	private FormatManager() {}
+    public static void operation(String operation, List<String[]> rows, String ID) {
+        switch (operation) {
+            case "INSERT":
+                for (String[] row : rows) {
+                    Format item = newItem(row);
+                    if(getItem(item.getID()) == null){
+                        ListOperation.insert(item,getList());
+                    }
+                }
+                break;
+            case "DELETE":
+                ListOperation.delete(getItem(ID),getList());
+                break;
+            case "UPDATE":
+                for (String[] row : rows) {
+                    Format item = newItem(row);
+                    ListOperation.update(getItem(item.getID()),getList());
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-	public static FormatManager getInstance() {
-		if (instance == null) {instance = new FormatManager();}
-		return instance;
-	}
+    public static Format newItem(String [] row){
+        Format format = new Format();
+        format.setID(row[0]);
+        format.setTitle(row[1]);
+        format.setFormat(row[2]);
+        return format;
+    }
 
-	public static List<Format> getCSVData(Path path) {
-		List<String[]> csvList = CSV.read(path);
-		List<Format> csvFormatList = new ArrayList<>();
+    public static Format getItem(String ID) {
+        for (Format format : formatList) {
+            if (format.getID().equals(ID)) {
+                return format;
+            }
+        }
+        return null;
+    }
 
-		for (String[] row : csvList) {
-			String title = row[0];
-			String description = row[1];
-			Format format = new Format(title,description);
-			csvFormatList.add(format);
-		}
-
-		return csvFormatList;
-	}
-	
-	public static ObservableList<Format> getList() {return formatList;}
+    public static ObservableList<Format> getList() {
+        return formatList;
+    }
 }

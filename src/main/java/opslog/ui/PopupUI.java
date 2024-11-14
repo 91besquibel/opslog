@@ -1,253 +1,145 @@
 package opslog.ui;
 
-import java.io.IOException;
-import java.util.Objects;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.stage.Modality;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import opslog.managers.LogManager;
-import opslog.objects.Log;
-import opslog.ui.controls.Buttons;
-import opslog.ui.controls.CustomHBox;
-import opslog.ui.controls.CustomLabel;
-import opslog.ui.controls.CustomTextArea;
-import opslog.ui.controls.CustomVBox;
-import opslog.util.CSV;
+import opslog.object.event.Log;
+import opslog.ui.controls.*;
 import opslog.util.Settings;
-import opslog.util.Update;
 
-public class PopupUI{	
-	
-	private double lastX, lastY;
+public class PopupUI {
 
-	public void message(String title, String message) {
-		BorderPane root = new BorderPane();
-		
-		CustomLabel label = new CustomLabel(message,400,200);
-		label.wrapTextProperty().set(true);
+    private CustomVBox root;
 
-		Button btn = ackBtn("Edit");
-		btn.setOnAction(e->{
-			Stage stage = (Stage) btn.getScene().getWindow();
-			stage.close();
-		});
-		
-		CustomVBox content = new CustomVBox();
-		content.getChildren().addAll(label,btn);
-		
-		AnchorPane viewArea = new AnchorPane(content);
-		AnchorPane.setTopAnchor(content, 0.0);
-		AnchorPane.setRightAnchor(content, 0.0);
-		AnchorPane.setLeftAnchor(content, 0.0);
-		AnchorPane.setBottomAnchor(content, 0.0);
-		viewArea.setPadding(Settings.INSETS);
+    private static Button ackBtn(String title) {
+        Button btn = new Button(title);
+        btn.setPrefSize(50, 30);
+        btn.setPadding(Settings.INSETS);
+        btn.setBackground(Settings.secondaryBackground.get());
+        btn.setTextFill(Settings.textColor.get());
+        btn.setBorder(Settings.secondaryBorder.get());
 
-		root.backgroundProperty().bind(Settings.rootBackground);
-		root.borderProperty().bind(Settings.borderWindow);
-		root.setTop(buildWindowBar());
-		root.setCenter(viewArea);
-		root.setBottom(null);
-		root.setLeft(null);
-		root.setRight(null);
-		display(root);
-	}
+        btn.focusedProperty().addListener(e -> {
+            if (btn.isFocused()) {
+                btn.setBorder(Settings.focusBorder.get());
+                btn.setPrefSize(50, 30);
+                btn.setPadding(Settings.INSETS);
+            } else {
+                btn.setBorder(Settings.secondaryBorder.get());
+                btn.setPrefSize(50, 30);
+                btn.setPadding(Settings.INSETS);
+            }
+        });
 
-	public void append(Log oldLog){
-		BorderPane root = new BorderPane();
+        btn.hoverProperty().addListener(e -> {
+            if (btn.isFocused()) {
+                btn.setBorder(Settings.focusBorder.get());
+                btn.setPrefSize(50, 30);
+                btn.setPadding(Settings.INSETS);
+            } else {
+                btn.setBorder(Settings.secondaryBorder.get());
+                btn.setPrefSize(50, 30);
+                btn.setPadding(Settings.INSETS);
+            }
+        });
 
-		CustomLabel label = new CustomLabel(oldLog.getDescription(),200,200);
-		label.wrapTextProperty().set(true);
-		
-		CustomTextArea textArea = new CustomTextArea(200,200);
-		
-		CustomHBox hbox = new CustomHBox();
-		hbox.getChildren().addAll(label,textArea);
+        return btn;
+    }
 
-		Button btn = ackBtn("Append");
-		btn.setOnAction(e->{
-			if (textArea.getText() != null && !textArea.getText().trim().isEmpty()) {
-				String newDescription = textArea.getText() + "(" + oldLog.getDescription() + ")";
-				
-				Log newLog = new Log(
-					oldLog.getDate(),
-					oldLog.getTime(),
-					oldLog.getType(),
-					oldLog.getTags(),
-					oldLog.getInitials(),
-					newDescription
-				);
+    public void message(String title, String message) {
+        CustomLabel label = new CustomLabel(message, 400, 200);
+        label.wrapTextProperty().set(true);
 
-                CSV.append(oldLog, newLog);
-                Update.edit(LogManager.getLogList(), oldLog, newLog);
+        Button btn = ackBtn("Edit");
+        btn.setOnAction(e -> {
+            Stage stage = (Stage) btn.getScene().getWindow();
+            stage.close();
+        });
+
+        root = new CustomVBox();
+        root.getChildren().addAll(label, btn);
+        display();
+    }
+
+    public void append(Log oldLog) {
+
+        CustomLabel label = new CustomLabel(oldLog.getDescription(), 200, 200);
+        label.wrapTextProperty().set(true);
+
+        CustomTextArea textArea = new CustomTextArea(200, 200);
+
+        CustomHBox hbox = new CustomHBox();
+        hbox.getChildren().addAll(label, textArea);
+
+        Button btn = ackBtn("Append");
+        btn.setOnAction(e -> {
+            if (textArea.getText() != null && !textArea.getText().trim().isEmpty()) {
+                String newDescription = textArea.getText() + "(" + oldLog.getDescription() + ")";
+
+                Log newLog = new Log(
+                        oldLog.getID(),
+                        oldLog.getDate(),
+                        oldLog.getTime(),
+                        oldLog.getType(),
+                        oldLog.getTags(),
+                        oldLog.getInitials(),
+                        newDescription
+                );
+
+                // CSV.append(oldLog, newLog);
+                //Update.edit(LogManager.getList(), oldLog, newLog);
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.close();
             }
-		});
-		
-		CustomVBox content = new CustomVBox();
-		content.getChildren().addAll(hbox,btn); 
+        });
 
-		AnchorPane viewArea = new AnchorPane(content);
-		AnchorPane.setTopAnchor(content, 0.0);
-		AnchorPane.setRightAnchor(content, 0.0);
-		AnchorPane.setLeftAnchor(content, 0.0);
-		AnchorPane.setBottomAnchor(content, 0.0);
-		viewArea.setPadding(Settings.INSETS);
-		
-		root.backgroundProperty().bind(Settings.rootBackground);
-		root.borderProperty().bind(Settings.borderWindow);
-		root.setTop(buildWindowBar());
-		root.setCenter(viewArea);
-		root.setBottom(null);
-		root.setLeft(null);
-		root.setRight(null);
-		display(root);
-	}
+        root = new CustomVBox();
+        root.getChildren().addAll(hbox, btn);
 
-	public Boolean ackCheck(String title, String message){
-		BooleanProperty ack = new SimpleBooleanProperty(false);
-		BorderPane root = new BorderPane();
+        display();
+    }
 
-		CustomLabel label = new CustomLabel(message,400,200);
-		label.wrapTextProperty().set(true);
+    public Boolean ackCheck(String title, String message) {
+        BooleanProperty ack = new SimpleBooleanProperty(false);
 
-		Button yesBtn = ackBtn("Yes");
-		yesBtn.setOnAction(e->{
-			ack.set(true);
-			Stage stage = (Stage) yesBtn.getScene().getWindow();
-			stage.close();
-		});
+        CustomLabel label = new CustomLabel(message, 400, 200);
+        label.wrapTextProperty().set(true);
 
-		Button noBtn = ackBtn("No");
-		noBtn.setOnAction(e->{
-			ack.set(false);
-			Stage stage = (Stage) noBtn.getScene().getWindow();
-			stage.close();
-		});
-		
-		CustomHBox btns = new CustomHBox();
-		btns.getChildren().addAll(yesBtn,noBtn);
-		CustomVBox content = new CustomVBox();
-		content.getChildren().addAll(label,btns);
+        Button yesBtn = ackBtn("Yes");
+        yesBtn.setOnAction(e -> {
+            ack.set(true);
+            Stage stage = (Stage) yesBtn.getScene().getWindow();
+            stage.close();
+        });
 
-		AnchorPane viewArea = new AnchorPane(content);
-		AnchorPane.setTopAnchor(content, 0.0);
-		AnchorPane.setRightAnchor(content, 0.0);
-		AnchorPane.setLeftAnchor(content, 0.0);
-		AnchorPane.setBottomAnchor(content, 0.0);
-		viewArea.setPadding(Settings.INSETS);
+        Button noBtn = ackBtn("No");
+        noBtn.setOnAction(e -> {
+            ack.set(false);
+            Stage stage = (Stage) noBtn.getScene().getWindow();
+            stage.close();
+        });
 
-		root.backgroundProperty().bind(Settings.rootBackground);
-		root.borderProperty().bind(Settings.borderWindow);
-		root.setTop(buildWindowBar());
-		root.setCenter(viewArea);
-		root.setBottom(null);
-		root.setLeft(null);
-		root.setRight(null);
-		display(root);
-		
-		return ack.get();
-	}
+        CustomHBox btns = new CustomHBox();
+        btns.getChildren().addAll(yesBtn, noBtn);
+        root = new CustomVBox();
+        root.getChildren().addAll(label, btns);
 
-	private void display(BorderPane root){
-		Stage popupWindow = new Stage();
-		popupWindow.initModality(Modality.APPLICATION_MODAL);
-		popupWindow.initStyle(StageStyle.TRANSPARENT);
+        display();
 
-		root.setOnMousePressed(event -> {
-			if (event.getY() <= 30) {
-				lastX = event.getScreenX();
-				lastY = event.getScreenY();
-				root.setCursor(Cursor.MOVE);
-			}
-		});
+        return ack.get();
+    }
 
-		root.setOnMouseDragged(event -> {
-			if (root.getCursor() == Cursor.MOVE) {
-				double deltaX = event.getScreenX() - lastX;
-				double deltaY = event.getScreenY() - lastY;
-				popupWindow.setX(popupWindow.getX() + deltaX);
-				popupWindow.setY(popupWindow.getY() + deltaY);
-				lastX = event.getScreenX();
-				lastY = event.getScreenY();
-			}
-		});
-
-		root.setOnMouseReleased(event -> {
-			root.setCursor(Cursor.DEFAULT);
-		});
-		
-		Scene scene = new Scene(root, 550, 300);
-		String cssPath = Objects.requireNonNull(PopupUI.class.getResource("/style.css")).toExternalForm();
-		scene.getStylesheets().add(cssPath);
-
-		popupWindow.setScene(scene);
-		popupWindow.setResizable(false);
-		popupWindow.showAndWait();
-	}
-
-	private static HBox buildWindowBar(){
-		Button exit = Buttons.exitWinBtn();
-
-		Region leftSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
-		CustomLabel statusLabel = new CustomLabel("Edit Log", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
-		Region rightSpacer = new Region();
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-
-		CustomHBox windowBar = new CustomHBox();
-		windowBar.getChildren().addAll(exit,leftSpacer,statusLabel,rightSpacer);
-		windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-		windowBar.borderProperty().bind(Settings.borderBar);
-		windowBar.setPadding(Settings.INSETS_WB);
-		return windowBar;
-	}
-
-	private static Button ackBtn(String title){
-		Button btn = new Button(title);
-		btn.setPrefSize(50, 30);
-		btn.setPadding(Settings.INSETS);
-		btn.setBackground(Settings.secondaryBackground.get());
-		btn.setTextFill(Settings.textColor.get());
-		btn.setBorder(Settings.secondaryBorder.get());
-
-		btn.focusedProperty().addListener(e -> {
-			if(btn.isFocused()){
-				btn.setBorder(Settings.focusBorder.get());
-				btn.setPrefSize(50, 30);
-				btn.setPadding(Settings.INSETS);
-			}else{
-				btn.setBorder(Settings.secondaryBorder.get());
-				btn.setPrefSize(50, 30);
-				btn.setPadding(Settings.INSETS);
-			}
-		});
-
-		btn.hoverProperty().addListener(e -> {
-			if(btn.isFocused()){
-				btn.setBorder(Settings.focusBorder.get());
-				btn.setPrefSize(50, 30);
-				btn.setPadding(Settings.INSETS);
-			}else{
-				btn.setBorder(Settings.secondaryBorder.get());
-				btn.setPrefSize(50, 30);
-				btn.setPadding(Settings.INSETS);
-			}
-		});
-
-		return btn;
-	}
+    public void display() {
+        Stage stage = new Stage();
+        WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
+        windowPane.viewAreaProperty().get().getChildren().clear();
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        windowPane.display();
+    }
 }

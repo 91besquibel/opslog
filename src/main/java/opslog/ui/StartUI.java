@@ -1,222 +1,188 @@
 package opslog.ui;
 
-import opslog.managers.*;
-import opslog.ui.controls.*;
-import opslog.ui.controls.CustomComboBox;
-import opslog.util.*;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.prefs.Preferences;
-import javafx.scene.Cursor;
-import javafx.scene.Scene;
+import java.sql.SQLException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-
+import opslog.ui.controls.CustomComboBox;
+import opslog.ui.controls.CustomTextField;
+import opslog.ui.controls.Buttons;
+import opslog.util.Settings;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.HikariConfigSetup;
+import opslog.sql.hikari.HikariConnectionProvider;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+import com.zaxxer.hikari.HikariConfig;
 
 public class StartUI {
 
-	private static Stage popupWindow;
-	private static BorderPane root;
-	private static double lastX, lastY;
-	private static final CountDownLatch latch = new CountDownLatch(1);
+    private static Stage stage;
+    private static volatile StartUI instance;
 
-	private static volatile StartUI instance;
+    private static final ObservableList<String> dataBaseTypes =
+            FXCollections.observableArrayList("postgresql", "mysql", "sqlserver");
 
-	private StartUI() {}
+    private static CustomComboBox<String> serverType;
+    private static CustomTextField serverAddress;
+    private static CustomTextField serverPort;
+    private static CustomTextField serverDBName;
+    private static CustomTextField serverUsername;
+    private static CustomTextField serverPassword;
 
-	public static StartUI getInstance() {
-		if (instance == null) {
-			synchronized (StartUI.class) {
-				if (instance == null) {
-					instance = new StartUI();
-				}
-			}
-		}
-		return instance;
-	}
+    private StartUI() {}
 
-	public void display(){
-
-		if (popupWindow != null && popupWindow.isShowing()) {
-			popupWindow.toFront();
-			return;
-		}
-
-		try{
-			popupWindow = new Stage();
-			popupWindow.initModality(Modality.APPLICATION_MODAL);
-			initialize();
-			latch.await();
-
-			Scene scene = new Scene(root);
-
-			String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
-			scene.getStylesheets().add(cssPath);
-			popupWindow.initStyle(StageStyle.TRANSPARENT);
-
-			root.setOnMousePressed(event -> {
-				if (event.getY() <= 30) {
-					lastX = event.getScreenX();
-					lastY = event.getScreenY();
-					root.setCursor(Cursor.MOVE);
-				}
-			});
-
-			root.setOnMouseDragged(event -> {
-				if (root.getCursor() == Cursor.MOVE) {
-					double deltaX = event.getScreenX() - lastX;
-					double deltaY = event.getScreenY() - lastY;
-					popupWindow.setX(popupWindow.getX() + deltaX);
-					popupWindow.setY(popupWindow.getY() + deltaY);
-					lastX = event.getScreenX();
-					lastY = event.getScreenY();
-				}
-			});
-
-			root.setOnMouseReleased(event -> {root.setCursor(Cursor.DEFAULT);});
-			popupWindow.setScene(scene);
-			popupWindow.setResizable(false);
-			popupWindow.showAndWait();
-
-		}catch(InterruptedException e){e.printStackTrace();}
-	}
-
-	private synchronized void initialize(){
-		Directory.loadPrefs();
-		ProfileManager.loadPrefs();
-		
-		HBox windowBar = buildWindowCard();
-		windowBar.backgroundProperty().bind(Settings.backgroundWindow);
-		windowBar.setPadding(Settings.INSETS_WB);
-		windowBar.borderProperty().bind(Settings.borderBar);
-
-		AnchorPane viewArea = buildBody();
-		viewArea.backgroundProperty().bind(Settings.rootBackground);
-		viewArea.setPadding(Settings.INSETS);
-
-		root = new BorderPane();
-		root.backgroundProperty().bind(Settings.rootBackground);
-		root.borderProperty().bind(Settings.borderWindow);
-		root.setTop(windowBar);
-		root.setCenter(viewArea);
-		root.setBottom(null);
-		root.setLeft(null);
-		root.setRight(null);
-		latch.countDown();
-	}
-
-	private static HBox buildWindowCard(){
-		Button exit = Buttons.exitAppBtn();
-
-		Region leftSpacer = new Region();
-		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-
-		CustomLabel statusLabel = new CustomLabel("File Manager", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-
-		Region rightSpacer = new Region();
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-		
-		CustomHBox windowBar = new CustomHBox();
-		windowBar.getChildren().addAll(exit,leftSpacer,statusLabel,rightSpacer);
-
-		return windowBar;
-	}
-
-	private static AnchorPane buildBody(){
-
-		CustomComboBox<String> pathSelector = new CustomComboBox<>("Select Path", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-		pathSelector.setItems(Directory.mPathList);
-		pathSelector.requestFocus();
-
-		CustomTextField pathField = new CustomTextField("Create New", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
-
-		Button loadAppData = new Button("Load");
-		loadAppData.setPrefSize(50, 30);
-		loadAppData.setPadding(Settings.INSETS);
-		loadAppData.setBackground(Settings.secondaryBackground.get());
-		loadAppData.setTextFill(Settings.textColor.get());
-		loadAppData.setBorder(Settings.secondaryBorder.get());
-		
-		loadAppData.setOnAction(actionEvent -> {
-			loadAppData.setBackground(Settings.primaryBackground.get());
-			loadAppData.setPrefSize(50, 30);
-			loadAppData.setPadding(Settings.INSETS);
-			handleLoadAppData(pathField.getText(),pathSelector.getValue());
-		});
-		
-		loadAppData.focusedProperty().addListener(e -> {
-			if(loadAppData.isFocused()){
-				loadAppData.setBorder(Settings.focusBorder.get());
-				loadAppData.setPrefSize(50, 30);
-				loadAppData.setPadding(Settings.INSETS);
-			}else{
-				loadAppData.setBorder(Settings.secondaryBorder.get());
-				loadAppData.setPrefSize(50, 30);
-				loadAppData.setPadding(Settings.INSETS);
-			}
-		});
-		
-		loadAppData.hoverProperty().addListener(e -> {
-			if(loadAppData.isFocused()){
-				loadAppData.setBorder(Settings.focusBorder.get());
-				loadAppData.setPrefSize(50, 30);
-				loadAppData.setPadding(Settings.INSETS);
-			}else{
-				loadAppData.setBorder(Settings.secondaryBorder.get());
-				loadAppData.setPrefSize(50, 30);
-				loadAppData.setPadding(Settings.INSETS);
-			}
-		});
-
-
-		VBox body = new VBox(pathSelector, pathField, loadAppData);
-		body.setSpacing(Settings.SPACING);
-		body.setPadding(Settings.INSETS);
-		body.backgroundProperty().bind(Settings.primaryBackground);
-		AnchorPane viewArea = new AnchorPane(body);
-		AnchorPane.setTopAnchor(body, 0.0);
-		AnchorPane.setLeftAnchor(body, 0.0);
-		AnchorPane.setRightAnchor(body, 0.0);
-		AnchorPane.setBottomAnchor(body, 0.0);
-		return viewArea;
-	}
-
-	private static void handleLoadAppData(String userInput, String selectorInput) {
-		Path userPath = userInput != null ? Paths.get(userInput) : null;
-		Path selectedPath = selectorInput != null ? Paths.get(selectorInput) : null;
-		Preferences prefs = Directory.getPref();
-		if ((userInput == null || userInput.isEmpty()) && (selectorInput != null && !selectorInput.isEmpty())) {
-			if (Files.notExists(selectedPath)) {
-				showPopup("Directory could not be found");
-			} else {
-				Directory.initialize(selectorInput);
-				popupWindow.close();
-			}
-		} else if ((selectorInput == null || selectorInput.isEmpty()) && (userInput != null && !userInput.isEmpty())) {
-			if (Files.notExists(userPath)) {
-				showPopup("Directory could not be found");
-			} else {
-				
-				Directory.initialize(userInput);
-                prefs.put(Directory.newKey(), userInput);
-                Directory.forceStore();
-                popupWindow.close();
+    public static StartUI getInstance() {
+        if (instance == null) {
+            synchronized (StartUI.class) {
+                if (instance == null) {
+                    instance = new StartUI();
+                }
             }
-		} else {
-			showPopup("Please select or enter a new file path");
-		}
-	}
+        }
+        return instance;
+    }
 
-	private static void showPopup(String message ){
-		PopupUI popup = new PopupUI();
-		popup.message("Invalid Input", message);
+    public void display(Runnable onComplete) {
+        stage = new Stage();
+        VBox sqlBody = buildSQLBody(onComplete); 
+        HBox root = new HBox(sqlBody);
+        root.setAlignment(Pos.CENTER);
+        WindowPane windowPane = new WindowPane(stage, Buttons.exitAppBtn());
+        windowPane.getSearchBar().setVisible(false);
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
+        windowPane.display();
+    }
 
-	}
+    private VBox buildSQLBody(Runnable onComplete) {
+        serverType = new CustomComboBox<>(
+                "Select: Database", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+        serverType.setItems(dataBaseTypes);
+
+        serverAddress = new CustomTextField(
+                "Enter: Host Address", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+        serverPort = new CustomTextField(
+                "Enter: Port", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+        serverDBName = new CustomTextField(
+                "Enter: Database Name", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+        serverUsername = new CustomTextField(
+                "Enter: User Name", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+        serverPassword = new CustomTextField(
+                "Enter: Password", Settings.WIDTH_XLARGE, Settings.SINGLE_LINE_HEIGHT);
+
+        // Preset for testing (you can remove this later)
+        serverType.setValue("postgresql");
+        serverAddress.setText("//ep-icy-frog-a5yrylqa.us-east-2.aws.neon.tech");
+        serverPort.setText("5432");
+        serverDBName.setText("neondb");
+        serverUsername.setText("neondb_owner");
+        serverPassword.setText("0cyrEuxY3spH");
+
+        Button load = createLoadButton(onComplete);
+
+        VBox root = new VBox(serverType, serverAddress, serverPort, serverDBName,
+                serverUsername, serverPassword, load);
+        root.setSpacing(Settings.SPACING);
+        root.setPadding(Settings.INSETS);
+        root.backgroundProperty().bind(Settings.primaryBackground);
+        return root;
+    }
+
+    private Button createLoadButton(Runnable onComplete){
+        Button load = new Button("Load");
+        load.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
+        load.setBackground(Settings.secondaryBackground.get());
+        load.setFont(Settings.fontProperty.get());
+        load.setTextFill(Settings.textColor.get());
+
+        load.hoverProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+                load.setBackground(Settings.primaryBackground.get());
+                load.setBorder(Settings.focusBorder.get());
+            }else{
+                load.setBackground(Settings.secondaryBackground.get());
+                load.setBorder(Settings.transparentBorder.get());
+            }
+            
+        });
+        load.pressedProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+               load.setBackground(Settings.secondaryBackground.get());
+            } else {
+               load.setBackground(Settings.primaryBackground.get());
+            }
+        });
+        
+        load.setOnAction(actionEvent -> {
+            if (!emptyFields()) {
+                try {
+                    handleConfigConnection(onComplete);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        return load;
+    }
+
+    private boolean emptyFields() {
+        String[] values = {
+                serverType.getValue(), serverAddress.getText(), serverPort.getText(),
+                serverDBName.getText(), serverUsername.getText(), serverPassword.getText()
+        };
+
+        for (String value : values) {
+            if (value == null || value.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleConfigConnection(Runnable onComplete) throws SQLException {
+        System.out.println("StartUI: Creating connection URL");
+
+        // Collect the input values
+        String type = serverType.getValue();
+        String address = serverAddress.getText();
+        String port = serverPort.getText();
+        String name = serverDBName.getText();
+        String user = serverUsername.getText();
+        String password = serverPassword.getText();
+
+        // Setup HikariCP connection pool
+        HikariConfig config = HikariConfigSetup.configure(type, address, port, name, user, password);
+        ConnectionManager.setInstance(config);
+        HikariConnectionProvider connectionProvider = ConnectionManager.getInstance();
+        DatabaseExecutor executor = new DatabaseExecutor(connectionProvider);
+
+        try {
+            boolean status = executor.executeTest();
+            if (status) {
+                System.out.println("Database connected successfully.");
+                stage.close();  // Close the StartUI window
+
+                // Execute the callback to notify that connection was successful
+                onComplete.run();
+            }
+        } catch (Exception e) {
+            showPopup("Connection Provider",
+                    "Could not connect to the database! Verify database information.");
+            e.printStackTrace();
+        }
+    }
+
+    private void showPopup(String title, String message) {
+        PopupUI popup = new PopupUI();
+        popup.message(title, message);
+    }
 }

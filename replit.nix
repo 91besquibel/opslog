@@ -1,5 +1,7 @@
 { pkgs }: {
   deps = [
+    pkgs.spring-boot
+    pkgs.postgresql
     pkgs.mssql_jdbc
     pkgs.systemd
     pkgs.maven
