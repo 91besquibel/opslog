@@ -80,8 +80,8 @@ public class DayViewControl {
             System.out.println("\nDayViewControl: New date detected: " + nv);
             if (nv != null && nv!= ov) {
                 // find a way to not rebuild the grid every time
-                // it would be better to remove the lablels individually
-                // but to not remove the panes
+                // it would be better to remove the event panes individually
+                // but to not remove the background panes
                 dayView.getColumnConstraints().clear();
                 dayView.getRowConstraints().clear();
                 dayView.getChildren().clear();
@@ -151,7 +151,6 @@ public class DayViewControl {
             // Get the X and Y coordinates of the label's maximum (rightmost) side
             double labelX = label.localToScreen(label.getBoundsInLocal()).getMaxX();
             double mouseY = e.getScreenY();
-
             popup.show(
                     label,
                     labelX + 10,
@@ -191,7 +190,9 @@ public class DayViewControl {
         Label label = new Label();
         String title = checklist.getTitle();
         Task firstTask = checklist.getTaskList().get(0);
-        LocalTime [] firstTaskTimes = firstTask.calculateTime();
+        Integer [] offset = checklist.getOffsets().get(0);
+        Integer [] duration = checklist.getDurations().get(0);
+        LocalTime [] firstTaskTimes = calculateTime(offset,duration);
         String labelStartTime = String.valueOf(firstTaskTimes[0]);
         label.setText(labelStartTime + " " + title);
         Tag tag = firstTask.getTags().get(0);
@@ -253,7 +254,9 @@ public class DayViewControl {
         }else{
             int finalTaskIndex = checklist.getTaskList().size() - 1;
             Task finalTask = checklist.getTaskList().get(finalTaskIndex);
-            LocalTime [] finalTaskTimes = finalTask.calculateTime();
+            Integer [] offsetFinal = checklist.getOffsets().get(finalTaskIndex);
+            Integer [] durationFinal = checklist.getDurations().get(finalTaskIndex);
+            LocalTime [] finalTaskTimes = calculateTime(offsetFinal,durationFinal);
             stopTime = finalTaskTimes[1];
         }
 
@@ -272,9 +275,10 @@ public class DayViewControl {
     private void processChecklistTasks(Checklist checklist){
         LocalDate viewedDate = calendarDay.dateProperty().get();
         // calculate the display window of the item
-        for(Task task : checklist.getTaskList()){
-            int [] offset = {task.getOffset()[0].get(), task.getOffset()[1].get()};
-            int [] duration = {task.getDuration()[0].get(), task.getDuration()[1].get()};
+        for(int i = 0; i< checklist.getTaskList().size(); i++){
+            Task task = checklist.getTaskList().get(i);
+            Integer [] offset = checklist.getOffsets().get(i);
+            Integer [] duration = checklist.getDurations().get(i);
             int taskStart = offset[0];
             int taskStop = taskStart + duration[0];
 
@@ -285,25 +289,26 @@ public class DayViewControl {
                 // if the task is not before the window and the task does not start after the window
                 if (!(taskStart < windowStart && taskStop < windowStart) && !(taskStart > windowStop)) {
                     // then it is in the window and needs to be displayed
-                    processTask(task, checklist);
+                    processTask(task, checklist, offset, duration);
                     Label taskLabel = new Label();
                     taskLabel.setAlignment(Pos.TOP_LEFT);
                     LocalTime baseline = LocalTime.of(0,0);
-                    LocalTime baselineH = baseline.plusHours(task.getOffset()[0].get());
-                    LocalTime startTime = baselineH.plusMinutes(task.getOffset()[1].get());
+                    LocalTime baselineH = baseline.plusHours(offset[0]);
+                    LocalTime startTime = baselineH.plusMinutes(offset[0]);
 
                     int timeRemainingInDay = 24 - taskStart;
                     LocalTime stopTime;
-                    if(task.getDuration()[0].get() > timeRemainingInDay){
+                    if(duration[0] > timeRemainingInDay){
                         // if the task exceeds the remaining time in the day max its display time for the day
                         stopTime = LocalTime.of(23,59);
                     } else {
-                        stopTime = LocalTime.of(task.getDuration()[0].get(), task.getDuration()[1].get());
+                        stopTime = LocalTime.of(duration[0], duration[1]);
                     }
 
                     // display task details if selected
                     Popup popup = new Popup();
-                    VBox vbox = Util.createTaskPopup(task, checklist);
+                    LocalTime[] times = calculateTime(offset,duration);
+                    VBox vbox = Util.createTaskPopup(task, checklist, times);
                     vbox.prefWidthProperty().bind(popup.widthProperty());
                     popup.getContent().add(vbox);
                     popup.setHideOnEscape(true);
@@ -329,15 +334,14 @@ public class DayViewControl {
                 int timeToWindowClose = timeToWindowOpen + 24;
                 // send to processing if in window
                 if (!(taskStart < timeToWindowOpen && taskStop < timeToWindowOpen) && !(taskStart > timeToWindowClose)) {
-                    processTask(task, checklist);
+                    processTask(task, checklist, offset, duration);
                 }
             }
         }
     }
 
-    private void processTask(Task task, Checklist checklist){
-
-        LocalTime[] times = task.calculateTime();
+    private void processTask(Task task, Checklist checklist, Integer[] offset, Integer[]duration){
+        LocalTime[] times = calculateTime(offset,duration);
         Label label = new Label(times[0] + "\n" + task.getTitle());
         label.setBackground(
                 new Background(
@@ -366,7 +370,7 @@ public class DayViewControl {
         // multi seleciton
 
         Popup popup = new Popup();
-        VBox vbox = Util.createTaskPopup(task,checklist);
+        VBox vbox = Util.createTaskPopup(task,checklist,times);
         vbox.prefWidthProperty().bind(popup.widthProperty());
         popup.getContent().add(vbox);
         popup.setHideOnEscape(true);
@@ -388,6 +392,22 @@ public class DayViewControl {
     private void update(LocalDate date){
         List<Event> events = handleQuery(date);
         calendarDay.eventsProperty().addAll(events);
+    }
+
+    public LocalTime[] calculateTime(Integer [] offset, Integer[] duration){
+        // calculates the time relative to the offset of
+        LocalTime [] times = new LocalTime[2];
+        LocalTime quadZ = LocalTime.of(0,0);
+        int hours = offset[0];
+        int minutes = offset[1];
+        LocalTime quadZplusH = quadZ.plusHours(hours);
+        LocalTime startTime = quadZplusH.plusMinutes(minutes);
+        times[0] = startTime;
+
+        // calculate the stoptime
+        LocalTime stopTime = startTime.plusHours(duration[0]).plusMinutes(duration[1]);
+        times[1] = stopTime;
+        return times;
     }
 
     private List<Event> handleQuery(LocalDate date){

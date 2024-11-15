@@ -3,16 +3,13 @@ package opslog.ui.checklist;
 import javafx.application.Platform;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import opslog.ui.PopupUI;
 import opslog.util.Settings;
 
 public class ChecklistUI {
 
     public static StackPane root;
-    public static VBox editorRoot;
+    public static SplitPane editorRoot;
     public static SplitPane statusRoot;
-
     private static volatile ChecklistUI instance;
 
     private ChecklistUI() {
@@ -27,12 +24,6 @@ public class ChecklistUI {
             }
         }
         return instance;
-    }
-
-    // You did a bad
-    public static void showPopup(String title, String message) {
-        PopupUI popup = new PopupUI();
-        popup.message(title, message);
     }
 
     // create a checker to make sure the editor and status window are built before adding them to the root

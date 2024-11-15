@@ -56,7 +56,6 @@ public class DBManager {
 		}
 	}
 
-
 	public <T extends SQL> int delete(T obj, String tableName) {
 		try {
 			String id = "'" + obj.getID() + "'";  
@@ -88,7 +87,7 @@ public class DBManager {
 			// Remove the trailing comma and space
 			setClause.setLength(setClause.length() - 2);
 
-			String sql = String.format("UPDATE %s SET %s WHERE id = '%s';", tableName, setClause.toString(), id);
+			String sql = String.format("UPDATE %s SET %s WHERE id = '%s';", tableName, setClause, id);
 			int rowsAffected = databaseExecutor.executeUpdate(sql); // Use DatabaseExecutor to execute the update
 
 			if (rowsAffected > 0) {

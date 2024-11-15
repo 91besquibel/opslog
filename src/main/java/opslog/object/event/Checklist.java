@@ -19,29 +19,32 @@ public class Checklist extends Event implements SQL {
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
-    private final ObservableList<Boolean> statusList = FXCollections.observableArrayList();
     private final ObservableList<Task> taskList = FXCollections.observableArrayList();
+    private final ObservableList<Integer []> offsets = FXCollections.observableArrayList();
+    private final ObservableList<Integer []> durations =FXCollections.observableArrayList();
+    private final ObservableList<Boolean> statusList = FXCollections.observableArrayList();
     private final StringProperty percentage = new SimpleStringProperty();
 
     // Constructor
-    public Checklist(String id, 
-                     String title, 
-                     LocalDate startDate, 
-                     LocalDate stopDate, 
-                     ObservableList<Boolean> statusList, 
-                     ObservableList<Task> taskList, 
-                     Type type, 
-                     ObservableList<Tag> tags, 
-                     String initials, 
-                     String description, 
-                     String percentage) {
+    public Checklist(
+            String id, String title,
+            LocalDate startDate, LocalDate stopDate,
+            ObservableList<Task> taskList,
+            ObservableList<Integer []> offsets,
+            ObservableList<Integer []> durations,
+            ObservableList<Boolean> statusList,
+            Type type, ObservableList<Tag> tags,
+            String initials, String description,
+            String percentage) {
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);
         this.startDate.set(startDate);
         this.stopDate.set(stopDate);
-        this.statusList.setAll(statusList);
         this.taskList.setAll(taskList);
+        this.offsets.setAll(offsets);
+        this.durations.setAll(durations);
+        this.statusList.setAll(statusList);
         this.percentage.set(percentage);
     }
 
@@ -51,21 +54,17 @@ public class Checklist extends Event implements SQL {
         this.title.set(null);
         this.startDate.set(null);
         this.stopDate.set(null);
-        this.statusList.setAll(FXCollections.observableArrayList());
         this.taskList.setAll(FXCollections.observableArrayList());
+        this.offsets.setAll(FXCollections.observableArrayList());
+        this.durations.setAll(FXCollections.observableArrayList());
+        this.statusList.setAll(FXCollections.observableArrayList());
         this.percentage.set(null);
     }
 
     @Override
-    public void setID(String id){
-        this.id.set(id);
-    }
-    
-    @Override
     public String getID(){
         return id.get();
     }
-
     public String getTitle() {
         return title.get();
     }
@@ -75,14 +74,16 @@ public class Checklist extends Event implements SQL {
     public LocalDate getStopDate() {
         return stopDate.get();
     }
+    public ObservableList<Task> getTaskList() {
+        return taskList;
+    }
+    public ObservableList<Integer[]> getOffsets(){return offsets;}
+    public ObservableList<Integer[]> getDurations(){return durations;}
     public ObservableList<Boolean> getStatusList() {
         return statusList;
     }
     public Boolean getStatus(int index){
         return statusList.get(index);
-    }
-    public ObservableList<Task> getTaskList() {
-        return taskList;
     }
     public StringProperty getPercentage() {
         int numItems = 0;
@@ -108,6 +109,10 @@ public class Checklist extends Event implements SQL {
         return percentage;
     }
 
+    @Override
+    public void setID(String id){
+        this.id.set(id);
+    }
     public void setTitle(String newTitle) {
         title.set(newTitle);
     }
@@ -117,11 +122,13 @@ public class Checklist extends Event implements SQL {
     public void setStopDate(LocalDate newStopDate) {
         stopDate.set(newStopDate);
     }
-    public void setStatusList(ObservableList<Boolean> newStatusList) {
-        statusList.setAll(newStatusList);
-    }
     public void setTaskList(ObservableList<Task> newTaskList) {
         taskList.setAll(newTaskList);
+    }
+    public void setOffsets(ObservableList<Integer[]> newOffsets){offsets.setAll(newOffsets);}
+    public void setDurations(ObservableList<Integer[]> newDurations){durations.setAll(newDurations);}
+    public void setStatusList(ObservableList<Boolean> newStatusList) {
+        statusList.setAll(newStatusList);
     }
     public void setPercentage(String newPercentage){
         percentage.set(newPercentage);
@@ -164,8 +171,10 @@ public class Checklist extends Event implements SQL {
                 title.get(),
                 DateTime.convertDate(getStartDate()),
                 DateTime.convertDate(getStopDate()),
-                statusList.stream().map(String::valueOf).collect(Collectors.joining(" | ")),
                 taskList.stream().map(Task::toString).collect(Collectors.joining(" | ")),
+                offsets.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
+                durations.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
+                statusList.stream().map(String::valueOf).collect(Collectors.joining(" | ")),
                 percentage.get(),
                 superArray[0], // type
                 superArray[1], // tags
@@ -177,8 +186,7 @@ public class Checklist extends Event implements SQL {
     @Override
     public boolean equals(Object other) {
         if (this == other) return true; // check if its the same reference 
-        if (!(other instanceof Checklist)) return false; // check if it is the same type
-        Checklist otherChecklist = (Checklist) other; // if same type cast type
+        if (!(other instanceof Checklist otherChecklist)) return false; // check if it is the same type
         return getID().equals(otherChecklist.getID()); // if same id return true
     }
 }

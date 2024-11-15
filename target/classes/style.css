@@ -115,6 +115,77 @@
     -fx-margin: 0;  /* Adjust margin around columns, if applicable */
 }
 
+.tree-table-view .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+.tree-table-view .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+}
+
+.tree-table-view .scroll-bar:vertical .increment-button,
+.tree-table-view .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.tree-table-view .scroll-bar:horizontal .increment-button,
+.tree-table-view .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.tree-table-view .scroll-bar:vertical .increment-arrow,
+.tree-table-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.tree-table-view .scroll-bar:horizontal .increment-arrow,
+.tree-table-view .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-shape: " ";
+}
+
+.tree-table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.tree-table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.tree-table-view .filler {
+    -fx-background-color: transparent;
+}
+
+.tree-table-view .column-resize-line {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 0;
+}
+
+.tree-table-view .column-separator {
+    -fx-background-color: transparent;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 0;
+}
+
+.tree-table-view .tree-table-column {
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
 .combo-box .scroll-bar:horizontal {
     -fx-min-height: 0;
     -fx-pref-height: 0;

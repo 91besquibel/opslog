@@ -2,15 +2,17 @@ package opslog.managers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import opslog.object.Tag;
 import opslog.object.event.Task;
 
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class TaskManager {
 
     private static final ObservableList<Task> taskList = FXCollections.observableArrayList();
-    private static final String TASK_COL = "id, title, start_time, stop_time, typeID, tagIDs, initials, descrption";
+    public static final String TASK_COL = "id, title, typeID, tagIDs, initials, description";
     
     public static void operation(String operation, List<String[]> rows, String ID) {
         switch (operation) {
@@ -38,10 +40,8 @@ public class TaskManager {
     
     public static Task newItem(String [] row){
         String [] intStr = row[1].split(":");
-        int [] offset = {Integer.parseInt(intStr[0]), Integer.parseInt(intStr[1])};
         Task task = new Task();
         task.setID(row[0]);
-        task.setOffset(offset);
         task.setType(TypeManager.getItem(row[2]));
         task.setTags(TagManager.getItems(row[3]));
         task.setInitials(row[4]);
@@ -58,7 +58,19 @@ public class TaskManager {
         return null;
     }
 
-    // Accessor
+    public static ObservableList<Task> getItems(String IDs) {
+        ObservableList<Task> tasks = FXCollections.observableArrayList();
+        String[] taskIDs = IDs.split("\\|");
+        System.out.println("TaskManager: Checking for the following IDs " + Arrays.toString(taskIDs));
+        for (String ID : taskIDs) {
+            Task task = getItem(ID);
+            if(task != null){
+                tasks.add(task);
+            }
+        }
+        return tasks;
+    }
+
     public static ObservableList<Task> getList() {
         return taskList;
     }

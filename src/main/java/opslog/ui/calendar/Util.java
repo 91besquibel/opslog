@@ -60,7 +60,7 @@ public class Util {
         return vbox;
     }
 
-    public static VBox createTaskPopup(Task task, Checklist checklist){
+    public static VBox createTaskPopup(Task task, Checklist checklist , LocalTime [] times){
         VBox vbox = new VBox();
 
         Label id= new Label( "ID: " + task.getID());
@@ -69,20 +69,13 @@ public class Util {
         Label title = new Label( "Title: " + task.getTitle());
         propertyFactory(title);
 
-        LocalTime[] times = task.calculateTime();
         Label window = new Label("Window: " + times[0]+ " - " + times[1]);
         propertyFactory(window);
-
-        Label offset = new Label("Offset: " + task.getOffset()[0] + ":" + task.getOffset()[1]);
-        propertyFactory(offset);
-
-        Label duration = new Label("Duration: " + task.getDuration()[0] + ":" + task.getDuration()[1]);
-        propertyFactory(duration);
 
         Label typeLabel = new Label("Type: " + task.getType().getTitle());
         propertyFactory(typeLabel);
 
-        vbox.getChildren().addAll(id,title,window,offset,duration,typeLabel);
+        vbox.getChildren().addAll(id,title,window,typeLabel);
 
         FlowPane flowPane = createTagLabels(checklist.getTags());
         flowPane.maxWidth(250);

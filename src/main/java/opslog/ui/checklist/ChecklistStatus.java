@@ -63,10 +63,12 @@ public class ChecklistStatus {
     }
 
     private static VBox buildChecklistSelector() {
-        CustomLabel label = new CustomLabel("Select Checklist", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
+        CustomLabel label = new CustomLabel(
+                "Select Checklist", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 
         CustomListView<Checklist> selector = new CustomListView<>(
-            ChecklistManager.getList(), Settings.WIDTH_LARGE, Settings.WIDTH_LARGE, SelectionMode.MULTIPLE);
+            ChecklistManager.getList(), Settings.WIDTH_LARGE,
+                Settings.WIDTH_LARGE, SelectionMode.MULTIPLE);
         selector.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Checklist>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {

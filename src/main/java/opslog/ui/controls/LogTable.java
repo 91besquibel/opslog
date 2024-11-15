@@ -180,7 +180,7 @@ public class LogTable extends TableView<Log>{
 	}
 
 	private TableColumn<Log, ObservableList<Tag>> tagColumn() {
-		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>("Tags");
+		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>();
 
 		column.setCellValueFactory(cellData ->
 				new SimpleObjectProperty<>(cellData.getValue().getTags())

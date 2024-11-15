@@ -87,18 +87,17 @@ public class MonthViewControl {
                 }
 
                 if(change.wasRemoved()){
-                    System.out.println("CalendarUI: Removing Changes");
                     for(Event event : change.getRemoved()){
 
                         LocalDate [] dates = getDates(event);
-                        System.out.println("CalendarUI: Event dates: " + Arrays.toString(dates));
+                        System.out.println("MonthViewControl:  Removing events with the dates: " + Arrays.toString(dates));
 
                         // Remove the event from each calendar day
                         if(dates[0] != null && dates[1] != null){
                             CalendarCell [] cells = monthView.getCells(dates[0], dates[1]);
                             for (CalendarCell cell : cells) {
                                 if (cell != null) {
-                                    System.out.println("CalendarUI: Removing event from cell at: " + cell.getDate().toString());
+                                    System.out.println("MonthViewControl: Removing event from cell at: " + cell.getDate().toString());
                                     cell.removeEvent(event);
                                 }
                             }
@@ -107,10 +106,11 @@ public class MonthViewControl {
                 }
 
                 if(change.wasUpdated()){
-                    System.out.println("CalendarUI: Updateing Changes");
+                    System.out.println("MonthViewControl: Updateing Changes");
                 }
             }
         });
+
         // Set the CalendarCell listeners
         for(CalendarCell calendarCell : monthView.getCells()){
             calendarCell.currentMonthProperty().addListener((observable, oldValue, newValue) -> {
