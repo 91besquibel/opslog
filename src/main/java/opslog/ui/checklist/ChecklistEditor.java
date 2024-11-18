@@ -1,7 +1,9 @@
 package opslog.ui.checklist;
 
+import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -16,10 +18,12 @@ import javafx.scene.layout.*;
 
 import javafx.scene.text.Text;
 import javafx.util.converter.LocalTimeStringConverter;
+import opslog.ui.controls.TaskTreeView;
 import opslog.managers.*;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Checklist;
+import opslog.object.event.ScheduledChecklist;
 import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseExecutor;
@@ -32,18 +36,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChecklistEditor {
-
+    
     private static final Checklist currentChecklist = new Checklist();
+    
+    private static final ObjectProperty<ScheduledChecklist> newScheduledChecklist = new SimpleObjectProperty<>();
+    
     private static final ObjectProperty<Task> newTask = new SimpleObjectProperty<>(new Task());
     private static ListView<Task> listViewTask;
-    private static CustomListView<Checklist> selector;
-    private static final ObjectProperty<TreeTableView<Task>> treeTableView = new SimpleObjectProperty<>();
+    private static CustomListView<Checklist> checklistTemplateSelector;
+    private static CustomListView<ScheduledChecklist> scheduledChecklistSelector;
+    private static final ObjectProperty<TaskTreeView> treeTableView = new SimpleObjectProperty<>();
+    
     private static CustomHBox checklistBar;
-
+    private static CustomTextField titleChk;
+    private static CustomComboBox<Type> typeChk;
+    private static MultiSelectBox<Tag> tagChk; 
+    private static CustomTextField descriptionChk;
+    private static CustomTextField initialsChk;
+    
+    private static CustomDatePicker startChk;
+    private static CustomDatePicker stopChk;
+    
     public static void buildEditorWindow(){
         // Left
-        CustomVBox left = initializeChecklistSelector();
-        left.setMaxWidth(300);
+        CustomVBox bottomLeft = initializeTemplateSelector();
+        bottomLeft.setMaxWidth(300);
+        CustomVBox topLeft = initializeScheduledSelector();
+        topLeft.setMaxWidth(300);
+        SplitPane left = new SplitPane(topLeft,bottomLeft);
 
         // Middle
         CustomVBox middle = initializeChecklistDisplay();
@@ -57,7 +77,7 @@ public class ChecklistEditor {
         right.setMaxWidth(300);
         right.backgroundProperty().bind(Settings.rootBackground);
 
-        SplitPane editorRoot = new SplitPane(left,middle, right);
+        SplitPane editorRoot = new SplitPane(left, middle, right);
         editorRoot.setDividerPositions(0.20f, 0.80f, 0.20f);
         editorRoot.backgroundProperty().bind(Settings.rootBackground);
         editorRoot.prefWidthProperty().bind(ChecklistUI.root.widthProperty());
@@ -65,28 +85,81 @@ public class ChecklistEditor {
         ChecklistUI.editorRoot = editorRoot;
     }
 
-    public static CustomVBox initializeChecklistSelector(){
-        CustomLabel label = new CustomLabel("Checklist Selector", 300, Settings.SINGLE_LINE_HEIGHT);
+    public static CustomVBox initializeScheduledSelector(){
+        CustomLabel label = new CustomLabel("Scheduled Checklist", 300, Settings.SINGLE_LINE_HEIGHT);
         label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        selector = new CustomListView<>(
-                ChecklistManager.getList(), 300, Settings.WIDTH_LARGE, SelectionMode.SINGLE);
-        selector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        selector.setMaxWidth(300);
-        selector.getSelectionModel().selectedItemProperty().addListener((ob, oV, nV) -> {
-            if (nV != null) {
-                // load checklist data into checklist bar here
-
-                // load tree table with tasks
-                if(!nV.getTaskList().isEmpty()){
-                    Task task = nV.getTaskList().get(0);
+        scheduledChecklistSelector = new CustomListView<>(
+            ScheduledChecklistManager.getList(), 300, Settings.WIDTH_LARGE, SelectionMode.SINGLE);
+        scheduledChecklistSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        scheduledChecklistSelector.setMaxWidth(300);
+        scheduledChecklistSelector.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
+            if (nv != null) {
+                
+                newScheduledChecklist.set(nv);
+                
+                // tableview tasks 
+                if(!nv.checklistProperty().get().getTaskList().isEmpty()){
+                    Task task = nv.checklistProperty().get().getTaskList().get(0);
                     treeTableView.get().setRoot(new TreeItem<>(task));
-                    for(int i = 1; i< nV.getTaskList().size(); i++){
+                    for(int i = 1; i< nv.checklistProperty().get().getTaskList().size(); i++){
+                        treeTableView.get().getRoot().getChildren().add(new TreeItem<>(task));
+                    }
+                }
+
+                // tableview offsets and durations
+                List<TreeTableColumn<Task, ?>> columns = treeTableView.get().getColumns();
+                TreeTableColumn<Task, String> offsetColumn = (TreeTableColumn<Task, String>) columns.get(0);
+                TreeTableColumn<Task, String> durationColumn = (TreeTableColumn<Task, String>) columns.get(1);
+                
+                for(int i = 0; i < nv.checklistProperty().get().getTaskList().size();i++){
+                    
+                    Integer [] offset = nv.getOffsets().get(i);
+                    String offsetStr = String.valueOf(offset[0]) + "," + String.valueOf(offset[1]); 
+                    offsetColumn.setCellValueFactory(param -> {
+                        return new SimpleStringProperty(offsetStr);
+                    });
+                    
+                    Integer [] duration = nv.getOffsets().get(i);
+                    String durationStr = String.valueOf(duration[0]) + "," + String.valueOf(duration[1]);  
+                    durationColumn.setCellValueFactory(param -> {
+                        return new SimpleStringProperty(durationStr);
+                    });
+                    
+                }
+                
+            }
+        });
+        VBox.setVgrow(scheduledChecklistSelector, Priority.ALWAYS);
+        CustomVBox vbox = new CustomVBox();
+        vbox.getChildren().addAll(label, scheduledChecklistSelector);
+        return vbox;
+    }
+
+    public static CustomVBox initializeTemplateSelector(){
+        CustomLabel label = new CustomLabel("Checklist Templates", 300, Settings.SINGLE_LINE_HEIGHT);
+        label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        checklistTemplateSelector = new CustomListView<>(
+                ChecklistManager.getList(), 300, Settings.WIDTH_LARGE, SelectionMode.SINGLE);
+        checklistTemplateSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        checklistTemplateSelector.setMaxWidth(300);
+        checklistTemplateSelector.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
+            if (nv != null) {
+                // save checklist data into checklist bar here
+                titleChk.setText(nv.getTitle());
+                typeChk.setValue(nv.getType());
+                tagChk.setItems(FXCollections.observableArrayList(nv.getTags()));
+                initialsChk.setText(nv.getInitials());
+                descriptionChk.setText(nv.getDescription());
+                if(!nv.getTaskList().isEmpty()){
+                    Task task = nv.getTaskList().get(0);
+                    treeTableView.get().setRoot(new TreeItem<>(task));
+                    for(int i = 1; i< nv.getTaskList().size(); i++){
                         treeTableView.get().getRoot().getChildren().add(new TreeItem<>(task));
                     }
                 }
             }
         });
-        VBox.setVgrow(selector, Priority.ALWAYS);
+        VBox.setVgrow(checklistTemplateSelector, Priority.ALWAYS);
 
         CustomButton swap = new CustomButton(Directory.SWAP_WHITE, Directory.SWAP_GREY, "Status Page");
         CustomButton add = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
@@ -105,7 +178,7 @@ public class ChecklistEditor {
         });
 
         delete.setOnAction(event -> {
-            if (selector.getSelectionModel().getSelectedItem().hasValue()) {
+            if (checklistTemplateSelector.getSelectionModel().getSelectedItem().hasValue()) {
                 //Update.delete(ChecklistManager.getList(), selector.getSelectionModel().getSelectedItem());
             }
         });
@@ -116,7 +189,7 @@ public class ChecklistEditor {
         buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
 
         CustomVBox vbox = new CustomVBox();
-        vbox.getChildren().addAll(label, selector, buttons);
+        vbox.getChildren().addAll(label, checklistTemplateSelector, buttons);
         return vbox;
     }
 
@@ -131,24 +204,27 @@ public class ChecklistEditor {
 
     public static CustomVBox initializeTaskEditor(){
         CustomLabel label = new CustomLabel(
-                "Task Editor", 300, Settings.SINGLE_LINE_HEIGHT);
+                "Editor", 300, Settings.SINGLE_LINE_HEIGHT);
         label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        
         CustomComboBox<Task> selector = new CustomComboBox<>(
-                "Select Task", 300, Settings.SINGLE_LINE_HEIGHT);
+                "Task", 300, Settings.SINGLE_LINE_HEIGHT);
         selector.setItems(TaskManager.getList());
         selector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        
         CustomTextField title = new CustomTextField(
-                "Enter Title", 300, Settings.SINGLE_LINE_HEIGHT);
-        title.textProperty().addListener((ob, oV, nV) -> {
-            newTask.get().setTitle(nV);
+                "Title", 300, Settings.SINGLE_LINE_HEIGHT);
+        title.textProperty().addListener((ob, ov, nv) -> {
+            newTask.get().setTitle(nv);
         });
         title.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        
         CustomComboBox<Type> type = new CustomComboBox<>(
-                "Enter Type", 300, Settings.SINGLE_LINE_HEIGHT);
+                "Type", 300, Settings.SINGLE_LINE_HEIGHT);
         type.setItems(TypeManager.getList());
         type.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        type.valueProperty().addListener((ob, oV, nV) -> {
-            newTask.get().setType(nV);
+        type.valueProperty().addListener((ob, ov, nv) -> {
+            newTask.get().setType(nv);
         });
 
         CustomListView<Tag> tag = new CustomListView<>(
@@ -160,18 +236,25 @@ public class ChecklistEditor {
         tag.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         tag.setMaxWidth(300);
 
+        CustomTextField initials = new CustomTextField("Initials",300, Settings.SINGLE_LINE_HEIGHT);
+        initials.textProperty().addListener((ob,ov,nv) -> {
+           newTask.get().setInitials(nv); 
+        });
+        initials.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        
         CustomTextField description = new CustomTextField(
-                "Enter Description", 300, Settings.SINGLE_LINE_HEIGHT);
-        description.textProperty().addListener((ob, oV, nV) -> {
-            newTask.get().setDescription(nV);
+                "Description", 300, Settings.SINGLE_LINE_HEIGHT);
+        description.textProperty().addListener((ob, ov, nv) -> {
+            newTask.get().setDescription(nv);
         });
         description.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        selector.valueProperty().addListener((ob, oV, nV) -> {
-            if (nV != null) {
-                title.setText(nV.getTitle());
-                type.setValue(nV.getType());
-                tag.setItems(FXCollections.observableArrayList(nV.getTags()));
-                description.setText(nV.getDescription());
+        selector.valueProperty().addListener((ob, ov, nv) -> {
+            if (nv != null) {
+                title.setText(nv.getTitle());
+                type.setValue(nv.getType());
+                tag.setItems(FXCollections.observableArrayList(nv.getTags()));
+                initials.setText(nv.getInitials());
+                description.setText(nv.getDescription());
             }
         });
 
@@ -193,14 +276,15 @@ public class ChecklistEditor {
                 DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
                 DBManager dbManager = new DBManager(databaseExecutor);
                 newTask.set(dbManager.insert(tempTask,"task_table",TaskManager.TASK_COL));
-
                 if(newTask.get().getID() != null && !newTask.get().getID().isEmpty()){
+                    System.out.println("ChecklistEditor: New task created: " + newTask.get().getID());
                     List<String[]> task = new ArrayList<>();
                     task.add(newTask.get().toArray());
                     TaskManager.operation("INSERT",task,newTask.get().getID());
                     title.clear();
                     type.setValue(null);
                     tag.setItems(FXCollections.observableArrayList());
+                    initials.clear();
                     description.clear();
                     selector.setValue(null);
                 }
@@ -230,6 +314,7 @@ public class ChecklistEditor {
                 title.clear();
                 type.setValue(null);
                 tag.setItems(FXCollections.observableArrayList());
+                initials.clear();
                 description.clear();
                 selector.setValue(null);
             }
@@ -251,6 +336,7 @@ public class ChecklistEditor {
                     title.clear();
                     type.setValue(null);
                     tag.setItems(FXCollections.observableArrayList());
+                    initials.clear();
                     description.clear();
                     selector.setValue(null);
                 }
@@ -263,7 +349,7 @@ public class ChecklistEditor {
         buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
 
         CustomVBox vbox = new CustomVBox();
-        vbox.getChildren().addAll(label, selector, title, type, tag, description, buttons);
+        vbox.getChildren().addAll(label, selector, title, type, tag, initials, description, buttons);
         return vbox;
     }
 
@@ -304,60 +390,245 @@ public class ChecklistEditor {
     }
 
     private static void createChecklistBar(){
-        // title
-        CustomTextField title = new CustomTextField("Title",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        title.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(title,Priority.ALWAYS);
         // start_date
-        CustomDatePicker startDate = new CustomDatePicker("Start Date",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        startDate.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(startDate,Priority.ALWAYS);
-        // stop_date,
-        CustomDatePicker stopDate = new CustomDatePicker("Stop Date",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        stopDate.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(stopDate,Priority.ALWAYS);
-        // typeID
-        CustomComboBox<Type> type = new CustomComboBox<>("Type",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        type.setItems(TypeManager.getList());
-        type.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(type,Priority.ALWAYS);
-        // tagID
-        MultiSelectBox<Tag> tag = new MultiSelectBox<>(TagManager.getList(),"Tag");
-        HBox.setHgrow(tag,Priority.ALWAYS);
-        tag.setMaxWidth(Double.MAX_VALUE);
-        // initials
-        CustomTextField initials = new CustomTextField("Initials",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        HBox.setHgrow(initials,Priority.ALWAYS);
-        initials.setMaxWidth(Double.MAX_VALUE);
-        // description
-        CustomTextField description = new CustomTextField("Description",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-        HBox.setHgrow(description,Priority.ALWAYS);
-        description.setMaxWidth(Double.MAX_VALUE);
+        startChk = new CustomDatePicker("Start",130,Settings.SINGLE_LINE_HEIGHT);
+        HBox.setHgrow(startChk,Priority.ALWAYS);
+        startChk.valueProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().startDateProperty().set(nv);
+        });
 
+        // stop_date
+        stopChk = new CustomDatePicker("Stop",130,Settings.SINGLE_LINE_HEIGHT);
+        HBox.setHgrow(stopChk,Priority.ALWAYS);
+        stopChk.valueProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().stopDateProperty().set(nv);
+        });
+        
+        // title
+        titleChk = new CustomTextField("Title",100,Settings.SINGLE_LINE_HEIGHT);
+        HBox.setHgrow(titleChk ,Priority.ALWAYS);
+        titleChk.textProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().checklistProperty().get().titleProperty().set(nv);
+        });
+
+        // typeID
+        typeChk  = new CustomComboBox<>("Type",100,Settings.SINGLE_LINE_HEIGHT);
+        typeChk.setItems(TypeManager.getList());
+        HBox.setHgrow(typeChk ,Priority.ALWAYS);
+        typeChk.valueProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().checklistProperty().get().typeProperty().set(nv);
+        });
+        
+        // tagID
+        tagChk = new MultiSelectBox<>(TagManager.getList(),"Tag");
+        HBox.setHgrow(tagChk ,Priority.ALWAYS);
+        tagChk.setPrefWidth(100);
+        //tagChk.selectionModelProperty().bindBidirectional(newScheduledChecklist.get().checklistProperty().get().getTags());
+        
+        // initials
+        initialsChk = new CustomTextField("Initials",100,Settings.SINGLE_LINE_HEIGHT);
+        HBox.setHgrow(initialsChk,Priority.ALWAYS);
+        initialsChk.textProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().checklistProperty().get().initialsProperty().set(nv);
+        });
+
+        // description
+        descriptionChk = new CustomTextField("Description",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
+        HBox.setHgrow(descriptionChk ,Priority.ALWAYS);
+        descriptionChk.setMaxWidth(Double.MAX_VALUE);
+        descriptionChk.textProperty().addListener((obs,ov,nv) -> {
+            newScheduledChecklist.get().checklistProperty().get().descriptionProperty().set(nv);
+        });
+        
+        Button save = createSaveButton();
+        Button schedule = createScheduleButton();
+        
         checklistBar = new CustomHBox();
         checklistBar.setPrefWidth(Double.MAX_VALUE);
-        checklistBar.getChildren().addAll(title,startDate,stopDate,type,tag,initials,description);
+        checklistBar.getChildren().addAll(startChk,stopChk,titleChk,typeChk,tagChk,initialsChk,descriptionChk);
+    }
+
+    // Saves the checklist as a template
+    private static Button createSaveButton(){
+        Button save = new Button("Load");
+        save.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
+        save.setBackground(Settings.secondaryBackground.get());
+        save.setFont(Settings.fontProperty.get());
+        save.setTextFill(Settings.textColor.get());
+
+        save.hoverProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+                save.setBackground(Settings.primaryBackground.get());
+                save.setBorder(Settings.focusBorder.get());
+            }else{
+                save.setBackground(Settings.secondaryBackground.get());
+                save.setBorder(Settings.transparentBorder.get());
+            }
+        });
+        
+        save.pressedProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+               save.setBackground(Settings.secondaryBackground.get());
+            } else {
+               save.setBackground(Settings.primaryBackground.get());
+            }
+        });
+
+        save.setOnAction(actionEvent -> {
+            Checklist checklistTemplate = newScheduledChecklist.get().checklistProperty().get();
+
+            // List<Tag> tags = tagChk.getSelectionModel().getSelectedItems();
+            /* use the ControlsFX library
+             // create the data to show in the CheckComboBox 
+             final ObservableList<String> strings = FXCollections.observableArrayList();
+             for (int i = 0; i <= 100; i++) {
+                 strings.add("Item " + i);
+             }
+
+             // Create the CheckComboBox with the data 
+             final CheckComboBox<String> checkComboBox = new CheckComboBox<String>(strings);
+
+             // and listen to the relevant events (e.g. when the selected indices or 
+             // selected items change).
+             checkComboBox.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
+                 public void onChanged(ListChangeListener.Change<? extends String> c) {
+                      while(c.next()) {
+                          //do something with changes here
+                      }
+                      System.out.println(checkComboBox.getCheckModel().getCheckedItems());
+                 }
+             });
+             }
+            */
+
+            // get the Tasks
+            ObservableList<Task> taskList = FXCollections.observableArrayList();
+            TreeItem<Task> rootItem = treeTableView.get().getRoot();
+            Task rootTask = rootItem.getValue();
+            taskList.add(rootTask);
+            List<TreeItem<Task>> treeItems = treeTableView.get().getRoot().getChildren();
+            for(int i =0; i < treeItems.size(); i ++){
+                TreeItem<Task> item = treeItems.get(i);
+                if(item.getValue() != null){
+                    Task childTask = treeItems.get(i).getValue();
+                    taskList.add(childTask);
+                    System.out.println("CheclistEditor: Saving checklist task: " + childTask.getTitle());
+                }
+            }
+            checklistTemplate.setTaskList(taskList);
+
+            //Send item to DB
+            if(checklistTemplate.hasValue()){
+                DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
+                DBManager dbManager = new DBManager(databaseExecutor);
+                newScheduledChecklist.get().checklistProperty().set(dbManager.insert(checklistTemplate,"checklist_table",ChecklistManager.CHCK_COL));
+                if(checklistTemplate.getID() != null && !checklistTemplate.getID().isEmpty()){
+                    System.out.println("ChecklistEditor: New checklist created: " + checklistTemplate.getID());
+                    List<String[]> checklist = new ArrayList<>();
+                    checklist.add(checklistTemplate.toArray());
+                    ChecklistManager.operation("INSERT",checklist,checklistTemplate.getID());
+                }
+            }
+        });
+
+        return save;
+    }
+    
+    // Schedules the checklist on the calendar
+    private static Button createScheduleButton(){
+        Button schedule = new Button("Schedule");
+        schedule.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
+        schedule.setBackground(Settings.secondaryBackground.get());
+        schedule.setFont(Settings.fontProperty.get());
+        schedule.setTextFill(Settings.textColor.get());
+
+        schedule.hoverProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+                schedule.setBackground(Settings.primaryBackground.get());
+                schedule.setBorder(Settings.focusBorder.get());
+            }else{
+                schedule.setBackground(Settings.secondaryBackground.get());
+                schedule.setBorder(Settings.transparentBorder.get());
+            }
+        });
+
+        schedule.pressedProperty().addListener((obs,ov,nv) -> {
+            if(nv){
+                schedule.setBackground(Settings.secondaryBackground.get());
+            } else {
+                schedule.setBackground(Settings.primaryBackground.get());
+            }
+        });
+        
+        schedule.setOnAction(actionEvent -> {
+            // get the start 
+            if(startChk.getValue() != null){
+                LocalDate startDate = startChk.getValue();
+                newScheduledChecklist.get().startDateProperty().set(startDate);
+            }
+
+            // get the stop 
+            if(stopChk.getValue() != null){
+                LocalDate stopDate = stopChk.getValue();
+                newScheduledChecklist.get().startDateProperty().set(stopDate);
+            }
+
+            // get offsets and durations
+            ObservableList<Integer[]> offsetList = FXCollections.observableArrayList();
+            ObservableList<Integer[]> durationList = FXCollections.observableArrayList();
+
+            TreeTableColumn<Task,?> offsetColumn = treeTableView.get().getColumns().get(0);
+            TreeTableColumn<Task,?> durationColumn = treeTableView.get().getColumns().get(1);
+
+            for(int i = 0; i < treeTableView.get().getRoot().getChildren().size() +1 ; i++){
+
+                Object offsetCell = offsetColumn.getCellObservableValue(i).getValue();
+                Object durationCell = durationColumn.getCellObservableValue(i).getValue();
+
+                String offsetStr = offsetCell != null ? offsetCell.toString() : "";
+                String durationStr = durationCell != null ? durationCell.toString() : "";
+
+                System.out.println("CheclistEditor: Saving task timing data offset/duration: " + offsetStr + " : " + durationStr);
+
+                String[] offsetArr = offsetStr.split(",");
+                String[] durationArr = durationStr.split(",");
+
+                Integer [] offsetIntArr = new Integer[2];
+                Integer [] durationIntArr = new Integer[2];
+
+                for (int j = 0; j < offsetArr.length; j++) {
+                    if (offsetArr[j] != null && !offsetArr[j].trim().isEmpty()) {
+                        Integer offsetValue = Integer.parseInt(offsetArr[j]);  
+                        offsetIntArr[j] = offsetValue;  
+                    }
+
+                    if (durationArr[j] != null && !durationArr[j].trim().isEmpty()) {
+                        Integer durationValue = Integer.parseInt(durationArr[j]);  
+                        durationIntArr[j] = durationValue;  
+                    }
+                }
+                offsetList.add(offsetIntArr);
+                durationList.add(durationIntArr);
+            }
+
+            newScheduledChecklist.get().setOffsets(offsetList);
+            newScheduledChecklist.get().setDurations(durationList);
+
+            // set status list
+            ObservableList<Boolean> statusList = FXCollections.observableArrayList();
+            for(int i = 0; i < newScheduledChecklist.get().checklistProperty().get().getTaskList().size(); i++){
+                statusList.add(false);
+            }
+            newScheduledChecklist.get().setStatusList(statusList);
+        });
+        return schedule;
     }
 
     private static void createTreeTableView(){
-        TreeTableView<Task> treeView = new TreeTableView<>();
+       
+        TaskTreeView treeView = new TaskTreeView();
         treeTableView.set(treeView);
-
-        TreeTableColumn<Task, String> titleColumn = titleColumn();
-        TreeTableColumn<Task, Type> typeColumn = typeColumn();
-        TreeTableColumn<Task, ObservableList<Tag>> tagColumn = tagColumn();
-        TreeTableColumn<Task, String> descriptionColumn = descriptionColumn("Description");
-        TreeTableColumn<Task, LocalTime> timeColumn = timeColumn();
-        TreeTableColumn<Task, String> offsetColumn = offsetColumn();
-        TreeTableColumn<Task, String> durationColumn = durationColumn();
-
-        treeView.getColumns().addAll(
-                titleColumn, typeColumn,
-                tagColumn, descriptionColumn,
-                timeColumn, offsetColumn, durationColumn
-        );
-        treeView.setEditable(true);
-
+        
         treeTableView.get().setOnDragOver(event -> {
             if (event.getGestureSource() != treeTableView && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.MOVE);
@@ -373,342 +644,39 @@ public class ChecklistEditor {
                 // Create a new TreeItem from the dropped ListView item
                 TreeItem<Task> newItem = new TreeItem<>(task);
                 // Add new TreeItem to the root
-                treeTableView.get().getRoot().getChildren().add(newItem);
+                if(treeTableView.get().getRoot() == null){
+                    treeTableView.get().setRoot(newItem);
+                }else{
+                    treeTableView.get().getRoot().getChildren().add(newItem);
+                }
             }
             event.setDropCompleted(true);
             event.consume();
         });
-
-        treeTableView.get().backgroundProperty().bind(Settings.primaryBackground);
-        treeTableView.get().setColumnResizePolicy(TreeTableView.UNCONSTRAINED_RESIZE_POLICY);
-        treeTableView.get().setRowFactory(tv -> createRow());
-        treeTableView.get().setPadding(Settings.INSETS);
+        
         VBox.setVgrow(treeTableView.get(),Priority.ALWAYS);
     }
 
-    private static TreeTableColumn<Task, String> titleColumn() {
-        TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-        // Set cell value factory to bind to the `title` property in `Task`
-        column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
-
-        // Customize column header with styled label
-        Label label = new Label("Title");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox headerBox = new HBox(label);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(headerBox);
-
-        // Create cell factory to render each cell in the column
-        column.setCellFactory(col -> createCell());
-
-        return column;
-    }
-
-    private static TreeTableColumn<Task, Type> typeColumn() {
-        TreeTableColumn<Task, Type> column = new TreeTableColumn<>();
-
-        // Set cell value factory to bind to the `type` property in `Task`
-        column.setCellValueFactory(param -> param.getValue().getValue().typeProperty());
-
-        // Customize column header with styled label
-        Label label = new Label("Type");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox hbox = new HBox(label);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(hbox);
-
-        // Create cell factory for custom cell rendering
-        column.setCellFactory(col -> createCell());
-
-        return column;
-    }
-
-    private static TreeTableColumn<Task, ObservableList<Tag>> tagColumn() {
-        TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
-        column.setCellValueFactory(cellData -> {
-            ObservableList<Tag> tags = cellData.getValue().getValue().getTags();
-            return new SimpleObjectProperty<>(tags);  // Wrap the tags in an ObservableValue
-        });
-        Label label = new Label("Tags");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox hbox = new HBox(label);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(hbox);
-        column.setCellFactory(col -> new TreeTableCell<Task, ObservableList<Tag>>() {
-            @Override
-            protected void updateItem(ObservableList<Tag> item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                } else {
-                    VBox vbox = new VBox();
-                    for (Tag tag : item) {
-                        Label lbl = new Label(tag.toString());
-                        lbl.setBackground(
-                                new Background(
-                                        new BackgroundFill(
-                                                tag.getColor(),
-                                                Settings.CORNER_RADII,
-                                                Settings.INSETS_ZERO
-                                        )
-                                )
-                        );
-                        lbl.setPadding(Settings.INSETS);
-                        lbl.textFillProperty().bind(Settings.textColor);
-                        lbl.setAlignment(Pos.TOP_CENTER);
-                        lbl.maxHeight(30);
-                        lbl.borderProperty().bind(Settings.transparentBorder);
-                        vbox.getChildren().add(lbl);
-                    }
-                    vbox.setSpacing(Settings.SPACING);
-                    vbox.setAlignment(Pos.TOP_CENTER);
-                    vbox.setPadding(Settings.INSETS);
-                    setGraphic(vbox);
-                }
-                {
-                    borderProperty().bind(Settings.transparentBorder);
-                    setAlignment(Pos.TOP_CENTER);
-                    setPadding(Settings.INSETS);
-                }
-            }
-        });
-        return column;
-    }
-
-    private static TreeTableColumn<Task, String> descriptionColumn(String header) {
-        TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-
-        column.setCellValueFactory(param -> param.getValue().getValue().descriptionProperty());
-
-        Label label = new Label(header);
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox headerBox = new HBox(label);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(headerBox);
-
-        // Cell Factory
-        column.setCellFactory(col -> new TreeTableCell<>() {
-            private final Text text = new Text();
-
-            {
-                // Configure cell properties
-                borderProperty().bind(Settings.transparentBorder);
-                setAlignment(Pos.TOP_CENTER);
-                setPadding(Settings.INSETS);
-
-                // Text styling
-                text.wrappingWidthProperty().bind(getTableColumn().widthProperty().subtract(5));
-                text.setLineSpacing(2);
-                text.fontProperty().bind(Settings.fontProperty);
-                text.fillProperty().bind(Settings.textColor);
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                } else {
-                    text.setText(item);
-                    Label label = new Label();
-                    label.setGraphic(text);
-                    label.setPadding(Settings.INSETS);
-                    label.setAlignment(Pos.TOP_CENTER);
-                    label.borderProperty().bind(Settings.transparentBorder);
-                    setGraphic(label);
-                }
-            }
-        });
-
-        // Adjust column width based on treeTableView total width
-        treeTableView.get().widthProperty().addListener((obs, oldWidth, newWidth) -> {
-            if (treeTableView.get() != null) {
-                double totalWidth = newWidth.doubleValue();
-                for (TreeTableColumn<Task, ?> col : treeTableView.get().getColumns()) {
-                    if (col != column) {
-                        totalWidth -= col.getWidth();
-                    }
-                }
-                column.setPrefWidth(totalWidth);
-            }
-        });
-
-        return column;
-    }
-
-    private static TreeTableColumn<Task, LocalTime> timeColumn() {
-        TreeTableColumn<Task, LocalTime> column = new TreeTableColumn<>();
-        column.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn(new LocalTimeStringConverter()));
-        // Customize column header with styled label
-        Label label = new Label("Time");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox headerBox = new HBox(label);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(headerBox);
-
-        return column;
-    }
-
-    private static TreeTableColumn<Task, String> offsetColumn() {
-        TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-
-        // Make the column editable with a TextField
-        //column.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn(new IntegerStringConverter()));
-        column.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
-        column.setEditable(true);
-
-        // Customize column header with styled label
-        Label label = new Label("Offset");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox headerBox = new HBox(label);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(headerBox);
-
-        return column;
-    }
-
-    private static TreeTableColumn<Task, String> durationColumn() {
-        TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-
-        // Set cell value factory to bind to the `duration` property in `Task`
-
-        // Make the column editable with a TextField
-        column.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
-        column.setEditable(true);
-
-        // Customize column header with styled label
-        Label label = new Label("Duration");
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox headerBox = new HBox(label);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        column.setGraphic(headerBox);
-
-        return column;
-    }
-
-    private static <S, T> TreeTableCell<S, T> createCell() {
-        return new TreeTableCell<S, T>() {
-            private final Text text = new Text();
-
-            {
-                borderProperty().bind(Settings.transparentBorder);
-                setAlignment(Pos.TOP_CENTER);
-                setPadding(Settings.INSETS);
-            }
-
-            @Override
-            protected void updateItem(T item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    text.setText(item.toString());
-                    text.setLineSpacing(2);
-                    text.fontProperty().bind(Settings.fontProperty);
-                    text.fillProperty().bind(Settings.textColor);
-                    Label label = new Label();
-                    label.setGraphic(text);
-                    label.setAlignment(Pos.TOP_CENTER);
-                    label.setPadding(Settings.INSETS);
-                    setGraphic(label);
-                }
-            }
-        };
-    }
-
-    private static TreeTableRow<Task> createRow() {
-        TreeTableRow<Task> row = new TreeTableRow<>();
-        row.backgroundProperty().bind(Settings.primaryBackground);
-        row.minHeight(50);
-        row.borderProperty().bind(Settings.primaryBorder);
-
-        row.itemProperty().addListener((obs, oldItem, newItem) -> {
-            if (row.isEmpty()) {
-                row.borderProperty().bind(Settings.primaryBorder);
-                row.backgroundProperty().bind(Settings.secondaryBackground);
-            }
-        });
-
-        row.hoverProperty().addListener((obs, noHov, hov) -> {
-            if (!row.isEmpty()) {
-                row.borderProperty().unbind();
-                if (hov) {
-                    row.setBorder(Settings.focusBorder.get());
-                } else {
-                    row.borderProperty().bind(Settings.primaryBorder);
-                }
-            }
-        });
-
-        row.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-            if (!row.isEmpty()) {
-                row.borderProperty().unbind();
-                if (isFocused) {
-                    row.setBorder(Settings.focusBorder.get());
-                } else {
-                    row.borderProperty().bind(Settings.primaryBorder);
-                }
-            }
-        });
-
-        row.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            row.backgroundProperty().unbind();
-            if (isSelected) {
-                row.setBackground(Settings.selectedBackground.get());
-            } else {
-                row.backgroundProperty().bind(Settings.secondaryBackground);
-            }
-        });
-
-        row.prefWidthProperty().bind(treeTableView.get().widthProperty().subtract(10.0));
-
-        return row;
-    }
-
     private static void testData(){
+        
         Checklist testRoot1 = new Checklist();
         testRoot1.setID("63516815");
         testRoot1.setTitle("Checklist test root node");
-        testRoot1.setStartDate(LocalDate.now());
-        testRoot1.setStopDate(LocalDate.now().plusDays(4));
         testRoot1.setTaskList( FXCollections.observableArrayList() );
-        testRoot1.setOffsets( FXCollections.observableArrayList() );
-        testRoot1.setDurations( FXCollections.observableArrayList() );
-        testRoot1.setStatusList(FXCollections.observableArrayList());
-        testRoot1.setPercentage("80");
         testRoot1.setInitials("ZAE");
         testRoot1.setDescription("Test the edit and display features of the checklist tree view");
 
         Checklist testRoot2 = new Checklist();
         testRoot2.setID("16816515");
         testRoot2.setTitle("Checklist test root node 2");
-        testRoot2.setStartDate(LocalDate.now());
-        testRoot2.setStopDate(LocalDate.now().plusDays(4));
         testRoot2.setTaskList( FXCollections.observableArrayList() );
-        testRoot2.setOffsets( FXCollections.observableArrayList() );
-        testRoot2.setDurations( FXCollections.observableArrayList() );
-        testRoot2.setStatusList(FXCollections.observableArrayList());
-        testRoot2.setPercentage("10");
         testRoot2.setInitials("ZAE");
         testRoot2.setDescription("Test the edit and display features of the checklist tree view");
 
         Checklist testRoot3 = new Checklist();
         testRoot3.setID("5165846");
         testRoot3.setTitle("Checklist test root node 3");
-        testRoot3.setStartDate(LocalDate.now());
-        testRoot3.setStopDate(LocalDate.now().plusDays(4));
         testRoot3.setTaskList( FXCollections.observableArrayList() );
-        testRoot3.setOffsets( FXCollections.observableArrayList() );
-        testRoot3.setDurations( FXCollections.observableArrayList() );
-        testRoot3.setStatusList(FXCollections.observableArrayList());
-        testRoot3.setPercentage("70");
         testRoot3.setInitials("ZAE");
         testRoot3.setDescription("Test the edit and display features of the checklist tree view");
 

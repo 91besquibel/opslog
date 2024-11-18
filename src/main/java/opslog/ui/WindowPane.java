@@ -155,7 +155,7 @@ public class WindowPane {
     private CustomMenuBar createDefaultMenuBar() {
 
         Menu defaultMenu = new Menu();
-        MenuItem file = new MenuItem("File");
+        MenuItem file = new MenuItem("Menu");
         CustomMenuBar defaultMenuBar = new CustomMenuBar();
         defaultMenu.getItems().addAll(file);
         defaultMenuBar.getMenus().add(defaultMenu);

@@ -8,6 +8,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import opslog.object.Tag;
+import opslog.object.event.ScheduledChecklist;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
@@ -104,8 +105,10 @@ public class Util {
         return vbox;
     }
 
-    public static VBox createChecklistPopup(Checklist checklist){
+    public static VBox createChecklistPopup(ScheduledChecklist scheduledChecklist){
         VBox vbox = new VBox();
+
+        Checklist checklist = scheduledChecklist.checklistProperty().get();
 
         Label id= new Label( "ID: " + checklist.getID());
         propertyFactory(id);
@@ -113,10 +116,10 @@ public class Util {
         Label title = new Label( "Title: " + checklist.getTitle());
         propertyFactory(title);
 
-        Label start = new Label("Start: " + checklist.getStartDate());
+        Label start = new Label("Start: " + scheduledChecklist.startDateProperty().get());
         propertyFactory(start);
 
-        Label stop = new Label("Stop: " + checklist.getStopDate());
+        Label stop = new Label("Stop: " + scheduledChecklist.stopDateProperty().get());
         propertyFactory(stop);
 
         Label typeLabel = new Label("Type: " + checklist.getType().getTitle());

@@ -142,7 +142,6 @@ public class LogTable extends TableView<Log>{
 	private TableColumn<Log, LocalDate> dateColumn() {
 		TableColumn<Log, LocalDate> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
-
 		Label label = new Label("Date");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
@@ -225,7 +224,6 @@ public class LogTable extends TableView<Log>{
 
 		return column;
 	}
-
 
 	private TableColumn<Log, String> initialsColumn() {
 		TableColumn<Log, String> column = new TableColumn<>();

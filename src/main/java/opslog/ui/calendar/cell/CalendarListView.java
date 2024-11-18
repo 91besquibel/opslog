@@ -14,13 +14,16 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
+
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
+import opslog.object.event.ScheduledChecklist;
 import opslog.object.event.Task;
 import opslog.ui.controls.CustomHBox;
 import opslog.ui.controls.CustomLabel;
 import opslog.ui.controls.Styles;
 import opslog.util.Settings;
+
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.MenuItem;
 
@@ -132,129 +135,16 @@ public class CalendarListView<T> extends ListView<T> {
 						getFocusModel().focus(-1);
 					}
 
-					if(item instanceof Checklist){
-						Checklist checklist = (Checklist) item;
-						HBox hbox = displayChecklist(checklist);
+					if(item instanceof ScheduledChecklist){
+						ScheduledChecklist scheduledChecklist = (ScheduledChecklist) item;
+						HBox hbox = displayChecklist(scheduledChecklist);
 					}
 				}
 			}
 		});
 	}
 
-	private HBox displayChecklist(Checklist checklist){
-		// Create a new checklist when slected from the checklist selector if it has a value
-		if (checklist.hasValue()) {
-
-			// Create checklist instance for listeners to store changes
-			Checklist newChecklist = new Checklist();// this should not be a new instance of cheklist this negates the observable properties
-			newChecklist.setID(checklist.getID());
-			newChecklist.setTitle(checklist.getTitle());
-			newChecklist.setStartDate(checklist.getStartDate());
-			newChecklist.setStopDate(checklist.getStopDate());
-			newChecklist.setStatusList(checklist.getStatusList());
-			newChecklist.setTaskList(checklist.getTaskList());
-
-			checklist.getStatusList().addListener((ListChangeListener<Boolean>) change -> {
-				System.out.println("If you can see me this works");
-				while (change.next()) {
-					if (change.wasAdded() || change.wasUpdated()) {
-						newChecklist.setID(checklist.getID());
-						newChecklist.setTitle(checklist.getTitle());
-						newChecklist.setStartDate(checklist.getStartDate());
-						newChecklist.setStopDate(checklist.getStopDate());
-						newChecklist.setStatusList(checklist.getStatusList());
-						newChecklist.setTaskList(checklist.getTaskList());
-					}
-				}
-			});
-
-			// Create the checklist tree view
-			TreeView<String> checklistTree = new TreeView<String>();
-
-			// Create compleation status
-			CustomLabel percentage = new CustomLabel("0", Settings.WIDTH_SMALL, Settings.SINGLE_LINE_HEIGHT);
-			percentage.textProperty().bind(newChecklist.getPercentage());
-
-			// Create the checklist completion checkbox
-			String title = checklist.getTitle();
-			String description = checklist.getDescription();
-			String finale = title + " | " + description;
-			CheckBoxTreeItem<String> parentItem = new CheckBoxTreeItem<String>(finale);
-
-			parentItem.setSelected(checklist.getStatus(0));
-
-			// Parent selection update
-
-
-			// Display all initial
-			parentItem.setExpanded(false);
-			// Display parent change
-			parentItem.addEventHandler(TreeItem.branchCollapsedEvent(), e -> {
-				checklistTree.setMinHeight(Settings.SINGLE_LINE_HEIGHT + 5);
-			});
-			// Display all change
-			parentItem.addEventHandler(TreeItem.branchExpandedEvent(), e -> {
-				checklistTree.setMinHeight((parentItem.getChildren().size() * Settings.SINGLE_LINE_HEIGHT) + 5);
-			});
-
-			// Add parent item to tree
-			checklistTree.setRoot(parentItem);
-
-			// Create checkboxes for children
-			for (Task task : checklist.getTaskList()) {
-				if (task.hasValue()) {
-					// Get the index
-					int statusIndex = checklist.getTaskList().indexOf(task) + 1;
-
-					// Create UI elements
-					String[] strArr = task.toArray();
-					String strChildItem = String.join(" | ", strArr);
-					String childDescription = task.getDescription();
-					String childFinale = strChildItem + " | " + childDescription;
-					CheckBoxTreeItem<String> childItem = new CheckBoxTreeItem<String>(childFinale);
-
-					childItem.setSelected(checklist.getStatus(statusIndex));
-
-					childItem.selectedProperty().addListener((obs, ov, nv) -> {
-						// Verify changed state
-						if (ov != nv) {
-							// update the new checklist state
-						   // newChecklist.setState(statusIndex, nv);
-							//checklist.setState(statusIndex,nv);
-							// Overwrite the old checklist
-						  // CSV.write(checklist.fileName(), newChecklist.toArray(), false);
-							// Update percentage when change detected
-						   // newChecklist.setPercentage();
-						}
-					});
-
-					// Add this child to the parent
-					parentItem.getChildren().add(childItem);
-				}
-			}
-
-			// Cell decoration
-			checklistTree.setCellFactory(CheckBoxTreeCell.forTreeView());
-			checklistTree.setCellFactory(tv -> new CheckBoxTreeCell<>() {
-				{
-					backgroundProperty().bind(Settings.primaryBackground);
-					textFillProperty().bind(Settings.textColor);
-					fontProperty().bind(Settings.fontProperty);
-					prefHeight(Settings.SINGLE_LINE_HEIGHT);
-				}
-			});
-
-			// Area Beautification
-			checklistTree.backgroundProperty().bind(Settings.primaryBackground);
-			checklistTree.setMaxHeight(parentItem.getChildren().size() * Settings.SINGLE_LINE_HEIGHT);
-			checklistTree.prefWidthProperty().bind(prefWidthProperty());
-
-			// return the container to be displayed
-			CustomHBox container = new CustomHBox();
-			container.setPrefHeight(Settings.SINGLE_LINE_HEIGHT + 10);
-			container.getChildren().addAll(checklistTree);
-			return container;
-		}
+	private HBox displayChecklist(ScheduledChecklist scheduledChecklist){
 		return new HBox();
 	}
 }

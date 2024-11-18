@@ -8,6 +8,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+
 import opslog.managers.CalendarManager;
 import opslog.managers.ChecklistManager;
 import opslog.managers.LogManager;
@@ -30,6 +31,7 @@ import opslog.ui.calendar.object.CalendarWeek;
 import opslog.ui.controls.CustomListView;
 import opslog.ui.controls.SearchBar;
 import opslog.util.Settings;
+
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;

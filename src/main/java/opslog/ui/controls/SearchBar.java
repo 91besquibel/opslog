@@ -75,9 +75,14 @@ public class SearchBar extends HBox {
 
 	private void createFilters() {
 		CheckMenuItem tag = new CheckMenuItem("Tag");
+		//tag.setHideOnClick(false);
 		CheckMenuItem type = new CheckMenuItem("Type");
+		//type.setHideOnClick(false);
 		CheckMenuItem initials = new CheckMenuItem("Initials");
+		//initials.setHideOnClick(false);
 		CheckMenuItem description = new CheckMenuItem("Description");
+		//description.setHideOnClick(false);
+		
 		filterMenu.setDisplayed("Filter");
 		filterMenu.getItems().addAll(tag, type, initials, description);
 		menuBar.getMenus().add(filterMenu);

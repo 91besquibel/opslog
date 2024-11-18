@@ -17,48 +17,25 @@ public class Checklist extends Event implements SQL {
     
     private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
-    private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
-    private final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
     private final ObservableList<Task> taskList = FXCollections.observableArrayList();
-    private final ObservableList<Integer []> offsets = FXCollections.observableArrayList();
-    private final ObservableList<Integer []> durations =FXCollections.observableArrayList();
-    private final ObservableList<Boolean> statusList = FXCollections.observableArrayList();
-    private final StringProperty percentage = new SimpleStringProperty();
 
     // Constructor
     public Checklist(
             String id, String title,
-            LocalDate startDate, LocalDate stopDate,
             ObservableList<Task> taskList,
-            ObservableList<Integer []> offsets,
-            ObservableList<Integer []> durations,
-            ObservableList<Boolean> statusList,
             Type type, ObservableList<Tag> tags,
-            String initials, String description,
-            String percentage) {
+            String initials, String description) {
         super(type, tags, initials, description);
         this.id.set(id);
         this.title.set(title);
-        this.startDate.set(startDate);
-        this.stopDate.set(stopDate);
         this.taskList.setAll(taskList);
-        this.offsets.setAll(offsets);
-        this.durations.setAll(durations);
-        this.statusList.setAll(statusList);
-        this.percentage.set(percentage);
     }
 
     public Checklist() {
         super();
         this.id.set(null);
         this.title.set(null);
-        this.startDate.set(null);
-        this.stopDate.set(null);
         this.taskList.setAll(FXCollections.observableArrayList());
-        this.offsets.setAll(FXCollections.observableArrayList());
-        this.durations.setAll(FXCollections.observableArrayList());
-        this.statusList.setAll(FXCollections.observableArrayList());
-        this.percentage.set(null);
     }
 
     @Override
@@ -68,46 +45,10 @@ public class Checklist extends Event implements SQL {
     public String getTitle() {
         return title.get();
     }
-    public LocalDate getStartDate() {
-        return startDate.get();
-    }
-    public LocalDate getStopDate() {
-        return stopDate.get();
-    }
     public ObservableList<Task> getTaskList() {
         return taskList;
     }
-    public ObservableList<Integer[]> getOffsets(){return offsets;}
-    public ObservableList<Integer[]> getDurations(){return durations;}
-    public ObservableList<Boolean> getStatusList() {
-        return statusList;
-    }
-    public Boolean getStatus(int index){
-        return statusList.get(index);
-    }
-    public StringProperty getPercentage() {
-        int numItems = 0;
-        for (Task task : taskList) {
-            if (task.hasValue()) {
-                numItems++;
-            }
-        }
-        numItems++;
-        if (numItems == 0) {
-            setPercentage("0");
-            return percentage;
-        }
-        double percentPerItem = 100.0 / numItems;
-        double perc = 100;
-        for (int i = 0; i < numItems; i++) {
-            if (!statusList.get(i)) {
-                // if false
-                perc -= percentPerItem;
-            }
-        }
-        percentage.set(String.valueOf(Math.round(perc)));
-        return percentage;
-    }
+    
 
     @Override
     public void setID(String id){
@@ -116,39 +57,19 @@ public class Checklist extends Event implements SQL {
     public void setTitle(String newTitle) {
         title.set(newTitle);
     }
-    public void setStartDate(LocalDate newStartDate) {
-        startDate.set(newStartDate);
-    }
-    public void setStopDate(LocalDate newStopDate) {
-        stopDate.set(newStopDate);
-    }
     public void setTaskList(ObservableList<Task> newTaskList) {
         taskList.setAll(newTaskList);
     }
-    public void setOffsets(ObservableList<Integer[]> newOffsets){offsets.setAll(newOffsets);}
-    public void setDurations(ObservableList<Integer[]> newDurations){durations.setAll(newDurations);}
-    public void setStatusList(ObservableList<Boolean> newStatusList) {
-        statusList.setAll(newStatusList);
-    }
-    public void setPercentage(String newPercentage){
-        percentage.set(newPercentage);
-    }
 
-    public void addTask(Task newTask) {
-        taskList.add(newTask);
-        statusList.add(false);
-    }
-    
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
+    public StringProperty titleProperty(){
+        return title;
     }
     
     public boolean hasValue() {
         return
-                title.get() != null && !title.get().trim().isEmpty() &&
-                        startDate.get() != null &&
-                        stopDate.get() != null &&
-                        super.hasValue();
+            title.get() != null &&
+            !title.get().trim().isEmpty() &&
+            super.hasValue();
     }
 
     @Override
@@ -169,13 +90,7 @@ public class Checklist extends Event implements SQL {
         return new String[]{
                 id.get(),
                 title.get(),
-                DateTime.convertDate(getStartDate()),
-                DateTime.convertDate(getStopDate()),
                 taskList.stream().map(Task::toString).collect(Collectors.joining(" | ")),
-                offsets.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
-                durations.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
-                statusList.stream().map(String::valueOf).collect(Collectors.joining(" | ")),
-                percentage.get(),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials

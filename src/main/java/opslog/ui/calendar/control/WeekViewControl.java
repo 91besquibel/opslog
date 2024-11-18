@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import opslog.managers.CalendarManager;
 import opslog.managers.ChecklistManager;
+import opslog.managers.ScheduledChecklistManager;
+import opslog.object.event.ScheduledChecklist;
 import opslog.object.Event;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;

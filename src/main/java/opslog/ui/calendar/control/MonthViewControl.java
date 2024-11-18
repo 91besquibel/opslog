@@ -15,6 +15,8 @@ import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.calendar.cell.CalendarCell;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.object.CalendarMonth;
+import opslog.managers.ScheduledChecklistManager;
+import opslog.object.event.ScheduledChecklist;
 import opslog.util.QuickSort;
 import opslog.util.Settings;
 
@@ -259,9 +261,9 @@ public class MonthViewControl {
             eventStopDate = calendar.getStopDate();
         }
 
-        if(event instanceof Checklist checklist){
-            eventStartDate = checklist.getStartDate();
-            eventStopDate = checklist.getStopDate();
+        if(event instanceof ScheduledChecklist scheduledChecklist){
+            eventStartDate = scheduledChecklist.startDateProperty().get();
+            eventStopDate = scheduledChecklist.stopDateProperty().get();
         }
 
         dates [0] = eventStartDate;
@@ -306,15 +308,15 @@ public class MonthViewControl {
 
         try{
             List<String[]> results = executor.executeBetweenQuery(
-                    "checklist_table",
+                    "scheduled_checklist_table",
                     "start_date",
                     startDate,
                     stopDate
             );
             for (String[] row : results) {
                 System.out.println("MonthViewControl: " + Arrays.toString(row));
-                Checklist item = ChecklistManager.newItem(row);
-                System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
+                ScheduledChecklist item = ScheduledChecklistManager.newItem(row);
+                System.out.println("MonthViewControl: adding calendar event " + item.toString());
                 events.add(item);
 
             }
