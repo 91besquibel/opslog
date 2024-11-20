@@ -63,8 +63,8 @@ public class Task extends Event implements SQL {
 
     //Utility Methods
     public boolean hasValue() {
-        return title.get() != null &&
-                        !title.get().trim().isEmpty() &&
+        return
+                title.get() != null && !title.get().trim().isEmpty() &&
                         super.hasValue();
     }
 

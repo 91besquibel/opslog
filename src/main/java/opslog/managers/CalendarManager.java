@@ -61,15 +61,16 @@ public class CalendarManager {
     }
     
     public static Calendar getItem(String ID) {
-        System.out.println("CalendarManager: Retreiving item with ID: " + ID);
-        for (Calendar calendar : calendarList) {
-            if (calendar.getID().equals(ID)) {
-                System.out.println("CalendarManager: Returning calendar event");
-                return calendar;
+        //System.out.println("CalendarManager: Retreiving item with ID: " + ID);
+        Calendar calendar = null;
+        for (Calendar item : calendarList) {
+            if (item.getID().equals(ID)) {
+                //System.out.println("CalendarManager: Returning calendar event");
+                calendar = item;
             }
         }
-        System.out.println("CalendarManager: Returning null");
-        return null;
+        //System.out.println("CalendarManager: Returning null");
+        return calendar;
     }
 
     public static ObservableList<Calendar> getList() {

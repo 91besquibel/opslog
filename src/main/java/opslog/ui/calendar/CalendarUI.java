@@ -137,7 +137,7 @@ public class CalendarUI{
         List<DayViewControl> dayViewControls = new ArrayList<>();
         List<DayView> dayViews = new ArrayList<>();
         for(int days = 0; days < 7; days++){
-            System.out.println("CalendarUI: Creating day view " + (days+1));
+           //System.out.println("CalendarUI: Creating day view " + (days+1));
             DayView weekViewDayView = new DayView();
             dayViews.add(weekViewDayView);
             CalendarDay weekCalendarDay = new CalendarDay();
@@ -249,7 +249,7 @@ public class CalendarUI{
 
         MenuItem goToDayView = new MenuItem("Day View");
         goToDayView.setOnAction(e-> {
-            System.out.println("CalendarUI: Switching to DayView");
+            //System.out.println("CalendarUI: Switching to DayView");
             if (monthView.selectedCellsProperty().size() == 1){
                 CalendarCell cell = monthView.selectedCellsProperty().get(0);
                 LocalDate date = cell.getDate();
@@ -261,10 +261,10 @@ public class CalendarUI{
         MenuItem goToWeekView = new MenuItem("Week View");
         goToWeekView.setOnAction(e ->{
             if (monthView.selectedCellsProperty().size() == 1){
-                System.out.println("CalendarUI: Switching to week view");
+                //System.out.println("CalendarUI: Switching to week view");
                 CalendarCell cell = monthView.selectedCellsProperty().get(0);
                 LocalDate date = cell.getDate();
-                System.out.println("CalendarUI: Week view date " + date);
+                //System.out.println("CalendarUI: Week view date " + date);
                 calendarWeek.dateProperty().set(date);
                 controlPanel.getSelector().setValue("Week");
             }
@@ -280,14 +280,14 @@ public class CalendarUI{
                 Date date = Date.valueOf(cellDate);
                 String sql = String.format("SELECT * FROM log_table WHERE date = '" + date + "'");
                 try {
-                    System.out.println("\n MonthView: DataBase Query: " + sql);
+                    //System.out.println("\n MonthView: DataBase Query: " + sql);
                     List<String[]> results = executor.executeQuery(sql);
                     for (String[] row : results) {
-                        System.out.println("MonthView: Result: " + Arrays.toString(row));
+                        //System.out.println("MonthView: Result: " + Arrays.toString(row));
                         Log newLog = LogManager.newItem(row);
                         data.add(newLog);
                     }
-                    System.out.println("MonthView: End Query \n");
+                    //System.out.println("MonthView: End Query \n");
                     if (!data.isEmpty()) {
                         try{
                             SearchUI<Log> searchUI = new SearchUI<>();

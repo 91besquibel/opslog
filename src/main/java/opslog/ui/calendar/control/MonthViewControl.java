@@ -62,15 +62,15 @@ public class MonthViewControl {
 
         // Tracks changes to the in application memory and adjusts the UI to reflect data
         CalendarManager.getMonthEvents().addListener((ListChangeListener<? super Event>) change -> {
-            System.out.println("MonthViewControl: MonthEvent list change detected");
+            //System.out.println("MonthViewControl: MonthEvent list change detected");
             while(change.next()){
                 if(change.wasAdded()){
-                    System.out.println("MonthViewControl: Adding Changes");
+                    //System.out.println("MonthViewControl: Adding Changes");
                     ObservableList<Event> events = FXCollections.observableArrayList(change.getAddedSubList());
 
                     for(Event event : events){
                         LocalDate [] dates = getDates(event);
-                        System.out.println("MonthViewControl: Event dates: " + Arrays.toString(dates));
+                        //System.out.println("MonthViewControl: Event dates: " + Arrays.toString(dates));
 
                         // Add the event to the calendar day
                         if(dates[0] != null && dates[1] != null){
@@ -78,10 +78,10 @@ public class MonthViewControl {
 
                             for (CalendarCell cell : cells) {
                                 if (cell != null && cell.getDate() != null) {  // Adding null check for cell
-                                    System.out.println("MonthViewControl: Adding event to cell at: " + cell.getDate().toString());
+                                    //System.out.println("MonthViewControl: Adding event to cell at: " + cell.getDate().toString());
                                     cell.addEvent(event);
                                 } else {
-                                    System.out.println("MonthViewControl: Skipping null cell.");
+                                    //System.out.println("MonthViewControl: Skipping null cell.");
                                 }
                             }
                         }
@@ -92,14 +92,14 @@ public class MonthViewControl {
                     for(Event event : change.getRemoved()){
 
                         LocalDate [] dates = getDates(event);
-                        System.out.println("MonthViewControl:  Removing events with the dates: " + Arrays.toString(dates));
+                        //System.out.println("MonthViewControl:  Removing events with the dates: " + Arrays.toString(dates));
 
                         // Remove the event from each calendar day
                         if(dates[0] != null && dates[1] != null){
                             CalendarCell [] cells = monthView.getCells(dates[0], dates[1]);
                             for (CalendarCell cell : cells) {
                                 if (cell != null) {
-                                    System.out.println("MonthViewControl: Removing event from cell at: " + cell.getDate().toString());
+                                    //System.out.println("MonthViewControl: Removing event from cell at: " + cell.getDate().toString());
                                     cell.removeEvent(event);
                                 }
                             }
@@ -108,7 +108,7 @@ public class MonthViewControl {
                 }
 
                 if(change.wasUpdated()){
-                    System.out.println("MonthViewControl: Updateing Changes");
+                    //System.out.println("MonthViewControl: Updateing Changes");
                 }
             }
         });
@@ -138,10 +138,10 @@ public class MonthViewControl {
             });
 
             calendarCell.setOnMouseClicked(e -> {
-                System.out.println("Mouse event detected: ");
+                //System.out.println("Mouse event detected: ");
                 boolean isControlPressed = e.isControlDown();
                 if (e.getButton() == MouseButton.PRIMARY && isControlPressed) {
-                    System.out.print(" Control + Primary Button Down \n");
+                    //System.out.print(" Control + Primary Button Down \n");
                     calendarCell.borderProperty().unbind();
 
                     if (monthView.selectedCellsProperty().contains(calendarCell)) {
@@ -152,7 +152,7 @@ public class MonthViewControl {
                         calendarCell.borderProperty().bind(Settings.dateSelectBorder);
                     }
                 } else if (e.getButton() == MouseButton.PRIMARY) {
-                    System.out.print(" Primary Button Down \n");
+                    //System.out.print(" Primary Button Down \n");
                     monthView.selectedCellsProperty().clear();
                     for(CalendarCell cell : monthView.getCells()){
                         cell.borderProperty().unbind();
@@ -179,7 +179,7 @@ public class MonthViewControl {
         YearMonth newValue = calendarMonth.yearMonthProperty().get();
         
         // update the month view cells with new dates
-        System.out.println("\nMonthView Control: Creating a new set of dates for " + newValue.toString());
+        //pSystem.out.println("\nMonthView Control: Creating a new set of dates for " + newValue.toString());
         for (int i = 0; i < 42; i++) {
             try {
                 CalendarCell cell = monthView.getCells().get(i);
@@ -281,7 +281,7 @@ public class MonthViewControl {
     private static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
         DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
 
-        System.out.println("MonthViewControl: DB Query for dates:  " + startDate + " to " + stopDate);
+        //System.out.println("MonthViewControl: DB Query for dates:  " + startDate + " to " + stopDate);
         List<Event> events = new ArrayList<>();
         CalendarManager.getMonthEvents().clear();
 
@@ -295,9 +295,9 @@ public class MonthViewControl {
             );
 
             for (String[] row : results) {
-                System.out.println("MonthViewControl: " + Arrays.toString(row));
+                //System.out.println("MonthViewControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-                System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
+                //System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
 
             }
@@ -314,9 +314,9 @@ public class MonthViewControl {
                     stopDate
             );
             for (String[] row : results) {
-                System.out.println("MonthViewControl: " + Arrays.toString(row));
+                //System.out.println("MonthViewControl: " + Arrays.toString(row));
                 ScheduledChecklist item = ScheduledChecklistManager.newItem(row);
-                System.out.println("MonthViewControl: adding calendar event " + item.toString());
+                //System.out.println("MonthViewControl: adding calendar event " + item.toString());
                 events.add(item);
 
             }

@@ -35,7 +35,7 @@ public class ScheduledChecklist extends Event implements SQL{
 	public ScheduledChecklist(){
 		super();
 		this.id.set(null);
-		this.checklist.set(null);
+		this.checklist.set(new Checklist());
 		this.startDate.set(null);
 		this.stopDate.set(null);
 		this.offsets.setAll(FXCollections.observableArrayList());

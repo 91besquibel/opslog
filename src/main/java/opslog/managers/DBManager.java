@@ -20,7 +20,8 @@ public class DBManager {
 		"log_table",
 		"pinboard_table",
 		"checklist_table", 
-		"calendar_table" 
+		"calendar_table",
+		"scheduled_checklist_table"
 	);
 
 	public DBManager(DatabaseExecutor databaseExecutor) {

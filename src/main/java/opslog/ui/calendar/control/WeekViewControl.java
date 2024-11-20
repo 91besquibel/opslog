@@ -1,28 +1,11 @@
 package opslog.ui.calendar.control;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
-import opslog.managers.ScheduledChecklistManager;
-import opslog.object.event.ScheduledChecklist;
-import opslog.object.Event;
-import opslog.object.event.Calendar;
-import opslog.object.event.Checklist;
-import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
 import opslog.ui.calendar.layout.WeekView;
 import opslog.ui.calendar.object.CalendarDay;
 import opslog.ui.calendar.object.CalendarWeek;
-import opslog.util.QuickSort;
-
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,17 +36,17 @@ public class WeekViewControl {
         // Listen for a new date
         calendarWeek.dateProperty().addListener((observable, oldValue, newValue) -> {
             if(!newValue.equals(oldValue)){
-                System.out.println("\nWeekViewControl: Creating a new set of dates for the week view: " + newValue.toString());
+                //System.out.println("\nWeekViewControl: Creating a new set of dates for the week view: " + newValue.toString());
                 calendarWeek.newWeek(newValue);
 
-                System.out.println("WeekViewControl: update triggered");
+                //System.out.println("WeekViewControl: update triggered");
                 LocalDate newDate = calendarWeek.dateProperty().get();
 
                 int weekDay = 0;
                 for(DayViewControl dayViewControl : dayViewControls) {
                     CalendarDay calendarDay = dayViewControl.getCalendarDay();
                     LocalDate date = calendarWeek.datesProperty().get(weekDay);
-                    System.out.println("WeekViewControl: Updating CalendarDay at " + weekDay + " with " + date);
+                    //System.out.println("WeekViewControl: Updating CalendarDay at " + weekDay + " with " + date);
                     calendarDay.dateProperty().set(date); // triggeres @DayViewControl calendarDay.datePropertyListener
                     weekDay++;
                 }

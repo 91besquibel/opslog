@@ -13,7 +13,7 @@ public class ScheduledChecklistManager{
 	
 	private static final ObservableList<ScheduledChecklist> list = FXCollections.observableArrayList();
 	
-	public static final String CHCK_COL = 
+	public static final String SCHDL_CHCK_COL =
 	"id, start_date, stop_date, offsets, durations, status_list, percentage";
 
 	public static void operation(String operation, List<String[]> rows, String ID) {

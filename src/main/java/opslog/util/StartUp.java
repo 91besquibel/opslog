@@ -64,7 +64,7 @@ public class StartUp{
 
 		try{
 			List<String[]> results = executor.executeBetweenQuery(
-				"checklist_table", 
+				"scheduled_checklist_table",
 				"start_date", 
 				startDate, 
 				stopDate

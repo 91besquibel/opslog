@@ -8,23 +8,20 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import opslog.managers.FormatManager;
-import opslog.managers.ListOperation;
-import opslog.managers.ProfileManager;
-import opslog.managers.TagManager;
-import opslog.managers.TypeManager;
+import opslog.managers.*;
 import opslog.object.Format;
 import opslog.object.Profile;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.controls.*;
 import opslog.util.*;
-import opslog.managers.DBManager;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
-
 
 public class SettingsUI {
 
@@ -58,33 +55,15 @@ public class SettingsUI {
         CustomButton mpathDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
 
         mpathSwap.setOnAction(event -> {
-            if (mpathSelector.getValue() != null) {
-                Directory.initialize(mpathSelector.getValue());
-            } else {
-                showPopup("Settings: Change Path", "Path selector empty, please select a choice");
-            }
+
         });
 
         mpathAdd.setOnAction(event -> {
-            if (mpathTextField.getText() != null && !mpathTextField.getText().trim().isEmpty()) {
-                prefs.put(Directory.newKey(), mpathTextField.getText());
-            } else {
-                showPopup("Settings: New Path", "To create a new path input a value");
-            }
+
         });
 
         mpathDelete.setOnAction(event -> {
-            if (mpathSelector.getValue() != null) {
-                String key = Directory.findKeyByValue(mpathTextField.getText());
-                if (key != null) {
-                    prefs.remove(key);
-                    Directory.forceStore();
-                } else {
-                    showPopup("Settings: Remove Path", "Selection, could not be found in storage");
-                }
-            } else {
-                showPopup("Settings: Remove Path", "Path selector empty, please select a choice");
-            }
+
         });
 
         CustomHBox mpathBtns = new CustomHBox();
@@ -120,31 +99,67 @@ public class SettingsUI {
         CustomListView<Type> listView = new CustomListView<>(TypeManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
         CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomTextField patternTextField = new CustomTextField("Pattern", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        CustomButton typeAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-        CustomButton typeDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-        
-        typeAdd.setOnAction(event -> {
-            Type newType = new Type();
-            newType.setTitle(titleTextField.getText());
-            newType.setPattern(patternTextField.getText());
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Type dbType = dbManager.insert(newType, "type_table", TypeManager.TYPE_COL);
-            TypeManager.insert(dbType);
-            titleTextField.clear();
-            patternTextField.clear();
+        CustomButton add = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+        CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
+        CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+
+        add.setOnAction(event -> {
+            try{
+
+                Type newType = new Type();
+                newType.setTitle(titleTextField.getText());
+                newType.setPattern(patternTextField.getText());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert( "type_table", TypeManager.TYPE_COL, newType.toArray());
+                newType.setID(id);
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(newType.toArray());
+                TypeManager.operation("INSERT",dbResults,newType.getID());
+
+                titleTextField.clear();
+                patternTextField.clear();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         });
 
-        typeDelete.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Type selectedType = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = dbManager.delete(selectedType, "type_table");
-            if(rowsAffected > 0){
-                TypeManager.delete(selectedType.getID());
+        edit.setOnAction(event -> {
+            try {
+
+                Type newType = new Type();
+                newType.setID(listView.getSelectionModel().getSelectedItem().getID());
+                newType.setTitle(titleTextField.getText());
+                newType.setPattern(patternTextField.getText());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.update("type_table", TypeManager.TYPE_COL, newType.toArray());
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(newType.toArray());
+                TypeManager.operation("UPDATE",dbResults,newType.getID());
+
+                titleTextField.clear();
+                patternTextField.clear();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        delete.setOnAction(event -> {
+            try {
+                Type selectedType = listView.getSelectionModel().getSelectedItem();
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.delete("type_table", selectedType.getID());
+                TypeManager.operation("DELETE", new ArrayList<>(),selectedType.getID());
                 titleTextField.clear();
                 patternTextField.clear();
                 listView.getSelectionModel().clearSelection();
+            }catch (SQLException e){
+                throw new RuntimeException(e);
             }
         });
 
@@ -156,7 +171,7 @@ public class SettingsUI {
         });
         
         HBox typeBtns = new CustomHBox();
-        typeBtns.getChildren().addAll(typeAdd, typeDelete);
+        typeBtns.getChildren().addAll(add, edit, delete);
         typeBtns.setAlignment(Pos.BASELINE_RIGHT);
 
         VBox typeCard = new CustomVBox();
@@ -171,31 +186,67 @@ public class SettingsUI {
         CustomListView<Tag> listView = new CustomListView<>(TagManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
         CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomColorPicker tagColorPicker = new CustomColorPicker(Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        CustomButton tagAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-        CustomButton tagDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-        
-        tagAdd.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Tag newTag = new Tag();
-            newTag.setTitle(titleTextField.getText());
-            newTag.setColor(tagColorPicker.getValue());
-            Tag dbTag = dbManager.insert(newTag, "tag_table", TagManager.TAG_COL);
-            ListOperation.insert(dbTag, TagManager.getList());
-            titleTextField.clear();
-            tagColorPicker.setValue(null);
+        CustomButton add = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+        CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
+        CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+
+        add.setOnAction(event -> {
+            try{
+
+                Tag tag = new Tag();
+                tag.setTitle(titleTextField.getText());
+                tag.setColor(tagColorPicker.getValue());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert( "tag_table", TagManager.TAG_COL, tag.toArray());
+                tag.setID(id);
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(tag.toArray());
+                TagManager.operation("INSERT",dbResults,tag.getID());
+
+                titleTextField.clear();
+                tagColorPicker.setValue(null);
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         });
 
-        tagDelete.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Tag selectedTag = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = dbManager.delete(selectedTag, "tag_table");
-            if(rowsAffected > 0){
-                ListOperation.delete(selectedTag, TagManager.getList());
+        edit.setOnAction(event -> {
+            try {
+
+                Tag tag = new Tag();
+                tag.setID(listView.getSelectionModel().getSelectedItem().getID());
+                tag.setTitle(titleTextField.getText());
+                tag.setColor(tagColorPicker.getValue());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.update("tag_table", TagManager.TAG_COL, tag.toArray());
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(tag.toArray());
+                TagManager.operation("UPDATE",dbResults,tag.getID());
+
+                titleTextField.clear();
+                tagColorPicker.setValue(null);
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        delete.setOnAction(event -> {
+            try {
+                Tag selectedItem = listView.getSelectionModel().getSelectedItem();
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.delete("tag_table", selectedItem.getID());
+                TagManager.operation("DELETE", new ArrayList<>(),selectedItem.getID());
                 titleTextField.clear();
                 tagColorPicker.setValue(null);
                 listView.getSelectionModel().clearSelection();
+            }catch (SQLException e){
+                throw new RuntimeException(e);
             }
         });
 
@@ -207,7 +258,7 @@ public class SettingsUI {
         });
         
         CustomHBox tagBtns = new CustomHBox();
-        tagBtns.getChildren().addAll(tagAdd, tagDelete);
+        tagBtns.getChildren().addAll(add, edit, delete);
         tagBtns.setAlignment(Pos.BASELINE_RIGHT);
         
         CustomVBox tagCard = new CustomVBox();
@@ -222,31 +273,67 @@ public class SettingsUI {
         CustomListView<Format> listView = new CustomListView<>(FormatManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE);
         CustomTextField titleTextField = new CustomTextField("Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomTextField descriptionTextField = new CustomTextField("Format", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        CustomButton formatAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-        CustomButton formatDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-        
-        formatAdd.setOnAction(event -> {
-            Format newFormat = new Format();
-            newFormat.setTitle(titleTextField.getText());
-            newFormat.setFormat(descriptionTextField.getText());
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Format dbFormat = dbManager.insert(newFormat, "format_table", FormatManager.FORMAT_COL);
-            ListOperation.insert(dbFormat, FormatManager.getList());
-            titleTextField.clear();
-            descriptionTextField.clear();
+        CustomButton add = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+        CustomButton edit = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
+        CustomButton delete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+
+        add.setOnAction(event -> {
+            try{
+
+                Format format = new Format();
+                format.setTitle(titleTextField.getText());
+                format.setFormat(descriptionTextField.getText());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert( "format_table", FormatManager.FORMAT_COL, format.toArray());
+                format.setID(id);
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(format.toArray());
+                FormatManager.operation("INSERT",dbResults,format.getID());
+
+                titleTextField.clear();
+                descriptionTextField.clear();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         });
-        
-        formatDelete.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Format selectedFormat = listView.getSelectionModel().getSelectedItem();
-            int rowsAffected = dbManager.delete(selectedFormat, "format_table");
-            if(rowsAffected > 0){
-                ListOperation.delete(selectedFormat, FormatManager.getList());
+
+        edit.setOnAction(event -> {
+            try {
+
+                Format format = new Format();
+                format.setID(listView.getSelectionModel().getSelectedItem().getID());
+                format.setTitle(titleTextField.getText());
+                format.setFormat(descriptionTextField.getText());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.update( "format_table", FormatManager.FORMAT_COL, format.toArray());
+
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(format.toArray());
+                TagManager.operation("UPDATE",dbResults,format.getID());
+
+                titleTextField.clear();
+                descriptionTextField.clear();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        delete.setOnAction(event -> {
+            try {
+                Format selectedItem = listView.getSelectionModel().getSelectedItem();
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.delete("format_table", selectedItem.getID());
+                FormatManager.operation("DELETE", new ArrayList<>(),selectedItem.getID());
                 titleTextField.clear();
                 descriptionTextField.clear();
                 listView.getSelectionModel().clearSelection();
+            }catch (SQLException e){
+                throw new RuntimeException(e);
             }
         });
         
@@ -258,7 +345,7 @@ public class SettingsUI {
         });
 
         CustomHBox formatBtns = new CustomHBox();
-        formatBtns.getChildren().addAll(formatAdd, formatDelete);
+        formatBtns.getChildren().addAll(add,edit,delete);
         formatBtns.setAlignment(Pos.BASELINE_RIGHT);
 
         CustomVBox formatCard = new CustomVBox();
@@ -343,35 +430,70 @@ public class SettingsUI {
         CustomButton profileDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
         
         profileAdd.setOnAction(event -> {
-            
-            Profile newProfile = new Profile();
-            newProfile.setTitle(profileTextField.getText());
-            newProfile.setRoot(rootColorPicker.getValue());
-            newProfile.setPrimary(primaryColorPicker.getValue());
-            newProfile.setSecondary(secondaryColorPicker.getValue());
-            newProfile.setBorder(focusColorPicker.getValue());
-            newProfile.setTextColor(textColorPicker.getValue());
-            newProfile.setTextSize(textSizeSelector.getSelectionModel().getSelectedItem());
-            newProfile.setTextFont(textFontSelector.getSelectionModel().getSelectedItem());
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Profile profile = dbManager.insert(newProfile,"profile_table",ProfileManager.PROFILE_COL);
-            ListOperation.insert(profile, ProfileManager.getList());
-            profileTextField.textProperty().set("");
+            try {
+                Profile newProfile = new Profile();
+                newProfile.setTitle(profileTextField.getText());
+                newProfile.setRoot(rootColorPicker.getValue());
+                newProfile.setPrimary(primaryColorPicker.getValue());
+                newProfile.setSecondary(secondaryColorPicker.getValue());
+                newProfile.setBorder(focusColorPicker.getValue());
+                newProfile.setTextColor(textColorPicker.getValue());
+                newProfile.setTextSize(textSizeSelector.getSelectionModel().getSelectedItem());
+                newProfile.setTextFont(textFontSelector.getSelectionModel().getSelectedItem());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert("profile_table",ProfileManager.PROFILE_COL, newProfile.toArray());
+                newProfile.setID(id);
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add( newProfile.toArray() );
+                ProfileManager.operation("INSERT", dbResults, newProfile.getID());
+
+                profileTextField.setText("");
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         });
         
         profileEdit.setOnAction(event -> {
-            
+            try {
+
+                Profile newProfile = new Profile();
+                newProfile.setID(profileSelector.getSelectionModel().getSelectedItem().getID());
+                newProfile.setTitle(profileTextField.getText());
+                newProfile.setRoot(rootColorPicker.getValue());
+                newProfile.setPrimary(primaryColorPicker.getValue());
+                newProfile.setSecondary(secondaryColorPicker.getValue());
+                newProfile.setBorder(focusColorPicker.getValue());
+                newProfile.setTextColor(textColorPicker.getValue());
+                newProfile.setTextSize(textSizeSelector.getSelectionModel().getSelectedItem());
+                newProfile.setTextFont(textFontSelector.getSelectionModel().getSelectedItem());
+
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.update("profile_table",ProfileManager.PROFILE_COL, newProfile.toArray());
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(newProfile.toArray());
+                ProfileManager.operation("UPDATE",dbResults,newProfile.getID());
+
+                profileTextField.setText("");
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         });
         
         profileDelete.setOnAction(event -> {
-            DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-            DBManager dbManager = new DBManager(databaseExecutor);
-            Profile selectedProfile = profileSelector.getValue();
-            int rowsAffected = dbManager.delete(selectedProfile,"profile_table");
-            if(rowsAffected>0){
-                ListOperation.delete(selectedProfile, ProfileManager.getList());
-                profileSelector.setValue(null);
+            try {
+
+                Profile selectedProfile = profileSelector.getValue();
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                databaseQueryBuilder.delete("profile_table", selectedProfile.getID());
+                List<String [] > dbResults = new ArrayList<>();
+                dbResults.add(selectedProfile.toArray());
+                ProfileManager.operation("DELETE",dbResults,selectedProfile.getID());
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         });
 
@@ -385,7 +507,6 @@ public class SettingsUI {
                 textColorPicker.setValue(nv.getTextColor());
                 textSizeSelector.setValue(nv.getTextSize());
                 textFontSelector.setValue(nv.getTextFont());
-                // Defer the clearSelection to avoid race conditions
                 Platform.runLater(() -> profileSelector.getSelectionModel().clearSelection());
             }
         });

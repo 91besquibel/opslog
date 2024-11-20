@@ -39,8 +39,12 @@ public class DatabaseExecutor {
 	 * @throws SQLException if there is an error executing the SQL statement
 	 */
 	public int executeUpdate(String sql) throws SQLException {
+		System.out.println("DatabaseExecutor.executeUpdate: " + sql);
 		try (Connection connection = connectionProvider.getConnection();
 			 PreparedStatement statement = connection.prepareStatement(sql)) {
+			int numUpdated = statement.executeUpdate();
+			System.out.println("DatabaseExecutor.executeUpdate: " + numUpdated);
+			System.out.println("DatabaseExecutor.executeUpdate: Query Completed\n");
 			return statement.executeUpdate();
 		}
 	}
@@ -54,6 +58,7 @@ public class DatabaseExecutor {
 	 * @throws SQLException if there is an error executing the SQL statement
 	 */
 	public List<String[]> executeQuery(String sql) throws SQLException {
+		System.out.println("DatabaseExecutor.executeQuery: " + sql);
 		List<String[]> results = new ArrayList<>();
 
 		// Use try-with-resources to ensure resources are closed properly.
@@ -70,10 +75,11 @@ public class DatabaseExecutor {
 				for (int i = 0; i < columnCount; i++) {
 					row[i] = resultSet.getString(i + 1);  // Columns are 1-indexed in ResultSet.
 				}
+				System.out.println("DatabaseExecutor.executeQuery: " + Arrays.toString(row));
 				results.add(row);
 			}
 		}
-		
+		System.out.println("DatabaseExecutor.executeQuery: Query Completed\n");
 		return results;
 	}
 
@@ -98,7 +104,7 @@ public class DatabaseExecutor {
 		);
 
 		List<String[]> results = new ArrayList<>();
-
+		System.out.println("DatabaseExecutor.executeBetweenQuery: " + sql);
 		// Use try-with-resources to ensure resources are closed properly.
 		try (Connection connection = connectionProvider.getConnection();
 			 PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -115,11 +121,12 @@ public class DatabaseExecutor {
 					for (int i = 0; i < columnCount; i++) {
 						row[i] = resultSet.getString(i + 1);  // Columns are 1-indexed.
 					}
-					System.out.println(Arrays.toString(row));
+					System.out.println("DatabaseExecutor.executeBetweenQuery: " + Arrays.toString(row));
 					results.add(row);
 				}
 			}
 		}
+		System.out.println("DatabaseExecutor.executeBetweenQuery: Query Completed\n");
 		return results;
 	}
 

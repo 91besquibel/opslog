@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import opslog.interfaces.*;
 
 /*
-
 	Abstract super class for:
 	Log.java
 	Calendar.java
@@ -20,7 +19,6 @@ import opslog.interfaces.*;
 	This will allow the DateCell in the CalendarContent.java 
 	to Display all the values associated with that date.
 	By using the Event Data type in an observable list in the CustomDateCell.java
-    
 */
 
 public abstract class Event {
@@ -79,18 +77,15 @@ public abstract class Event {
     public ObjectProperty<Type> typeProperty() {
         return type;
     }
-
     public StringProperty initialsProperty(){
         return initials;
     }
-
     public StringProperty descriptionProperty(){
         return description;
     }
 
-    // Checkis if all properties have a value
     public boolean hasValue() {
-        System.out.println("Checking if type has a value: " + type.get().toString());
+        //System.out.println("Checking if type has a value: " + type.get().toString());
         return
                 type.get().hasValue() &&
                 !tags.isEmpty() && tags.stream().allMatch(Tag::hasValue) &&

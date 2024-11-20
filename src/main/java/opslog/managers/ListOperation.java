@@ -7,12 +7,14 @@ import javafx.collections.ObservableList;
 public class ListOperation {
 
 	public static <T> void  insert(T obj, ObservableList<T> objList) {
+		System.out.println("ListOperation: updating list with step 1 " + obj.toString());
 		if (Platform.isFxApplicationThread()) {
 			objList.add(obj);
 		} else {
 			CountDownLatch latch = new CountDownLatch(1);
 			Platform.runLater(() -> {
 				try {
+					System.out.println("ListOperation: updating list with step 3 " + obj.toString());
 					objList.add(obj);
 				} finally {
 					latch.countDown();

@@ -8,7 +8,6 @@ import javafx.geometry.HPos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.layout.GridPane;
-import javafx.geometry.Pos;
 import opslog.ui.calendar.Util;
 import opslog.util.Settings;
 
@@ -90,7 +89,7 @@ public class DayView extends GridPane{
 		// Round start and stop times
 		LocalTime roundedStartTime = Util.roundTime(startTime);
 		LocalTime roundedStopTime = Util.roundTime(stopTime);
-		System.out.println("DayView: Event start time " + roundedStartTime + " and stop time " + roundedStopTime);
+		//System.out.println("DayView: Event start time " + roundedStartTime + " and stop time " + roundedStopTime);
 
 		// Get indices and calculate row span
 		int startIndex = map.getOrDefault(roundedStartTime, 0);
@@ -111,17 +110,17 @@ public class DayView extends GridPane{
 			}
 			if (isAvailable) {
 				// Mark each cell in the span as occupied if they are all available
-				System.out.println("DayView: Availability found");
+				//System.out.println("DayView: Availability found");
 				for (int i = 0; i < rowSpan; i++) {
 					occupiedCells.add((startIndex + i) + "," + col);
 				}
-				System.out.println("DayView: Displaying label from " +
-						startIndex + " to " + stopIndex +
-						" with a row span of " + rowSpan +" at col " + 0);
+				//System.out.println("DayView: Displaying label from " +
+						//startIndex + " to " + stopIndex +
+						//" with a row span of " + rowSpan +" at col " + 0);
 				this.add(pane, col, startIndex, 1, rowSpan);
 				break;
 			} else{
-				System.out.println("DayView: No availablity found");
+				//System.out.println("DayView: No availablity found");
 			}
 		}
 	}

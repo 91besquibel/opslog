@@ -79,7 +79,7 @@ public class DayViewControl {
     public void initializeListeners(){
         // If the date changes clear the dayView
         calendarDay.dateProperty().addListener((obs, ov, nv) -> {
-            System.out.println("\nDayViewControl: New date detected: " + nv);
+            //System.out.println("\nDayViewControl: New date detected: " + nv);
             if (nv != null && nv!= ov) {
                 // find a way to not rebuild the grid every time
                 // it would be better to remove the event panes individually
@@ -95,7 +95,7 @@ public class DayViewControl {
 
         calendarDay.eventsProperty().addListener(
                 (ListChangeListener<? super Event>) change -> {
-            System.out.println("DayView: event list change detected");
+            //System.out.println("DayView: event list change detected");
             while(change.next()){
                 if(change.wasAdded()){
                     ObservableList<Event> events =
@@ -125,7 +125,7 @@ public class DayViewControl {
     private void processCalendar(Calendar calendar) {
         LocalDate viewedDate = calendarDay.dateProperty().get();
         Label label = new Label(calendar.getStartTime()+ " " + calendar.getTitle());
-        System.out.println("DayView: Processing calendar event: " + calendar.getTitle());
+        //System.out.println("DayView: Processing calendar event: " + calendar.getTitle());
         label.setBackground(
                 new Background(
                         new BackgroundFill(
@@ -418,7 +418,7 @@ public class DayViewControl {
     }
 
     private List<Event> handleQuery(LocalDate date){
-        System.out.println("DayViewControl: DB Query for entries matching: " + date);
+        //System.out.println("DayViewControl: DB Query for entries matching: " + date);
         DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
         List<Event> events = new ArrayList<>();
         String dateStr = " '" + date +"' ";
@@ -428,12 +428,12 @@ public class DayViewControl {
                     , dateStr
                     , dateStr
             );
-            System.out.println("DayViewControl: DB Query: " + sql);
+            //System.out.println("DayViewControl: DB Query: " + sql);
             List<String[]> results = executor.executeQuery(sql);
             for (String[] row : results) {
-                System.out.println("DayViewControl: " + Arrays.toString(row));
+                //System.out.println("DayViewControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-                System.out.println("DayViewControl: adding calendar event " + item.getTitle());
+                //System.out.println("DayViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
             }
         }catch(SQLException e){
@@ -446,12 +446,12 @@ public class DayViewControl {
                     , dateStr
                     , dateStr
             );
-            System.out.println("DayViewControl: DB Query: " + sql);
+            //System.out.println("DayViewControl: DB Query: " + sql);
             List<String[]> results = executor.executeQuery(sql);
             for (String[] row : results) {
-                System.out.println("DayViewControl: " + Arrays.toString(row));
+                //System.out.println("DayViewControl: " + Arrays.toString(row));
                 ScheduledChecklist item = ScheduledChecklistManager.newItem(row);
-                System.out.println("DayViewControl: adding ScheduledChecklist event " + item.toString());
+                //System.out.println("DayViewControl: adding ScheduledChecklist event " + item.toString());
                 events.add(item);
             }
         }catch(SQLException e){
