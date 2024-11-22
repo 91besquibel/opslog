@@ -4,8 +4,6 @@ import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Task;
 import opslog.util.Settings;
-import opslog.ui.controls.DualTextFieldCell;
-
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.TextFieldTreeTableCell;
@@ -15,16 +13,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.util.StringConverter; 
 import javafx.util.converter.DefaultStringConverter;
 
 
 public class TaskTreeView extends TreeTableView<Task>{
-	
-	
 
 	public TaskTreeView(){
 		
@@ -32,12 +24,8 @@ public class TaskTreeView extends TreeTableView<Task>{
 		TreeTableColumn<Task, Type> typeColumn = typeColumn();
 		TreeTableColumn<Task, ObservableList<Tag>> tagColumn = tagColumn();
 		TreeTableColumn<Task, String> descriptionColumn = descriptionColumn("Description");
-		TreeTableColumn<Task, String> offset = offset();
-		TreeTableColumn<Task, String> duration = duration();
 
 		getColumns().addAll(
-			offset, 
-			duration,
 			titleColumn,
 			typeColumn,
 			tagColumn, 
@@ -62,7 +50,7 @@ public class TaskTreeView extends TreeTableView<Task>{
 		label.textFillProperty().bind(Settings.textColor);
 		
 		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setAlignment(Pos.CENTER);
 		
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell());
@@ -83,7 +71,7 @@ public class TaskTreeView extends TreeTableView<Task>{
 
 		
 		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setAlignment(Pos.CENTER);
 		
 		column.setGraphic(hbox);
 		column.setMinWidth(100);
@@ -106,7 +94,7 @@ public class TaskTreeView extends TreeTableView<Task>{
 		label.textFillProperty().bind(Settings.textColor);
 		
 		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
 		column.setMinWidth(100);
 		
@@ -150,131 +138,6 @@ public class TaskTreeView extends TreeTableView<Task>{
 		return column;
 	}
 
-	private TreeTableColumn<Task, String> offset() {
-		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-		
-		Label label = new Label("Offset");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-
-		column.setGraphic(hbox);
-		column.setMinWidth(130);
-		column.setEditable(true);
-
-		column.setCellFactory(col -> new TextFieldTreeTableCell<Task, String>(new DefaultStringConverter()) {
-			private final CustomTextField textField = new CustomTextField("hh,mm",70,40); 
-			
-			{
-				setBorder(Settings.transparentBorder.get());
-				textField.backgroundProperty().unbind();
-				textField.backgroundProperty().bind(Settings.primaryBackground);
-			} 
-			
-			@Override public void updateItem(String item, boolean empty) { 
-				super.updateItem(item, empty); 
-				if (item != null) { 
-					setGraphic(null); 
-				} else {
-					String offset = item != null ? item : ""; 
-					textField.setText(offset);
-					setGraphic(textField);  
-					setAlignment(Pos.CENTER);
-				} 
-			} 
-			
-			@Override public void startEdit() { 
-				super.startEdit(); 
-				if (isEditing()) { 
-					setGraphic(textField); 
-				} else{
-					setGraphic(textField); 
-				}
-			} 
-			
-			@Override public void cancelEdit() { 
-				super.cancelEdit(); 
-				setGraphic(textField); 
-			} 
-			
-			@Override 
-			public void commitEdit(String newValue) { 
-				super.commitEdit(newValue); 
-				setGraphic(textField); 
-			} 
-			
-		}); 
-		
-		return column;
-	}
-		
-	private TreeTableColumn<Task, String> duration() {
-		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-
-		Label label = new Label("Duration");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-		
-		column.setGraphic(hbox);
-		column.setMinWidth(130);
-		column.setEditable(true);
-
-		column.setCellFactory(col -> new TextFieldTreeTableCell<Task, String>(new DefaultStringConverter()) {
-			private final CustomTextField textField = new CustomTextField(" ",70,40); 
-			private final Label hoursLbl = new Label("H,M:");
-			private final HBox hbox = new HBox(hoursLbl, textField); 
-
-			{
-				setBorder(Settings.transparentBorder.get());
-				hoursLbl.fontProperty().bind(Settings.fontProperty);
-				hoursLbl.textFillProperty().bind(Settings.textColor);
-				hoursLbl.setAlignment(Pos.CENTER);
-				textField.backgroundProperty().unbind();
-				textField.backgroundProperty().bind(Settings.primaryBackground);
-				hbox.setAlignment(Pos.CENTER);
-			} 
-
-			@Override public void updateItem(String item, boolean empty) { 
-				super.updateItem(item, empty); 
-				if (item != null) { 
-					setGraphic(null); 
-				} else {
-					setText(null); 
-					setGraphic(hbox);  
-					setAlignment(Pos.CENTER);
-				} 
-			} 
-
-			@Override public void startEdit() { 
-				super.startEdit(); 
-				if (isEditing()) { 
-					setGraphic(hbox); 
-				} else{
-					setGraphic(null); 
-				}
-			} 
-
-			@Override public void cancelEdit() { 
-				super.cancelEdit(); 
-				setGraphic(hbox); 
-			} 
-
-			@Override 
-			public void commitEdit(String newValue) { 
-				super.commitEdit(newValue); 
-				setGraphic(hbox); 
-			} 
-
-		}); 
-		
-		return column;
-	}
-
 	private TreeTableColumn<Task, String> descriptionColumn(String header) {
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 
@@ -283,11 +146,10 @@ public class TaskTreeView extends TreeTableView<Task>{
 		Label label = new Label(header);
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
-		label.setAlignment(Pos.CENTER_LEFT);
-		HBox headerBox = new HBox(label);
-		headerBox.setAlignment(Pos.CENTER_LEFT);
+		HBox hbox = new HBox(label);
+		hbox.setAlignment(Pos.CENTER);
 
-		column.setGraphic(headerBox);
+		column.setGraphic(hbox);
 		column.setMinWidth(100);
 
 		// Cell Factory
@@ -371,11 +233,12 @@ public class TaskTreeView extends TreeTableView<Task>{
 		};
 	}
 
-	private TreeTableRow createRow() {
+	private TreeTableRow<Task> createRow() {
 		TreeTableRow<Task> row = new TreeTableRow<>();
 		row.backgroundProperty().bind(Settings.primaryBackground);
 		row.minHeight(50);
 		row.borderProperty().bind(Settings.primaryBorder);
+		
 
 		row.itemProperty().addListener((obs, oldItem, newItem) -> {
 			if (row.isEmpty()) {
@@ -416,6 +279,16 @@ public class TaskTreeView extends TreeTableView<Task>{
 		});
 
 		row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
+
+	
+		@Override
+		public void updateItem(TreeItem<?> item, boolean empty) {
+			super.updateItem(item, empty);
+			if (!empty) {
+				setDisclosureNode(null); // Remove the expand/collapse arrow
+			}
+		}
+
 
 		return row;
 	}

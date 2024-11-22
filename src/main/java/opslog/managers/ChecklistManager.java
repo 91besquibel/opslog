@@ -12,7 +12,7 @@ public class ChecklistManager {
     // Definition
     private static final ObservableList<Checklist> checklistList = FXCollections.observableArrayList();
 
-    public static final String CHCK_COL =
+    public static final String COLUMNS =
             "id, title, task_list, typeid, tagids, initials, description";
 
     // determine the operation for SQL

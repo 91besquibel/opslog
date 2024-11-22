@@ -7,7 +7,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
 import opslog.managers.*;
 import opslog.object.Format;
 import opslog.object.Tag;
@@ -28,13 +27,11 @@ public class EventUI {
     private static Calendar tempCalendar = new Calendar();
     private static Log tempLog = new Log();
     private static Stage stage;
-    
     private static DatePicker startDatePicker;
     private static ComboBox<LocalTime> startTimeSelection;
     private static DatePicker stopDatePicker;
     private static ComboBox<LocalTime> stopTimeSelection;
     private static CustomTextArea descriptionTextArea;
-
     private static volatile EventUI instance;
 
     private EventUI() {}

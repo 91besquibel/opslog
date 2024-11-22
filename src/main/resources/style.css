@@ -352,3 +352,8 @@
 .menu-button:hover {
     -fx-background-color: transparent;
 }
+
+/* Idk why but the typo in blac turns triggers a transparent combobox allowing me to style it */
+.combo-box-base {
+  -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, blac;
+}

@@ -18,9 +18,9 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
-import opslog.sql.hikari.*;
 import org.controlsfx.control.*;
 
+import opslog.sql.hikari.*;
 import opslog.ui.controls.TaskTreeView;
 import opslog.managers.*;
 import opslog.object.Tag;
@@ -30,6 +30,7 @@ import opslog.object.event.ScheduledChecklist;
 import opslog.object.event.Task;
 import opslog.ui.controls.*;
 import opslog.util.*;
+import opslog.ui.controls.Styles;
 
 import java.util.ArrayList;
 
@@ -60,9 +61,12 @@ public class ChecklistEditor {
     private static CheckComboBox<Tag> tagChk;
     private static CustomTextField descriptionChk;
     private static CustomTextField initialsChk;
+    
     // scheduled checklist
     private static CustomDatePicker startChk;
     private static CustomDatePicker stopChk;
+    // contains offset and durations
+    private static TableView<ScheduledChecklist> tableView;
     
     public static void buildEditorWindow(){
         // Left
@@ -134,11 +138,89 @@ public class ChecklistEditor {
         });
 
         add.setOnAction(event -> {
+            System.out.println("ChecklistEditor: Attempting to save checklist to database");
+            
+            Checklist checklistTemplate = newScheduledChecklist.get().checklistProperty().get();
+            ObservableList<Task> taskList = FXCollections.observableArrayList();
+            taskList.add(treeTableView.getRoot().getValue());
+            List<TreeItem<Task>> treeItems =  treeTableView.getRoot().getChildren();
+            for (TreeItem<Task> item : treeItems) {
+                if (item.getValue() != null) {
+                    Task childTask = item.getValue();
+                    taskList.add(childTask);
+                }
+            }
+            checklistTemplate.setTaskList(taskList);
 
+            //Send item to DB
+            if(checklistTemplate.hasValue()){
+                try {
+                    // update database
+                    DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                    String id = databaseQueryBuilder.insert("checklist_table", ChecklistManager.COLUMNS, checklistTemplate.toArray());
+                    checklistTemplate.setID(id);
+                    // update ui
+                    List<String [] > dbResults = new ArrayList<>();
+                    dbResults.add(checklistTemplate.toArray());
+                    ChecklistManager.operation("INSERT",dbResults,checklistTemplate.getID());
+
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        edit.setOnAction(event -> {
+            System.out.println("ChecklistEditor: Attempting to update checklist in database");
+            
+            Checklist checklistTemplate = newScheduledChecklist.get().checklistProperty().get();
+            checklistTemplate.setID(checklistTemplateSelector.getSelectionModel().getSelectedItem().getID());
+            
+            ObservableList<Task> taskList = FXCollections.observableArrayList();
+            System.out.println("ChecklistEditor: Number of tasks detected: " + treeTableView.getRoot().getChildren().size());
+            taskList.add(treeTableView.getRoot().getValue());
+            List<TreeItem<Task>> treeItems =  treeTableView.getRoot().getChildren();
+            for (TreeItem<Task> item : treeItems) {
+                if (item.getValue() != null) {
+                    Task childTask = item.getValue();
+                    taskList.add(childTask);
+                }
+            }
+            checklistTemplate.setTaskList(taskList);
+
+            if(checklistTemplate.hasValue()){
+                try {
+                    DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                    databaseQueryBuilder.update("checklist_table", ChecklistManager.COLUMNS, checklistTemplate.toArray());
+                    
+                    List<String [] > dbResults = new ArrayList<>();
+                    dbResults.add(checklistTemplate.toArray());
+                    ChecklistManager.operation("UPDATE", dbResults, checklistTemplate.getID());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         });
 
         delete.setOnAction(event -> {
-
+            System.out.println("ChecklistEditor: checklist delete button pressed");
+            Checklist checklistTemplate = newScheduledChecklist.get().checklistProperty().get();
+            checklistTemplate.setID(checklistTemplateSelector.getSelectionModel().getSelectedItem().getID());
+            System.out.println("ChecklistEditor: " + Arrays.toString(checklistTemplate.toArray()));
+            if(checklistTemplate.hasValue()){
+                try {
+                    System.out.println("ChecklistEditor: Atempting to delete");
+                    DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                    databaseQueryBuilder.delete("checklist_table", checklistTemplate.getID());
+                    
+                    List<String [] > dbResults = new ArrayList<>();
+                    dbResults.add(checklistTemplate.toArray());
+                    ChecklistManager.operation("DELETE", dbResults, checklistTemplate.getID());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            checklistTemplateSelector.getSelectionModel().clearSelection();
         });
 
         CustomHBox buttons = new CustomHBox();
@@ -154,12 +236,15 @@ public class ChecklistEditor {
     public static CustomVBox initializeChecklistDisplay(){
         CustomHBox checklistBar = createChecklistBar();
         createTreeTableView();
+        createTableView();
+        CustomHBox hbox = new CustomHBox();
+        hbox.getChildren().addAll(tableView,treeTableView);
         CustomVBox vbox = new CustomVBox();
-        vbox.getChildren().addAll(checklistBar,treeTableView);
+        vbox.getChildren().addAll(checklistBar,hbox);
         return vbox;
     }
 
-    private static CustomVBox initializeTaskEditor(){
+	private static CustomVBox initializeTaskEditor(){
         CustomLabel label = new CustomLabel(
                 "Editor", 300, Settings.SINGLE_LINE_HEIGHT);
         label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
@@ -183,6 +268,9 @@ public class ChecklistEditor {
         VBox.setVgrow(tagTask,Priority.ALWAYS);
         tagTask.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         tagTask.setMaxWidth(300);
+        tagTask.setTitle("Tags");
+        tagTask.backgroundProperty().bind(Settings.secondaryBackground);
+        tagTask.borderProperty().bind(Settings.secondaryBorder);
 
         initialsTask = new CustomTextField(
                 "Initials",300, Settings.SINGLE_LINE_HEIGHT);
@@ -328,10 +416,10 @@ public class ChecklistEditor {
         tagChk = new CheckComboBox<>(TagManager.getList());
         tagChk.setPrefHeight(Settings.SINGLE_LINE_HEIGHT);
         tagChk.setPrefWidth(100);
-        tagChk.setShowCheckedCount(true);
         tagChk.setTitle("Tags");
         tagChk.backgroundProperty().bind(Settings.secondaryBackground);
         tagChk.borderProperty().bind(Settings.secondaryBorder);
+
         HBox.setHgrow(tagChk ,Priority.ALWAYS);
         // initials
         initialsChk = new CustomTextField("Initials",100,Settings.SINGLE_LINE_HEIGHT);
@@ -340,87 +428,15 @@ public class ChecklistEditor {
         descriptionChk = new CustomTextField("Description",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
         HBox.setHgrow(descriptionChk ,Priority.ALWAYS);
         descriptionChk.setMaxWidth(Double.MAX_VALUE);
-        // save
-        Button save = createSaveButton();
         // schedule
         Button schedule = createScheduleButton();
         // checklistbar
         CustomHBox checklistBar = new CustomHBox();
         checklistBar.setPrefWidth(Double.MAX_VALUE);
-        checklistBar.getChildren().addAll(startChk,stopChk,titleChk,typeChk,tagChk,initialsChk,descriptionChk,save,schedule);
+        checklistBar.getChildren().addAll(startChk,stopChk,titleChk,typeChk,tagChk,initialsChk,descriptionChk,schedule);
         return checklistBar;
     }
-
-    // Saves the checklist as a template
-    private static Button createSaveButton(){
-        Button save = new Button("Save");
-        save.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
-        save.setBackground(Settings.secondaryBackground.get());
-        save.setFont(Settings.fontProperty.get());
-        save.setTextFill(Settings.textColor.get());
-
-        save.hoverProperty().addListener((obs,ov,nv) -> {
-            if(nv){
-                save.setBackground(Settings.primaryBackground.get());
-                save.setBorder(Settings.focusBorder.get());
-            }else{
-                save.setBackground(Settings.secondaryBackground.get());
-                save.setBorder(Settings.transparentBorder.get());
-            }
-        });
-        
-        save.pressedProperty().addListener((obs,ov,nv) -> {
-            if(nv){
-               save.setBackground(Settings.secondaryBackground.get());
-            } else {
-               save.setBackground(Settings.primaryBackground.get());
-            }
-        });
-
-        save.setOnAction(actionEvent -> {
-            //System.out.println("ChecklistEditor: Attempting to save checklist to database");
-            Checklist checklistTemplate = newScheduledChecklist.get().checklistProperty().get();
-            //System.out.println("ChecklistEditor: Collecting user selected tasks from TreeTableView");
-            ObservableList<Task> taskList = FXCollections.observableArrayList();
-            //System.out.println("ChecklistEditor: Number of tasks detected: " + treeTableView.getRoot().getChildren().size());
-            taskList.add(treeTableView.getRoot().getValue());
-            List<TreeItem<Task>> treeItems =  treeTableView.getRoot().getChildren();
-            for (TreeItem<Task> item : treeItems) {
-                if (item.getValue() != null) {
-                    Task childTask = item.getValue();
-                    taskList.add(childTask);
-                    //System.out.println("CheclistEditor: Saving checklist task: " + childTask.getTitle());
-                }
-            }
-            checklistTemplate.setTaskList(taskList);
-
-            //System.out.println("ChecklistEditor: Updating database with: " + Arrays.toString(checklistTemplate.toArray()));
-
-            //Send item to DB
-            if(checklistTemplate.hasValue()){
-
-                DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-                DBManager dbManager = new DBManager(databaseExecutor);
-
-                // update the checklist with the returned id
-                Checklist tempChecklist = dbManager.insert(checklistTemplate,"checklist_table",ChecklistManager.CHCK_COL);
-                newScheduledChecklist.get().checklistProperty().set(tempChecklist);
-                //System.out.println( "ChecklistEditor: new checklist id: " + newScheduledChecklist.get().checklistProperty().get().getID());
-
-                // db succefully updated and id returned add the checklist to the in app memory for responsive ui
-                if(checklistTemplate.getID() != null && !checklistTemplate.getID().isEmpty()){
-                    //System.out.println("ChecklistEditor: New checklist created: " + checklistTemplate.getID());
-                    List<String[]> checklist = new ArrayList<>();
-                    checklist.add(checklistTemplate.toArray());
-                    ChecklistManager.operation("INSERT",checklist,checklistTemplate.getID());
-                }
-            }
-        });
-
-        return save;
-    }
     
-    // Schedules the checklist on the calendar
     private static Button createScheduleButton(){
         Button schedule = new Button("Schedule");
         schedule.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
@@ -447,7 +463,7 @@ public class ChecklistEditor {
         });
         
         schedule.setOnAction(actionEvent -> {
-
+            System.out.println("ChecklistEditor: Schedule button pressed");
             // get offsets and durations
             ObservableList<Integer[]> offsetList = FXCollections.observableArrayList();
             ObservableList<Integer[]> durationList = FXCollections.observableArrayList();
@@ -463,14 +479,13 @@ public class ChecklistEditor {
                 // if values returned get the string value
                 String offsetStr = offsetCell != null ? offsetCell.toString() : "";
                 String durationStr = durationCell != null ? durationCell.toString() : "";
-                // System.out.println("CheclistEditor: Saving task timing data offset/duration: " + offsetStr + " : " + durationStr);
-                // split into string array
+                System.out.println("CheclistEditor: Saving task timing data offset/duration: " + offsetStr + " : " + durationStr);
                 String[] offsetArr = offsetStr.split(",");
                 String[] durationArr = durationStr.split(",");
-                // create integer arr storage
+                // Create integer arr storage
                 Integer [] offsetIntArr = new Integer[2];
                 Integer [] durationIntArr = new Integer[2];
-                // parse into integers and store in arrays
+                // Parse into integers and store in arrays
                 for (int j = 0; j < offsetArr.length; j++) {
                     if (offsetArr[j] != null && !offsetArr[j].trim().isEmpty()) {
                         int offsetValue = Integer.parseInt(offsetArr[j]);
@@ -481,22 +496,26 @@ public class ChecklistEditor {
                         durationIntArr[j] = durationValue;  
                     }
                 }
-                // add values to lists
+                System.out.println("ChecklistEditor: Saved task timing data offset/duration");
+                
+                // Add values to lists
                 offsetList.add(offsetIntArr);
                 durationList.add(durationIntArr);
             }
 
-            // set the lists
+            // Set the lists
             newScheduledChecklist.get().setOffsets(offsetList);
             newScheduledChecklist.get().setDurations(durationList);
 
-            // set status list
+            // Set status list
             ObservableList<Boolean> statusList = FXCollections.observableArrayList();
             for(int i = 0; i < newScheduledChecklist.get().checklistProperty().get().getTaskList().size(); i++) {
+                System.out.println("ChecklistEditor: Setting status to false for task " + (i+1));
                 statusList.add(false);
             }
             newScheduledChecklist.get().setStatusList(statusList);
 
+            // 
             if(newScheduledChecklist.get().hasValue()){
                 DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
                 DBManager dbManager = new DBManager(databaseExecutor);
@@ -549,6 +568,10 @@ public class ChecklistEditor {
         });
 
         VBox.setVgrow(treeTableView,Priority.ALWAYS);
+    }
+    
+    private static void createTableView() {
+        
     }
 
     public static void initializeTaskListeners(){
@@ -743,10 +766,7 @@ public class ChecklistEditor {
         // update  stopDate
         stopChk.setValue(scheduledChecklist.stopDateProperty().get());
 
-        // Update offsets and durations
-        List<TreeTableColumn<Task, ?>> columns = treeTableView.getColumns();
-        TreeTableColumn<Task, String> offsetColumn = (TreeTableColumn<Task, String>) columns.get(0);
-        TreeTableColumn<Task, String> durationColumn = (TreeTableColumn<Task, String>) columns.get(1);
+    
 
         for (int i = 0; i < scheduledChecklist.checklistProperty().get().getTaskList().size(); i++) {
             // Set the value of the TextFieldTreeViewCell for the offset column

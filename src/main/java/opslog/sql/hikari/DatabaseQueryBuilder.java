@@ -100,7 +100,7 @@ public class DatabaseQueryBuilder {
 
         // Construct the SQL query
         String sql = String.format("UPDATE %s SET %s WHERE id = ?", tableName, setClause);
-        System.out.println("Executing SQL: " + sql);
+        System.out.println("DatabaseQueryBuilder: " + sql);
 
         for (int i = 0; i < columns.length; i++) {
             System.out.println("Setting column " + columns[i] + " with " + rawData[i]);
@@ -134,7 +134,8 @@ public class DatabaseQueryBuilder {
         UUID id = UUID.fromString(uuid);
 
         String sql = String.format("DELETE FROM %s WHERE id = ?", tableName);
-
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -152,7 +153,8 @@ public class DatabaseQueryBuilder {
      */
     public ResultSet loadTable(String tableName) throws SQLException {
         String sql = String.format("SELECT * FROM %s", tableName);
-
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        
         Connection connection = connectionProvider.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -171,7 +173,8 @@ public class DatabaseQueryBuilder {
      */
     public ResultSet rangeQuery(String tableName, String column, String start, String end) throws SQLException {
         String sql = String.format("SELECT * FROM %s WHERE %s BETWEEN ? AND ?", tableName, column);
-
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        
         Connection connection = connectionProvider.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -192,7 +195,8 @@ public class DatabaseQueryBuilder {
      */
     public ResultSet keywordSearch(String tableName, String column, String keyword) throws SQLException {
         String sql = String.format("SELECT * FROM %s WHERE %s LIKE ?", tableName, column);
-
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        
         Connection connection = connectionProvider.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
 
