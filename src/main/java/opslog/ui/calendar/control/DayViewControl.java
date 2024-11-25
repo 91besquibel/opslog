@@ -8,28 +8,26 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Popup;
 
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
+import opslog.ui.calendar.managers.CalendarManager;
 import opslog.object.Event;
 import opslog.object.Tag;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.calendar.Util;
 import opslog.ui.calendar.layout.DayView;
 import opslog.ui.calendar.object.CalendarDay;
 import opslog.util.QuickSort;
 import opslog.util.Settings;
-import opslog.managers.ScheduledChecklistManager;
+import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -418,22 +416,16 @@ public class DayViewControl {
     }
 
     private List<Event> handleQuery(LocalDate date){
-        //System.out.println("DayViewControl: DB Query for entries matching: " + date);
-        DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
+        //System.out.println("DayViewControl: DB Query for entries matching: " + date)
         List<Event> events = new ArrayList<>();
-        String dateStr = " '" + date +"' ";
         try{
-            String sql = String.format(
-                    "SELECT * FROM calendar_table WHERE start_date <= %s AND stop_date >= %s;"
-                    , dateStr
-                    , dateStr
-            );
             //System.out.println("DayViewControl: DB Query: " + sql);
-            List<String[]> results = executor.executeQuery(sql);
+            DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+            List<String[]> results = databaseQueryBuilder.dateQuery("calendar_table",date);
             for (String[] row : results) {
-                //System.out.println("DayViewControl: " + Arrays.toString(row));
+                // System.out.println("DayViewControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-                //System.out.println("DayViewControl: adding calendar event " + item.getTitle());
+                // System.out.println("DayViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
             }
         }catch(SQLException e){
@@ -441,17 +433,13 @@ public class DayViewControl {
         }
 
         try{
-            String sql = String.format(
-                    "SELECT * FROM scheduled_checklist_table WHERE start_date <= %s AND stop_date >= %s;"
-                    , dateStr
-                    , dateStr
-            );
             //System.out.println("DayViewControl: DB Query: " + sql);
-            List<String[]> results = executor.executeQuery(sql);
+            DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+            List<String[]> results = databaseQueryBuilder.dateQuery("scheduled_checklist_table",date);
             for (String[] row : results) {
                 //System.out.println("DayViewControl: " + Arrays.toString(row));
                 ScheduledChecklist item = ScheduledChecklistManager.newItem(row);
-                //System.out.println("DayViewControl: adding ScheduledChecklist event " + item.toString());
+                //System.out.println("DayViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
             }
         }catch(SQLException e){

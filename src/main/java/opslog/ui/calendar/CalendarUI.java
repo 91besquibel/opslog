@@ -3,22 +3,22 @@ package opslog.ui.calendar;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
-import opslog.managers.LogManager;
+import opslog.ui.calendar.managers.CalendarManager;
+import opslog.ui.checklist.managers.ChecklistManager;
+import opslog.ui.log.managers.LogManager;
 import opslog.object.Event;
 import opslog.object.event.Checklist;
 import opslog.object.event.Log;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.EventUI;
-import opslog.ui.SearchUI;
+import opslog.ui.search.SearchUI;
 import opslog.ui.calendar.cell.CalendarCell;
 import opslog.ui.calendar.cell.CalendarListView;
 import opslog.ui.calendar.control.*;
@@ -29,14 +29,12 @@ import opslog.ui.calendar.object.CalendarDay;
 import opslog.ui.calendar.object.CalendarMonth;
 import opslog.ui.calendar.object.CalendarWeek;
 import opslog.ui.controls.CustomListView;
-import opslog.ui.controls.SearchBar;
+import opslog.ui.search.controls.SearchBar;
 import opslog.util.Settings;
 
-import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CalendarUI{
@@ -272,22 +270,18 @@ public class CalendarUI{
 
         MenuItem viewLogs = new MenuItem("View Logs");
         viewLogs.setOnAction(e -> {
-            DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
+            DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
             List<Log> data = new ArrayList<>();
 
             for (CalendarCell cell : monthView.selectedCellsProperty()) {
                 LocalDate cellDate = cell.getDate();
-                Date date = Date.valueOf(cellDate);
-                String sql = String.format("SELECT * FROM log_table WHERE date = '" + date + "'");
                 try {
-                    //System.out.println("\n MonthView: DataBase Query: " + sql);
-                    List<String[]> results = executor.executeQuery(sql);
+                    List<String[]> results = databaseQueryBuilder.dateQuery(DatabaseConfig.LOG_TABLE,cellDate);
                     for (String[] row : results) {
-                        //System.out.println("MonthView: Result: " + Arrays.toString(row));
                         Log newLog = LogManager.newItem(row);
                         data.add(newLog);
                     }
-                    //System.out.println("MonthView: End Query \n");
+
                     if (!data.isEmpty()) {
                         try{
                             SearchUI<Log> searchUI = new SearchUI<>();

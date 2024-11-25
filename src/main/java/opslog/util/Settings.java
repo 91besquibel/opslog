@@ -244,7 +244,7 @@ public class Settings {
         public static ObjectProperty<Color> textColor =
             new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
         public static ObjectProperty<Integer> textSize =
-            new SimpleObjectProperty<Integer>(14);
+            new SimpleObjectProperty<Integer>(20);
         public static ObjectProperty<String> textFont =
             new SimpleObjectProperty<String>("Arial");
         public static ObjectProperty<Integer> textSizeSmall =

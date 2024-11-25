@@ -3,7 +3,6 @@ package opslog.object.event;
 import java.time.LocalDate;
 import javafx.beans.property.*;
 import opslog.interfaces.SQL;
-import opslog.object.event.Checklist;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.util.DateTime;
@@ -64,7 +63,6 @@ public class ScheduledChecklist extends Event implements SQL{
 
 
 	@Override public String [] toArray(){
-		String[] superArray = super.toArray();
 		return new String[]{
 				id.get(),
 				checklist.get().getID(),
@@ -86,4 +84,47 @@ public class ScheduledChecklist extends Event implements SQL{
 	@Override public String toString() {
 		return checklist.get().getTitle();
 	}
+
+	@Override public boolean hasValue() {
+		// Check basic conditions
+		if (startDate == null || stopDate == null || percentage.get() == null || percentage.get().trim().isEmpty()) {
+			System.out.println("ChecklistEditor: returning false");
+			return false;
+		}
+		System.out.println("ChecklistEditor: true");
+
+		// Check if checklist has a value
+		if (!checklist.get().hasValue()) {
+			System.out.println("ChecklistEditor: returning false " + Arrays.toString(checklist.get().toArray()));
+			return false;
+		}
+		System.out.println("ChecklistEditor: true");
+
+		// Validate offsets
+		for (Integer[] offset : offsets) {
+			for (int num : offset) {
+				if (num < 0) {
+					System.out.println("ChecklistEditor: returning false");
+					return false;
+				}
+			}
+		}
+		System.out.println("ChecklistEditor: true");
+
+		// Validate durations
+		for (Integer[] duration : durations) {
+			for (int num : duration) {
+				if (num < 0) {
+					System.out.println("ChecklistEditor: returning false");
+					return false;
+				}
+			}
+		}
+		System.out.println("ChecklistEditor: true");
+
+		System.out.println("ChecklistEditor: checking list sizes");
+		// Ensure size consistency across lists
+        return statusList.size() == offsets.size() && statusList.size() == durations.size();
+    }
+
 }

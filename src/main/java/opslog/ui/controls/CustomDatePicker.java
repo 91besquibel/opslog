@@ -12,6 +12,7 @@ public class CustomDatePicker extends DatePicker {
         setPromptText(prompt);
         setPrefWidth(width);
         setPrefHeight(height);
+        setMinHeight(height);
         setEditable(false);
         setFocusTraversable(true);
         backgroundProperty().bind(Settings.secondaryBackground);

@@ -20,7 +20,7 @@ import opslog.ui.controls.Buttons;
 import opslog.ui.controls.CustomMenuBar;
 import opslog.util.ResizeListener;
 import opslog.util.Settings;
-import opslog.ui.controls.SearchBar;
+import opslog.ui.search.controls.SearchBar;
 
 public class WindowPane {
 

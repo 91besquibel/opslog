@@ -15,6 +15,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
     public CustomComboBox(String prompt, double width, double height) {
         setPrefWidth(width);
         setPrefHeight(height);
+        setMinHeight(height);
         setEditable(false);
         setFocusTraversable(true);
         setPromptText(prompt);

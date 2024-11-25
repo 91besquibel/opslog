@@ -9,6 +9,7 @@ public class CustomTextField extends TextField {
         setPromptText(prompt);
         setPrefWidth(width);
         setMaxWidth(width);
+        setMinHeight(height);
         setPrefHeight(height);
 
         fontProperty().bind(Settings.fontProperty);

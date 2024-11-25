@@ -10,6 +10,7 @@ public class CustomColorPicker extends ColorPicker {
     public CustomColorPicker(double width, double height) {
         setPrefWidth(width);
         setPrefHeight(height);
+        setMinHeight(height);
         setFocusTraversable(true);
 
         backgroundProperty().bind(Settings.secondaryBackground);

@@ -5,17 +5,15 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
+import opslog.ui.calendar.managers.CalendarManager;
 import opslog.object.Event;
 import opslog.object.event.Calendar;
-import opslog.object.event.Checklist;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.calendar.cell.CalendarCell;
 import opslog.ui.calendar.layout.MonthView;
 import opslog.ui.calendar.object.CalendarMonth;
-import opslog.managers.ScheduledChecklistManager;
+import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
 import opslog.util.QuickSort;
 import opslog.util.Settings;
@@ -27,7 +25,6 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -173,6 +170,7 @@ public class MonthViewControl {
     * Update the control panel year and month labels
     * */
     public static void update(){
+
         if(calendarMonth.yearMonthProperty().get() == null){
             calendarMonth.yearMonthProperty().set(YearMonth.now());
         }
@@ -278,8 +276,8 @@ public class MonthViewControl {
      * @return Lis<Event> returns the list of event from the Database to be placed
      * in the application UI.
      */
-    private static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
-        DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
+    public static List<Event> handleQuery(LocalDate startDate, LocalDate stopDate){
+        DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
 
         //System.out.println("MonthViewControl: DB Query for dates:  " + startDate + " to " + stopDate);
         List<Event> events = new ArrayList<>();
@@ -287,11 +285,11 @@ public class MonthViewControl {
 
         try{
 
-            List<String[]> results = executor.executeBetweenQuery(
+            List<String[]> results = databaseQueryBuilder.rangeQuery(
                     "calendar_table",
                     "start_date",
-                    startDate,
-                    stopDate
+                    startDate.toString(),
+                    stopDate.toString()
             );
 
             for (String[] row : results) {
@@ -299,7 +297,6 @@ public class MonthViewControl {
                 Calendar item = CalendarManager.newItem(row);
                 //System.out.println("MonthViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
-
             }
 
         }catch(SQLException e){
@@ -307,11 +304,11 @@ public class MonthViewControl {
         }
 
         try{
-            List<String[]> results = executor.executeBetweenQuery(
+            List<String[]> results = databaseQueryBuilder.rangeQuery(
                     "scheduled_checklist_table",
                     "start_date",
-                    startDate,
-                    stopDate
+                    startDate.toString(),
+                    stopDate.toString()
             );
             for (String[] row : results) {
                 //System.out.println("MonthViewControl: " + Arrays.toString(row));

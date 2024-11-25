@@ -5,9 +5,7 @@ import java.util.List;
 
 import opslog.object.Event;
 import opslog.object.event.Calendar;
-import opslog.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
-import opslog.object.event.Checklist;
 
 // QuickSort Utility for List<Event>
 public class QuickSort {
@@ -43,7 +41,7 @@ public class QuickSort {
 	private static LocalDate getStartDate(Event event) {
 		if (event instanceof Calendar) {
 			return ((Calendar) event).getStartDate();
-		} else if (event instanceof Checklist) {
+		} else if (event instanceof ScheduledChecklist) {
 			return ((ScheduledChecklist) event).startDateProperty().get();
 		} else {
 			throw new IllegalArgumentException("Unknown Event type: " + event.getClass().getSimpleName());

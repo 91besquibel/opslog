@@ -1,12 +1,11 @@
 package opslog.sql.hikari;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.sql.*;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * The {@code DatabaseQueryBuilder} class is responsible for constructing
@@ -26,7 +25,6 @@ public class DatabaseQueryBuilder {
         this.connectionProvider = connectionProvider;
     }
 
-
     /**
      * Constructs and executes an SQL INSERT query.
      *
@@ -37,35 +35,63 @@ public class DatabaseQueryBuilder {
      * @throws SQLException if an error occurs
      */
     public String insert(String tableName, String tableColumns, String[] data) throws SQLException {
-        String [] columns = tableColumns.split(",",2);
-        String columnsNoID = columns[1];
-
+        // edit the columns to have no id
+        String [] columnsArray  = tableColumns.split(",",2);
+        String columnsNoID = columnsArray[1];
+        // edit the data to have no id
+        String [] dataNoID = new String[data.length -1];
+        System.arraycopy(data, 1, dataNoID, 0, data.length - 1);
+        // display to verify cohesion
+        System.out.println(columnsNoID);
+        System.out.println(Arrays.toString(dataNoID));
+        // add placeholders for values from data
         StringJoiner placeholders = new StringJoiner(", ", "(", ")");
-        for (int i = 1; i < data.length; i++) {
+        for (int i = 0; i < dataNoID.length; i++) {
             placeholders.add("?");
         }
-
+        // create prepared statement
         String sql = String.format("INSERT INTO %s (%s) VALUES %s RETURNING id", tableName, columnsNoID, placeholders);
         System.out.println("DatabaseQueryBuilder: " + sql);
-
+        // connect to database with automatic closing
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            // Loop to set the rest of the values starting from index 2 (i.e., skipping id)
-            for (int i = 0; i < data.length-1; i++) {
-                statement.setString(i + 1, data[i+1]);  // Start at index 2 to set other values
+            // create filters fo data types
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+            timeFormat.setLenient(false);
+            dateFormat.setLenient(false);
+            // Iterate through each item
+            for (int i = 0; i < dataNoID.length; i++) {
+                try {
+                    java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
+                    Date sqlDate = new Date(parsedDate.getTime());
+                    statement.setDate(i + 1, sqlDate);
+                    System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
+                } catch (ParseException e) {
+                    try{
+                        java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
+                        java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
+                        statement.setTime(i + 1, sqlTime);
+                        System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
+                    } catch (ParseException ex) {
+                        statement.setString(i + 1, dataNoID[i]);
+                        System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
+                    }
+                }
             }
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getString("id");  // Retrieve the generated UUID
+                    return resultSet.getString("id");
                 } else {
                     throw new SQLException("Failed to retrieve generated UUID.");
                 }
             }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Constructs and executes an SQL UPDATE query.
@@ -151,14 +177,20 @@ public class DatabaseQueryBuilder {
      * @return a {@code ResultSet} containing the table data
      * @throws SQLException if an error occurs
      */
-    public ResultSet loadTable(String tableName) throws SQLException {
+    public List<String[]> loadTable(String tableName) throws SQLException {
         String sql = String.format("SELECT * FROM %s", tableName);
         System.out.println("DatabaseQueryBuilder: " + sql);
-        
-        Connection connection = connectionProvider.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
 
-        return statement.executeQuery();
+        List<String[] > results = new ArrayList<>();
+        try(Connection connection = connectionProvider.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql);){
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                results = processResultSet(resultSet, results);
+            }
+        }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
+        return results;
     }
 
     /**
@@ -171,17 +203,51 @@ public class DatabaseQueryBuilder {
      * @return a {@code ResultSet} containing the range data
      * @throws SQLException if an error occurs
      */
-    public ResultSet rangeQuery(String tableName, String column, String start, String end) throws SQLException {
+    public List<String[]> rangeQuery(String tableName, String column, String start, String end) throws SQLException {
         String sql = String.format("SELECT * FROM %s WHERE %s BETWEEN ? AND ?", tableName, column);
         System.out.println("DatabaseQueryBuilder: " + sql);
-        
-        Connection connection = connectionProvider.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
+        List<String[]> results = new ArrayList<>();
+        try(Connection connection = connectionProvider.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);){
+            statement.setDate(1, Date.valueOf(start));
+            statement.setDate(2, Date.valueOf(end));
+            try (ResultSet resultSet = statement.executeQuery()) {
+                results = processResultSet(resultSet, results);
+            }
+        }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
+        return results;
+    }
 
-        statement.setString(1, start);
-        statement.setString(2, end);
-
-        return statement.executeQuery();
+    /**
+     * Executes a query for all items in a table related to the date.
+     *
+     * @param tableName the name of the table
+     * @param date the date being requested
+     * @return a {@code ResultSet} containing the range data
+     * @throws SQLException if an error occurs
+     */
+    public List<String[]> dateQuery(String tableName, LocalDate date) throws SQLException {
+        String sql = String.format(
+                "SELECT * FROM %s WHERE start_date <= ? AND stop_date >= ?;",
+                tableName
+        );
+        // Create a list to store results
+        List<String[]> results = new ArrayList<>();
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Set the query parameters
+            Date sqlDate = Date.valueOf(date);
+            statement.setDate(1, sqlDate);
+            statement.setDate(2, sqlDate);
+            System.out.println("DatabaseQueryBuilder: " + statement);
+            // Execute the query
+            try (ResultSet resultSet = statement.executeQuery()) {
+                results = processResultSet(resultSet, results);
+            }
+        }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
+        return results;
     }
 
     /**
@@ -203,5 +269,28 @@ public class DatabaseQueryBuilder {
         statement.setString(1, "%" + keyword + "%");
 
         return statement.executeQuery();
+    }
+
+    public Boolean executeTest() throws SQLException {
+        System.out.println("DatabaseQueryBuilder: Testing connection....");
+        try (Connection connection = connectionProvider.getConnection();) {
+            System.out.println("DatabaseQueryBuilder: Test connection successful\n");
+            return true;
+        }
+    }
+
+    private List<String[]> processResultSet(ResultSet resultSet, List<String[]> results) throws SQLException {
+        // Get column count for dynamic row processing
+        int columnCount = resultSet.getMetaData().getColumnCount();
+        // Process ResultSet and add rows to the list
+        while (resultSet.next()) {
+            String[] row = new String[columnCount];
+            for (int i = 1; i <= columnCount; i++) {
+                row[i - 1] = resultSet.getString(i);
+            }
+            System.out.println("DatabaseQueryBuilder: " + Arrays.toString(row));
+            results.add(row);
+        }
+        return results;
     }
 }
