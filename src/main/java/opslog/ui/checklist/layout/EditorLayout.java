@@ -180,7 +180,7 @@ public class EditorLayout {
         scheduleTable.minWidth(210);
 
         CustomHBox hbox = new CustomHBox();
-        hbox.getChildren().addAll(scheduleTable, taskTable);
+        hbox.getChildren().addAll(scheduleTable,taskTable);
         HBox.setHgrow(taskTable,Priority.ALWAYS);
         VBox.setVgrow(hbox,Priority.ALWAYS);
         CustomVBox vbox = new CustomVBox();

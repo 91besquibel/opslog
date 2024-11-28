@@ -12,10 +12,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import java.util.HashSet;
+import java.util.Set;
 
-public class TaskTreeView extends TreeTableView<Task>{
-
-	public TaskTreeView(){
+public class StatusTreeView extends TreeTableView<Task>{
+	
+	public final Set<CheckBoxTreeItem<Task>> set = new HashSet<>();
+	
+	public StatusTreeView(){
 		
 		TreeTableColumn<Task, String> titleColumn = titleColumn();
 		TreeTableColumn<Task, Type> typeColumn = typeColumn();
@@ -28,27 +32,48 @@ public class TaskTreeView extends TreeTableView<Task>{
 			tagColumn, 
 			descriptionColumn
 		);
-		
+
 		backgroundProperty().bind(Settings.primaryBackground);
 		setColumnResizePolicy(TreeTableView.UNCONSTRAINED_RESIZE_POLICY);
 		autosize();
 		setRowFactory(tv -> createRow());
-		
 		setEditable(true);
-
 	}
 
+	public Set<CheckBoxTreeItem<Task>> getTreeItems(){
+		return set;
+	}
+
+	public void setItems(ObservableList<Task> tasks, ObservableList<Boolean> status) {
+		for(int i = 0; i < tasks.size(); i++){
+			// Create the treeItem
+			CheckBoxTreeItem<Task> treeItem = new CheckBoxTreeItem<>(tasks.get(i));
+			// Set the status checked status of the task
+			treeItem.setSelected(status.get(i));
+			// add the TreeItem to the set
+			set.add(treeItem);
+			// Determine if root or child the place in treeView
+			if(getRoot() == null){
+				setRoot(treeItem);
+			}else{
+				getRoot().getChildren().add(treeItem);
+			}
+		}
+		// ...Make big
+		getRoot().setExpanded(true);
+	}
+	
 	private TreeTableColumn<Task, String> titleColumn() {
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
-		
+
 		Label label = new Label("Title");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
-		
+
 		HBox hbox = new HBox(label);
 		hbox.setAlignment(Pos.CENTER);
-		
+
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell());
 		column.setMinWidth(110);
@@ -66,10 +91,10 @@ public class TaskTreeView extends TreeTableView<Task>{
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
 
-		
+
 		HBox hbox = new HBox(label);
 		hbox.setAlignment(Pos.CENTER);
-		
+
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
 
@@ -85,54 +110,54 @@ public class TaskTreeView extends TreeTableView<Task>{
 			ObservableList<Tag> tags = cellData.getValue().getValue().getTags();
 			return new SimpleObjectProperty<>(tags);
 		});
-		
+
 		Label label = new Label("Tags");
 		label.fontProperty().bind(Settings.fontPropertyBold);
 		label.textFillProperty().bind(Settings.textColor);
-		
+
 		HBox hbox = new HBox(label);
 		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
-		
+
 		column.setCellFactory(col -> new TreeTableCell<>() {
-            @Override
-            protected void updateItem(ObservableList<Tag> item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                } else {
-                    VBox vbox = new VBox();
-                    for (Tag tag : item) {
-                        Label lbl = new Label(tag.toString());
-                        lbl.setBackground(
-                                new Background(
-                                        new BackgroundFill(
-                                                tag.getColor(),
-                                                Settings.CORNER_RADII,
-                                                Settings.INSETS_ZERO
-                                        )
-                                )
-                        );
-                        lbl.fontProperty().bind(Settings.fontCalendarSmall);
-                        lbl.textFillProperty().bind(Settings.textColor);
-                        lbl.setAlignment(Pos.CENTER);
-                        lbl.maxHeight(30);
-                        lbl.borderProperty().bind(Settings.transparentBorder);
-                        vbox.getChildren().add(lbl);
-                    }
-                    vbox.setSpacing(Settings.SPACING);
-                    vbox.setAlignment(Pos.CENTER);
-                    vbox.setPadding(Settings.INSETS);
-                    setGraphic(vbox);
-                }
-                {
-                    borderProperty().bind(Settings.transparentBorder);
-                    setAlignment(Pos.CENTER);
-                    setPadding(Settings.INSETS);
-                }
-            }
-        });
+			@Override
+			protected void updateItem(ObservableList<Tag> item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty || item == null) {
+					setGraphic(null);
+				} else {
+					VBox vbox = new VBox();
+					for (Tag tag : item) {
+						Label lbl = new Label(tag.toString());
+						lbl.setBackground(
+								new Background(
+										new BackgroundFill(
+												tag.getColor(),
+												Settings.CORNER_RADII,
+												Settings.INSETS_ZERO
+										)
+								)
+						);
+						lbl.fontProperty().bind(Settings.fontCalendarSmall);
+						lbl.textFillProperty().bind(Settings.textColor);
+						lbl.setAlignment(Pos.CENTER);
+						lbl.maxHeight(30);
+						lbl.borderProperty().bind(Settings.transparentBorder);
+						vbox.getChildren().add(lbl);
+					}
+					vbox.setSpacing(Settings.SPACING);
+					vbox.setAlignment(Pos.CENTER);
+					vbox.setPadding(Settings.INSETS);
+					setGraphic(vbox);
+				}
+				{
+					borderProperty().bind(Settings.transparentBorder);
+					setAlignment(Pos.CENTER);
+					setPadding(Settings.INSETS);
+				}
+			}
+		});
 		return column;
 	}
 
@@ -186,17 +211,17 @@ public class TaskTreeView extends TreeTableView<Task>{
 				}
 			}
 		});
-		
+
 		// Adjust column width based on treeTableView total width
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
-            double totalWidth = newWidth.doubleValue();
-            for (TreeTableColumn<Task, ?> col : this.getColumns()) {
-                if (col != column) {
-                    totalWidth -= col.getWidth();
-                }
-            }
-            column.setPrefWidth(totalWidth);
-        });
+			double totalWidth = newWidth.doubleValue();
+			for (TreeTableColumn<Task, ?> col : this.getColumns()) {
+				if (col != column) {
+					totalWidth -= col.getWidth();
+				}
+			}
+			column.setPrefWidth(totalWidth);
+		});
 
 		return column;
 	}

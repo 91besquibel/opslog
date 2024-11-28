@@ -1,6 +1,5 @@
 package opslog.ui.checklist.layout;
 
-import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
@@ -12,8 +11,6 @@ import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatusLayout {
 

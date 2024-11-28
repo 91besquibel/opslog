@@ -45,11 +45,9 @@ public class SettingsUI {
     }
 
     private static VBox createPathCard() {
-        Preferences prefs = Directory.getPref();
         CustomLabel mpathLabel = new CustomLabel("Main Path", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 
         CustomComboBox<String> mpathSelector = new CustomComboBox<>("Selection", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        mpathSelector.setItems(Directory.mPathList);
         CustomTextField mpathTextField = new CustomTextField("Location", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
 
         CustomButton mpathSwap = new CustomButton(Directory.SWAP_WHITE, Directory.SWAP_GREY, "Switch Path");
@@ -74,14 +72,12 @@ public class SettingsUI {
 
         CustomLabel bpathLabel = new CustomLabel("Backup Path", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomComboBox<String> bpathSelector = new CustomComboBox<>("Selection", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        bpathSelector.setItems(Directory.backupPathList);
+
         CustomTextField bpathTextField = new CustomTextField("Location", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
         CustomButton bpathAdd = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
         CustomButton bpathSwap = new CustomButton(Directory.SWAP_WHITE, Directory.SWAP_GREY, "Switch Path");
         CustomButton bpathDelete = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
-        //bpathAdd.setOnAction(event -> handle_BPath("add", bpathTextField.getText(),bpathSelector.getValue()));
-        //bpathSwap.setOnAction(event -> handle_BPath("Swap", bpathSelector.getValue(),bpathSelector.getValue()));
-        //bpathDelete.setOnAction(event -> handle_BPath("Delete", bpathTextField.getText(),bpathSelector.getValue()));
+        
         HBox bpathBtns = new CustomHBox();
         bpathBtns.getChildren().addAll(bpathSwap, bpathAdd, bpathDelete);
         bpathBtns.setAlignment(Pos.BASELINE_RIGHT);

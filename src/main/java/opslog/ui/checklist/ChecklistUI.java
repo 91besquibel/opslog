@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.StackPane;
 import opslog.ui.checklist.controllers.EditorController;
+import opslog.ui.checklist.controllers.StatusController;
 import opslog.ui.checklist.layout.EditorLayout;
 import opslog.ui.checklist.layout.StatusLayout;
 import opslog.util.Settings;
@@ -36,7 +37,7 @@ public class ChecklistUI {
             EditorLayout.buildEditorWindow();
             EditorController.initialize();
             StatusLayout.buildStatusWindow();
-            //StatusController
+            StatusController.initialize();
             root.getChildren().addAll(editorRoot, statusRoot);
             root.backgroundProperty().bind(Settings.rootBackground);
             editorRoot.setVisible(false);

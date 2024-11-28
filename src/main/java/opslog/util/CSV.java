@@ -13,7 +13,6 @@ public class CSV {
     private static final ReentrantLock fileLock = new ReentrantLock();
 
     public static void write(Path path, String[] data, boolean append) {
-        System.out.println("Accessing CSV writer");
         boolean lockAcquired = false;
         long startTime = System.currentTimeMillis();
         long timeout = 10000; // 10 seconds timeout
@@ -84,9 +83,7 @@ public class CSV {
     }
 
     public static void append(Log oldLog, Log newLog) {
-        Path location = Directory.Format_Dir.get();
         String[] row = newLog.toArray();
-        write(location, row, true); // Use true for append
     }
 
     public static void delete(Path path, String[] rowFilters) {

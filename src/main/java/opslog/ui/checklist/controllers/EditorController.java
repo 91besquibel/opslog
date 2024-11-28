@@ -55,26 +55,27 @@ public class EditorController {
 
     private static void checklistDisplayControls(){
         scheduleTable.setItems(newScheduledChecklist);
-
-        // checklist updates
         EditorLayout.titleChk.textProperty().bindBidirectional(newChecklist.titleProperty());
-        EditorLayout.listViewTask.getSelectionModel().getSelectedItems().addListener((ListChangeListener<? super Task>) change -> {
+        EditorLayout.listViewTask.getSelectionModel().getSelectedItems().addListener(
+            (ListChangeListener<? super Task>) change -> {
             List<TreeItem<Task>> newTaskList = new ArrayList<>();
             // turn the tasks into tree items
             for(Task task : change.getList()){
                 TreeItem<Task> newItem = new TreeItem<>(task);
                 newTaskList.add(newItem);
             }
-
             // Set the first item as the root if one does not exist
             for(int i = 1; i < newTaskList.size(); i++ ) {
                 if (taskTable.getRoot() == null) {
                     taskTable.setRoot(newTaskList.get(i));
+                    updateScheduleTable();
                 } else {
                     taskTable.getRoot().getChildren().add(newTaskList.get(i));
+                    updateScheduleTable();
                 }
             }
             updateScheduleTable();
+            EditoryLayout.taskTable.refresh();
         });
         EditorLayout.typeChk.valueProperty().bindBidirectional(newChecklist.typeProperty());
         EditorLayout.tagChk.getCheckModel().getCheckedItems().addListener((ListChangeListener<Tag>) change -> {
@@ -151,8 +152,10 @@ public class EditorController {
             }
         });
 
-        // used the selected checklist template id and the user
-        // input to edit the selected checklist template
+        /* 
+            used the selected checklist template id and the user
+            input to edit the selected checklist template
+        */
         EditorLayout.editTemplate.setOnAction(event -> {
             System.out.println("ChecklistEditor: Attempting to update checklist in database");
             // get the id of the selected checklist
@@ -367,6 +370,7 @@ public class EditorController {
         EditorLayout.stopChk.valueProperty().bindBidirectional(newScheduledChecklist.stopDateProperty());
 
         EditorLayout.scheduledChecklistSelector.getSelectionModel().selectedItemProperty().addListener((obs,ov,nv) ->{
+            
             // set the selection to the newScheduledChecklist
             newScheduledChecklist.setID(nv.getID());
             // sets title,task,tag,type,initials,descripton
@@ -485,6 +489,9 @@ public class EditorController {
         newChecklist.setID(checklist.getID()); // get the UUID
         newChecklist.titleProperty().setValue(checklist.getTitle()); // get the title
         newChecklist.getTaskList().setAll(checklist.getTaskList()); // tasklist
+        if(taskTable.getRoot() != null){
+            taskTable.setRoot(null);
+        }
         // display the tasks in the taskTable
         for(Task task : checklist.getTaskList()){
             TreeItem<Task> treeItem = new TreeItem<>(task);
@@ -536,8 +543,7 @@ public class EditorController {
             event.setDropCompleted(true);
             event.consume();
         });
-
-
+        
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem clearAll = new MenuItem("Delete All");
@@ -566,9 +572,11 @@ public class EditorController {
         System.out.println("ChecklistEditor: Updating ScheduledChecklistTableView with new offsets and durations");
         EditorLayout.scheduleTable.getItems().clear();
         if( EditorLayout.taskTable.getRoot() != null ){
+            System.out.println("EditorController: Adding new offsets and durations for root task");
             EditorLayout.scheduleTable.getItems().add(new Integer[]{0,0,0,0});
             if(!EditorLayout.taskTable.getRoot().getChildren().isEmpty()){
                 for(TreeItem<Task> task :  EditorLayout.taskTable.getRoot().getChildren()){
+                    System.out.println("EditorController: Adding new offsets and durations for child task");
                     EditorLayout.scheduleTable.getItems().add(new Integer[]{0,0,0,0});
                 }
             }
