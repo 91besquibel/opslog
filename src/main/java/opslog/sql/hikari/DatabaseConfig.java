@@ -1,5 +1,7 @@
 package opslog.sql.hikari;
 
+import java.util.List;
+
 public class DatabaseConfig {
 
     public static final String TAG_TABLE =
@@ -51,4 +53,35 @@ public class DatabaseConfig {
             "scheduled_checklist_table";
     public static final String SCHEDULED_CHECKLIST_COLUMNS =
             "id, checklist_id, start_date, stop_date, offsets, durations, status_list, percentage";
+
+    public static String [] tableNames(){
+        return new String[]{
+                TAG_TABLE,
+                TASK_TABLE,
+                TYPE_TABLE,
+                FORMAT_TABLE,
+                PROFILE_TABLE,
+                PINBOARD_TABLE,
+                CHECKLIST_TABLE,
+                LOG_TABLE,
+                CALENDAR_TABLE,
+                SCHEDULED_CHECKLIST_TABLE
+        };
+    }
+
+    public static String [] threadNames(){
+        return new String[]{
+                "log_changes",
+                "pinboard_changes",
+                "checklist_table",
+                "scheduled_checklist_table",
+                "task_table",
+                "calendar_table",
+                "format_table",
+                "tag_table",
+                "type_table",
+                "profile_table"
+        };
+    }
+
 }

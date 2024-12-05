@@ -167,6 +167,7 @@ public class StartUI {
         DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(connectionProvider);
 
         try {
+            // test that the connection to the data base is good
             boolean status = databaseQueryBuilder.executeTest();
             if (status) {
                 // Close the StartUI window

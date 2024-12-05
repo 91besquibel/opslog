@@ -8,12 +8,11 @@ import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
 import opslog.ui.calendar.CalendarUI;
-import opslog.ui.calendar.control.MonthViewControl;
 import opslog.ui.controls.CustomMenuBar;
 import opslog.ui.log.LogUI;
 import opslog.ui.settings.SettingsUI;
+import opslog.ui.startup.StartController;
 import opslog.ui.startup.StartUI;
-import opslog.ui.startup.StartUp;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import opslog.ui.*;
@@ -72,9 +71,8 @@ public class App extends Application {
             // Create and display database connection UI
             StartUI startUI = StartUI.getInstance();
             startUI.display(()->{
-
-                StartUp.loadInitialData();
-
+                StartController.loadData();
+                StartController.startNotifications();
                 CustomMenuBar menuBar = createMenuBar();
                 //System.out.println("App: Displaying main application");
                 // Display the app after the user connects to a database

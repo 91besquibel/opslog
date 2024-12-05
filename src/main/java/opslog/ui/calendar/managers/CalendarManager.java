@@ -32,20 +32,16 @@ public class CalendarManager {
         return calendar;
     }
 
-    /*
-    public static Calendar getItem(String ID) {
-        //System.out.println("CalendarManager: Retreiving item with ID: " + ID);
-        Calendar calendar = null;
-        for (Calendar item : calendarList) {
-            if (item.getID().equals(ID)) {
-                //System.out.println("CalendarManager: Returning calendar event");
-                calendar = item;
+    public static Calendar getItem(String id){
+        for(Event event : monthEvents){
+            if(event instanceof Calendar calendar){
+                if(calendar.getID().contains(id)){
+                    return calendar;
+                }
             }
         }
-        //System.out.println("CalendarManager: Returning null");
-        return calendar;
+        return null;
     }
-    */
 
     public static ObservableList<Event> getMonthEvents() {
         return monthEvents;

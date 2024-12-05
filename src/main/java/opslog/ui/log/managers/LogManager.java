@@ -28,9 +28,11 @@ public class LogManager {
                     startDate.toString(),
                     date.toString()
             );
+
             for(String[] row: results){
                 logList.add(newItem(row));
             }
+
         } catch (SQLException e){
             e.printStackTrace();
         }

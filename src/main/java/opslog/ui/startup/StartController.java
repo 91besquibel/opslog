@@ -1,9 +1,12 @@
 package opslog.ui.startup;
 
-import java.time.YearMonth;
 import java.time.LocalDate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.pgsql.Listen;
 import opslog.ui.calendar.control.MonthViewControl;
-import opslog.ui.calendar.control.WeekViewControl;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;
@@ -14,9 +17,9 @@ import opslog.ui.settings.managers.ProfileManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
 
-public class StartUp{
+public class StartController {
 
-	public static void loadInitialData(){
+	public static void loadData(){
 		// load independent tables
 		FormatManager.loadTable();
 		ProfileManager.loadTable();
@@ -36,12 +39,10 @@ public class StartUp{
 		LogManager.loadTable(LocalDate.now());
 	}
 
-	public static void loadCalendarData(){
-		YearMonth yearMonth = YearMonth.now();
-		LocalDate startDate = yearMonth.atDay(1);
-		LocalDate stopDate = yearMonth.atEndOfMonth();
-
-		MonthViewControl.handleQuery(startDate,stopDate);
-		WeekViewControl.calendarWeek.dateProperty().set(LocalDate.now());
+	public static void startNotifications(){
+		ExecutorService executor = Executors.newFixedThreadPool(10);
+		for (String threadName : DatabaseConfig.threadNames()) {
+			executor.submit(new Listen(ConnectionManager.getInstance(), threadName));
+		}
 	}
 }

@@ -306,19 +306,19 @@
 
 .context-menu {
     -fx-background-color: black;
-    -fx-background-radius: 13px;
+    -fx-background-radius: 6px;
    
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
     -fx-border-color: grey;
     -fx-border-width: 2px;
-    -fx-border-radius: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    -fx-border-radius: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0.5, 0, 0);
 }
 
 .popup{
     -fx-background-insets:      0, 1, 2;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0.5, 0, 0);
 }
 
 .menu-item:focused {
@@ -355,5 +355,5 @@
 
 /* Idk why but the typo in blac turns triggers a transparent combobox allowing me to style it */
 .combo-box-base {
-  -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, blac;
+  -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, transparent;
 }

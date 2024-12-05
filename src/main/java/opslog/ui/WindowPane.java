@@ -29,13 +29,11 @@ public class WindowPane {
     private double lastX, lastY;
     private double originalWidth;
     private double originalHeight;
-    
 
     private final Button exitButton;
     private final SearchBar searchBar = new SearchBar();
     private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
     private final ObjectProperty<CustomMenuBar> menuBarProperty = new SimpleObjectProperty<>();
-
 
     // Constructor: Accepts a Stage and MenuBar for flexible window customization
     public WindowPane(Stage stage, Button exitButton) {
@@ -56,8 +54,8 @@ public class WindowPane {
         double sceneHeight = screenSize.getHeight()/2+20;
         double sceneWidth = screenSize.getWidth()/2+20;
         Scene scene = new Scene(stackPane, sceneWidth, sceneHeight);
-        root.prefWidthProperty().bind(scene.widthProperty().subtract(20));
-        root.prefHeightProperty().bind(scene.heightProperty().subtract(20));
+        root.minWidthProperty().bind(scene.widthProperty().subtract(20));
+        root.minHeightProperty().bind(scene.heightProperty().subtract(20));
 
         String cssPath = Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm();
         scene.getStylesheets().add(cssPath);
@@ -70,7 +68,7 @@ public class WindowPane {
         stage.setScene(scene);
         stage.setResizable(true);
         stage.setMinWidth(sceneWidth);
-        stage.setMinHeight(sceneHeight);
+        stage.setMinHeight(sceneHeight+200);
         stage.setTitle("Operations Logger");
         stage.show();
         stage.toFront();

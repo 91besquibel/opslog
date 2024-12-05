@@ -21,14 +21,11 @@ import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.checklist.controls.StatusTreeView;
-import opslog.ui.checklist.controls.TaskTreeView;
 import opslog.ui.checklist.layout.StatusLayout;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomLabel;
 import opslog.util.Directory;
-import opslog.util.Settings;
-import javafx.scene.control.CheckBoxTreeItem;
 
 public class StatusController {
 

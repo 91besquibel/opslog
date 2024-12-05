@@ -66,16 +66,16 @@ public class DatabaseQueryBuilder {
                     java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
                     Date sqlDate = new Date(parsedDate.getTime());
                     statement.setDate(i + 1, sqlDate);
-                    System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
+                    //System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
                 } catch (ParseException e) {
                     try{
                         java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
                         java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
                         statement.setTime(i + 1, sqlTime);
-                        System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
+                        //System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
                     } catch (ParseException ex) {
                         statement.setString(i + 1, dataNoID[i]);
-                        System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
+                        //System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
                     }
                 }
             }
@@ -186,7 +186,7 @@ public class DatabaseQueryBuilder {
             PreparedStatement statement = connection.prepareStatement(sql);){
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                results = processResultSet(resultSet, results);
+                processResultSet(resultSet, results);
             }
         }
         System.out.println("DatabaseQueryBuilder: Query complete \n" );
@@ -243,7 +243,21 @@ public class DatabaseQueryBuilder {
             System.out.println("DatabaseQueryBuilder: " + statement);
             // Execute the query
             try (ResultSet resultSet = statement.executeQuery()) {
-                results = processResultSet(resultSet, results);
+                processResultSet(resultSet, results);
+            }
+        }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
+        return results;
+    }
+
+    public List<String[]> select(String tableName, String id) throws SQLException {
+        String sql = String.format("SELECT * FROM %s WHERE id = '%s'", tableName, id);
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        List<String[]> results = new ArrayList<>();
+        try(Connection connection = connectionProvider.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql);) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                processResultSet(resultSet, results);
             }
         }
         System.out.println("DatabaseQueryBuilder: Query complete \n" );

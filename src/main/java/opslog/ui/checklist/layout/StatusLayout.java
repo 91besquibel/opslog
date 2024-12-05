@@ -4,8 +4,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import opslog.object.event.Checklist;
 import opslog.ui.checklist.ChecklistUI;
+import opslog.ui.checklist.controls.ScheduleTable;
+import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.controls.*;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
@@ -21,6 +25,22 @@ public class StatusLayout {
                     ScheduledChecklistManager.getList(), Settings.WIDTH_LARGE,
                     Settings.WIDTH_LARGE, SelectionMode.MULTIPLE
             );
+
+    // Schedule a new checklist assests
+    public static final CustomComboBox<Checklist> checklistSelector =
+            new CustomComboBox<>("Checklist",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT);
+    public static final CustomDatePicker startChk = new CustomDatePicker(
+            "Start",130,Settings.SINGLE_LINE_HEIGHT);
+    public static final CustomDatePicker stopChk = new CustomDatePicker(
+            "Stop",130,Settings.SINGLE_LINE_HEIGHT);
+    public static final ScheduleTable scheduleTable = new ScheduleTable();
+
+    public static final CustomButton addSchedule = new CustomButton(
+            Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+    public static final CustomButton updateSchedule = new CustomButton(
+            Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
+    public static final CustomButton removeSchedule = new CustomButton(
+            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
 
     //Build Status
     public static void buildStatusWindow() {
@@ -81,5 +101,19 @@ public class StatusLayout {
         CustomHBox top = new CustomHBox();
         top.getChildren().addAll(swap, label);
         return top;
+    }
+
+    public static CustomVBox initializeChecklistSelector(){
+        CustomLabel label = new CustomLabel("Scheduled Checklist", 300, Settings.SINGLE_LINE_HEIGHT);
+        checklistSelector.setItems(ChecklistManager.getList());
+        label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        checklistSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        checklistSelector.setMaxWidth(300);
+        CustomHBox buttons = new CustomHBox();
+        buttons.getChildren().addAll(addSchedule,updateSchedule,removeSchedule);
+        VBox.setVgrow(checklistSelector, Priority.ALWAYS);
+        CustomVBox vbox = new CustomVBox();
+        vbox.getChildren().addAll(label, checklistSelector,buttons);
+        return vbox;
     }
 }

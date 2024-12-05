@@ -15,13 +15,13 @@ import opslog.object.event.ScheduledChecklist;
 import opslog.ui.controls.CustomTextField;
 import opslog.util.Settings;
 
-public class ScheduledChecklistTableView extends TableView<Integer[]> {
+public class ScheduleTable extends TableView<Integer[]> {
 	private final TableColumn<Integer[], String> offsetColumn = new TableColumn<>();
 	private final TableColumn<Integer[], String> durationColumn = new TableColumn<>();
 	private int currentRowIndex;
 	private int currentColumnIndex;
 
-	public ScheduledChecklistTableView() {
+	public ScheduleTable() {
 		// Enable editing
 		setEditable(true);
 
