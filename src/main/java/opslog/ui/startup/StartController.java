@@ -1,12 +1,18 @@
 package opslog.ui.startup;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javafx.collections.ListChangeListener;
+import opslog.object.event.Checklist;
+import opslog.object.event.ScheduledChecklist;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.pgsql.Listen;
 import opslog.ui.calendar.control.MonthViewControl;
+import opslog.ui.checklist.controllers.StatusController;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;

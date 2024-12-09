@@ -186,13 +186,10 @@ public class DayViewControl {
     }
 
     private void processChecklist(ScheduledChecklist scheduledChecklist){
-    
-        Checklist checklist = scheduledChecklist.checklistProperty().get();
-        
         LocalDate viewedDate = calendarDay.dateProperty().get();
         Label label = new Label();
-        String title = checklist.getTitle();
-        Task firstTask = checklist.getTaskList().get(0);
+        String title = scheduledChecklist.titleProperty().get();
+        Task firstTask = scheduledChecklist.getTaskList().get(0);
         Integer [] offset = scheduledChecklist.getOffsets().get(0);
         Integer [] duration = scheduledChecklist.getDurations().get(0);
         LocalTime [] firstTaskTimes = calculateTime(offset,duration);
@@ -255,8 +252,8 @@ public class DayViewControl {
         if(scheduledChecklist.stopDateProperty().get().isAfter(viewedDate)){
             stopTime = LocalTime.of(23,59);
         }else{
-            int finalTaskIndex = checklist.getTaskList().size() - 1;
-            Task finalTask = checklist.getTaskList().get(finalTaskIndex);
+            int finalTaskIndex = scheduledChecklist.getTaskList().size() - 1;
+            Task finalTask = scheduledChecklist.getTaskList().get(finalTaskIndex);
             Integer [] offsetFinal = scheduledChecklist.getOffsets().get(finalTaskIndex);
             Integer [] durationFinal = scheduledChecklist.getDurations().get(finalTaskIndex);
             LocalTime [] finalTaskTimes = calculateTime(offsetFinal,durationFinal);
@@ -276,12 +273,11 @@ public class DayViewControl {
      * task offset is relative to the checklist start date.
      */
     private void processChecklistTasks(ScheduledChecklist scheduledChecklist){
-        Checklist checklist = scheduledChecklist.checklistProperty().get();
         LocalDate viewedDate = calendarDay.dateProperty().get();
         LocalDate startDate = scheduledChecklist.startDateProperty().get();
         // calculate the display window of the item
-        for(int i = 0; i< checklist.getTaskList().size(); i++){
-            Task task = checklist.getTaskList().get(i);
+        for(int i = 0; i< scheduledChecklist.getTaskList().size(); i++){
+            Task task = scheduledChecklist.getTaskList().get(i);
             Integer [] offset = scheduledChecklist.getOffsets().get(i);
             Integer [] duration = scheduledChecklist.getDurations().get(i);
             int taskStart = offset[0];
@@ -294,7 +290,7 @@ public class DayViewControl {
                 // if the task is not before the window and the task does not start after the window
                 if (!(taskStart < windowStart && taskStop < windowStart) && !(taskStart > windowStop)) {
                     // then it is in the window and needs to be displayed
-                    processTask(task, checklist, offset, duration);
+                    processTask(task, scheduledChecklist, offset, duration);
                     Label taskLabel = new Label();
                     taskLabel.setAlignment(Pos.TOP_LEFT);
                     LocalTime baseline = LocalTime.of(0,0);
@@ -313,7 +309,7 @@ public class DayViewControl {
                     // display task details if selected
                     Popup popup = new Popup();
                     LocalTime[] times = calculateTime(offset,duration);
-                    VBox vbox = Util.createTaskPopup(task, checklist, times);
+                    VBox vbox = Util.createTaskPopup(task, times);
                     vbox.prefWidthProperty().bind(popup.widthProperty());
                     popup.getContent().add(vbox);
                     popup.setHideOnEscape(true);
@@ -339,13 +335,13 @@ public class DayViewControl {
                 int timeToWindowClose = timeToWindowOpen + 24;
                 // send to processing if in window
                 if (!(taskStart < timeToWindowOpen && taskStop < timeToWindowOpen) && !(taskStart > timeToWindowClose)) {
-                    processTask(task, checklist, offset, duration);
+                    processTask(task, scheduledChecklist, offset, duration);
                 }
             }
         }
     }
 
-    private void processTask(Task task, Checklist checklist, Integer[] offset, Integer[]duration){
+    private void processTask(Task task, ScheduledChecklist scheduledChecklist, Integer[] offset, Integer[]duration){
         LocalTime[] times = calculateTime(offset,duration);
         Label label = new Label(times[0] + "\n" + task.getTitle());
         label.setBackground(
@@ -361,7 +357,7 @@ public class DayViewControl {
         label.setBorder(
                 new Border(
                         new BorderStroke(
-                                checklist.getTags().get(0).getColor(),
+                                scheduledChecklist.getTags().get(0).getColor(),
                                 BorderStrokeStyle.SOLID,
                                 Settings.CORNER_RADII_ZERO,
                                 Settings.BORDER_WIDTH
@@ -375,7 +371,7 @@ public class DayViewControl {
         // multi seleciton
 
         Popup popup = new Popup();
-        VBox vbox = Util.createTaskPopup(task,checklist,times);
+        VBox vbox = Util.createTaskPopup(task,times);
         vbox.prefWidthProperty().bind(popup.widthProperty());
         popup.getContent().add(vbox);
         popup.setHideOnEscape(true);

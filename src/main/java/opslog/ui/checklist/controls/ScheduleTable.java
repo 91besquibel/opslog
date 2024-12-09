@@ -8,10 +8,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import opslog.object.event.ScheduledChecklist;
+import opslog.object.event.Task;
 import opslog.ui.controls.CustomTextField;
 import opslog.util.Settings;
 
@@ -60,7 +62,7 @@ public class ScheduleTable extends TableView<Integer[]> {
 		setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
 		setRowFactory(createRowFactory());
 
-		backgroundProperty().bind(Settings.primaryBackground);
+		backgroundProperty().bind(Settings.secondaryBackground);
 		// Add listener to track the selected cell
 		getSelectionModel().getSelectedCells().addListener((ListChangeListener<TablePosition>) change -> {
 			while (change.next()) {
@@ -79,6 +81,26 @@ public class ScheduleTable extends TableView<Integer[]> {
 		setItems(combineData(scheduledChecklist.getOffsets(), scheduledChecklist.getDurations()));
 	}
 
+	public ObservableList<Integer[]> getOffsets(){
+		ObservableList<Integer []> combindData = getItems();
+		ObservableList<Integer []> offsets = FXCollections.observableArrayList();
+		for(Integer [] row : combindData){
+			Integer[] offsetRow = {row[0],row[1]};
+			offsets.add(offsetRow);
+		}
+		return offsets;
+	}
+
+	public ObservableList<Integer[]> getDurations(){
+		ObservableList<Integer []> combindData = getItems();
+		ObservableList<Integer []> durations = FXCollections.observableArrayList();
+		for(Integer [] row : combindData){
+			Integer[] durationsRow = {row[2],row[3]};
+			durations.add(durationsRow);
+		}
+		return durations;
+	}
+
 	private void customizeColumn(String title,TableColumn<Integer[], String> column){
 		Label label = new Label(title);
 		label.fontProperty().bind(Settings.fontPropertyBold);
@@ -86,8 +108,7 @@ public class ScheduleTable extends TableView<Integer[]> {
 		HBox hbox = new HBox(label);
 		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
-		column.setMinWidth(100);
-		column.setMaxWidth(100);
+		column.prefWidthProperty().bind(this.widthProperty().multiply(0.5)); // 50%
 	}
 
 	// Combine offsets and durations into a single list of Integer[]
@@ -208,18 +229,18 @@ public class ScheduleTable extends TableView<Integer[]> {
 	private Callback<TableView<Integer[]>, TableRow<Integer[]>> createRowFactory() {
 		return tableView -> new TableRow<>() {
 			{
-				backgroundProperty().bind(Settings.primaryBackground);
-				borderProperty().bind(Settings.primaryBorder);
+				backgroundProperty().bind(Settings.secondaryBackground);
+				borderProperty().bind(Settings.secondaryBorder);
 
 				itemProperty().addListener((obs, oldItem, newItem) -> {
 					borderProperty().unbind();
 					backgroundProperty().unbind();
 					if (newItem != null ) {
-						borderProperty().bind(Settings.primaryBorder);
-						backgroundProperty().bind(Settings.secondaryBackground);
-					} else {
-						borderProperty().bind(Settings.primaryBorder);
+						borderProperty().bind(Settings.secondaryBorder);
 						backgroundProperty().bind(Settings.primaryBackground);
+					} else {
+						borderProperty().bind(Settings.secondaryBorder);
+						backgroundProperty().bind(Settings.secondaryBackground);
 					}
 				});
 
@@ -228,7 +249,7 @@ public class ScheduleTable extends TableView<Integer[]> {
 					if (isSelected) {
 						setBackground(Settings.selectedBackground.get());
 					} else {
-						backgroundProperty().bind(Settings.secondaryBackground);
+						backgroundProperty().bind(Settings.primaryBackground);
 					}
 				});
 				prefWidthProperty().bind(this.widthProperty().subtract(10.0));

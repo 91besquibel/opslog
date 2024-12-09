@@ -55,7 +55,7 @@ public class DatabaseQueryBuilder {
         // connect to database with automatic closing
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            // create filters fo data types
+            // create filters for data types
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
             timeFormat.setLenient(false);
@@ -129,7 +129,7 @@ public class DatabaseQueryBuilder {
         System.out.println("DatabaseQueryBuilder: " + sql);
 
         for (int i = 0; i < columns.length; i++) {
-            System.out.println("Setting column " + columns[i] + " with " + rawData[i]);
+            System.out.println("DatabaseQueryBuilder: Setting column " + columns[i] + " with " + rawData[i]);
         }
 
         try (Connection connection = connectionProvider.getConnection();
@@ -139,9 +139,29 @@ public class DatabaseQueryBuilder {
             UUID uuid = UUID.fromString(data[0]);  // The first element should be the UUID
             statement.setObject(columns.length+1, uuid);  // This sets the UUID correctly
 
-            // Loop through data and set each value for the columns
+            // create filters for data types
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+            timeFormat.setLenient(false);
+            dateFormat.setLenient(false);
+            // Iterate through each item
             for (int i = 0; i < columns.length; i++) {
-                statement.setString(i+1, rawData[i]);
+                try {
+                    java.util.Date parsedDate = dateFormat.parse(rawData[i]);
+                    Date sqlDate = new Date(parsedDate.getTime());
+                    statement.setDate(i + 1, sqlDate);
+                    System.out.println("DatabaseQueryBuilder: Setting date value: " + rawData[i] + " @ position " + (i + 1));
+                } catch (ParseException e) {
+                    try{
+                        java.util.Date parsedTime = timeFormat.parse(rawData[i]);
+                        java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
+                        statement.setTime(i + 1, sqlTime);
+                        System.out.println("DatabaseQueryBuilder: Setting time value: " + rawData[i] + " @ position " + (i + 1));
+                    } catch (ParseException ex) {
+                        statement.setString(i + 1, rawData[i]);
+                        System.out.println("DatabaseQueryBuilder: Setting text value: " + rawData[i] + " @ position " + (i + 1));
+                    }
+                }
             }
 
             // Execute the update query

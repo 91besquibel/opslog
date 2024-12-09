@@ -1,13 +1,16 @@
 package opslog;
 
 import javafx.application.Application;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
+import opslog.object.event.Checklist;
 import opslog.ui.calendar.CalendarUI;
+import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.controls.CustomMenuBar;
 import opslog.ui.log.LogUI;
 import opslog.ui.settings.SettingsUI;

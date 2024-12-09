@@ -63,6 +63,8 @@ public class EditorLayout {
     public  static final VBox checklistEditor = new VBox();
     public static final CustomLabel checklistSelectorLabel = new CustomLabel(
             "Checklist Selector", 300, Settings.SINGLE_LINE_HEIGHT);
+    public static final CustomComboBox<Checklist> checklistSelector = new CustomComboBox<>(
+            "Checklist", 300, Settings.SINGLE_LINE_HEIGHT);
     public static final CustomTextField checklistTitle = new CustomTextField(
             "Title",300,Settings.SINGLE_LINE_HEIGHT);
     public static final CustomComboBox<Type> checklistType = new CustomComboBox<>(
@@ -72,7 +74,7 @@ public class EditorLayout {
     public static final CustomTextField checklistInitials = new CustomTextField(
             "Initials",300,Settings.SINGLE_LINE_HEIGHT);
     public static final CustomTextField checklistDescription = new CustomTextField(
-            "Description",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
+            "Description",300,Settings.SINGLE_LINE_HEIGHT);
 
     // Checklist template Selection
     public static final VBox checklistSelection = new VBox();
@@ -98,7 +100,7 @@ public class EditorLayout {
         CustomVBox taskBox = initializeTaskBox();
         CustomVBox checklistBox = initializeChecklistBox();
 
-        SplitPane controls = new SplitPane(taskBox,checklistBox);
+        SplitPane controls = new SplitPane(checklistBox,taskBox);
         controls.setOrientation(Orientation.VERTICAL);
         controls.setDividerPositions(0.50f);
         controls.setMaxWidth(300);
@@ -113,9 +115,27 @@ public class EditorLayout {
     }
 
     public static CustomVBox initializeChecklistDisplay(){
+
+        Region leftSpacer = new Region();
+        leftSpacer.prefWidth(Double.MAX_VALUE);
+
+        CustomLabel label = new CustomLabel(
+                "Checklist Editor",
+                Settings.WIDTH_LARGE,
+                Settings.SINGLE_LINE_HEIGHT
+        );
+
+        Region rightSpacer = new Region();
+        rightSpacer.prefWidth(Double.MAX_VALUE);
+
+        HBox hbox = new HBox(swapView,leftSpacer,label,rightSpacer);
+        hbox.setAlignment(Pos.CENTER);
+        hbox.minHeight(Settings.SINGLE_LINE_HEIGHT);
+        hbox.maxHeight(Settings.SINGLE_LINE_HEIGHT);
         VBox.setVgrow(taskTreeView,Priority.ALWAYS);
+
         CustomVBox vbox = new CustomVBox();
-        vbox.getChildren().addAll(taskTreeView);
+        vbox.getChildren().addAll(hbox,taskTreeView);
         return vbox;
     }
 
@@ -130,22 +150,35 @@ public class EditorLayout {
         );
         checklistSelection.setVisible(true);
         checklistEditor.setVisible(false);
-
-        VBox.setVgrow(checklistStack,Priority.ALWAYS);
+        VBox.setVgrow(
+                checklistStack,
+                Priority.ALWAYS
+        );
 
         HBox buttons = new HBox();
-        buttons.getChildren().addAll(swapChecklistView, addChecklist, removeChecklist, updateChecklist);
+        buttons.getChildren().addAll(
+                swapChecklistView,
+                addChecklist,
+                removeChecklist,
+                updateChecklist
+        );
+
         buttons.setMaxWidth(300);
         buttons.setSpacing(Settings.SPACING);
         buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
         CustomVBox checklistBox = new CustomVBox();
-        checklistBox.getChildren().addAll(checklistSelectorLabel, checklistStack, buttons);
+        checklistBox.getChildren().addAll(
+                checklistSelectorLabel,
+                checklistStack,
+                buttons
+        );
         return checklistBox;
     }
 
     public static void initializeChecklistEditor(){
+        checklistSelector.setItems(ChecklistManager.getList());
         checklistType.setItems(TypeManager.getList());
         checklistTags.setFocusTraversable(true);
         checklistTags.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
@@ -154,6 +187,7 @@ public class EditorLayout {
         checklistTags.backgroundProperty().bind(Settings.secondaryBackground);
         checklistTags.borderProperty().bind(Settings.secondaryBorder);
         checklistEditor.getChildren().addAll(
+                checklistSelector,
                 checklistTitle,
                 checklistType,
                 checklistTags,
@@ -167,11 +201,14 @@ public class EditorLayout {
         checklistListView.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         checklistListView.setMaxWidth(300);
         checklistListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        VBox.setVgrow(checklistListView, Priority.ALWAYS);
+        VBox.setVgrow(
+                checklistListView,
+                Priority.ALWAYS
+        );
         checklistSelection.getChildren().add(checklistListView);
     }
 
-	private static CustomVBox initializeTaskBox(){
+    private static CustomVBox initializeTaskBox(){
         taskStackLabel.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         initalizeTaskEditor();
         initializeTaskSelection();
@@ -180,11 +217,15 @@ public class EditorLayout {
                 taskEditor,
                 taskSelection
         );
-
         VBox.setVgrow(taskStack,Priority.ALWAYS);
 
         HBox buttons = new HBox();
-        buttons.getChildren().addAll(swapTaskView,addTask,updateTask,removeTask);
+        buttons.getChildren().addAll(
+                swapTaskView,
+                addTask,
+                updateTask,
+                removeTask
+        );
         buttons.setMaxWidth(300);
         buttons.setSpacing(Settings.SPACING);
         buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
@@ -192,7 +233,11 @@ public class EditorLayout {
 
         CustomVBox taskBox = new CustomVBox();
         taskBox.setMaxWidth(300);
-        taskBox.getChildren().addAll(taskStackLabel,taskStack,buttons);
+        taskBox.getChildren().addAll(
+                taskStackLabel,
+                taskStack,
+                buttons
+        );
         return taskBox;
     }
 

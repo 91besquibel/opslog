@@ -11,6 +11,7 @@ import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.DatabaseQueryBuilder;
+import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.checklist.layout.EditorLayout;
 import javafx.scene.control.ContextMenu;
 import opslog.ui.checklist.managers.ChecklistManager;
@@ -40,7 +41,6 @@ public class EditorController {
                         EditorLayout.taskTags.getCheckModel().check(tag);
                     }
                 }
-
                 EditorLayout.taskInitials.textProperty().set(nv.initialsProperty().get());
                 EditorLayout.taskDescription.textProperty().set(nv.descriptionProperty().get());
             }
@@ -179,6 +179,11 @@ public class EditorController {
     }
 
     private static void initializeTaskTreeViewEvents(){
+        EditorLayout.swapView.setOnAction(e -> {
+            ChecklistUI.editorRoot.setVisible(false);
+            ChecklistUI.statusRoot.setVisible(true);
+        });
+
         EditorLayout.taskTreeView.setOnDragOver(event -> {
             if (event.getGestureSource() != EditorLayout.taskTreeView &&
                     event.getDragboard().hasString()) {
@@ -191,13 +196,27 @@ public class EditorController {
             Dragboard dragboard = event.getDragboard();
             if (dragboard.hasString()) {
                 String droppedItem = dragboard.getString();
-                Task task = TaskManager.getItem(droppedItem);
-                TreeItem<Task> treeItem = new TreeItem<>(task);
-                if(EditorLayout.taskTreeView.getRoot() == null){
-                    EditorLayout.taskTreeView.setRoot(treeItem);
-                    treeItem.setExpanded(true);
-                }else{
-                    EditorLayout.taskTreeView.getRoot().getChildren().add(treeItem);
+                if(TaskManager.getItem(droppedItem) != null){
+                    Task task = TaskManager.getItem(droppedItem);
+                    TreeItem<Task> treeItem = new TreeItem<>(task);
+                    if(EditorLayout.taskTreeView.getRoot() == null){
+                        EditorLayout.taskTreeView.setRoot(treeItem);
+                        treeItem.setExpanded(true);
+                    }else{
+                        EditorLayout.taskTreeView.getRoot().getChildren().add(treeItem);
+                    }
+                } else if(ChecklistManager.getItem(droppedItem) != null){
+                    EditorLayout.taskTreeView.setRoot(null);
+                    Checklist checklist = ChecklistManager.getItem(droppedItem);
+                    for(Task task : checklist.getTaskList()){
+                        TreeItem<Task> treeItem = new TreeItem<>(task);
+                        if(EditorLayout.taskTreeView.getRoot() == null){
+                            EditorLayout.taskTreeView.setRoot(treeItem);
+                            treeItem.setExpanded(true);
+                        }else{
+                            EditorLayout.taskTreeView.getRoot().getChildren().add(treeItem);
+                        }
+                    }
                 }
             }
             event.setDropCompleted(true);
@@ -227,18 +246,28 @@ public class EditorController {
     }
 
     private static void initializeChecklistBoxInteractions(){
-
         EditorLayout.checklistListView.getSelectionModel().selectedItemProperty().addListener(
-                (obs,ov,nv) -> {
-                EditorLayout.checklistTitle.setText(nv.titleProperty().get());
-                EditorLayout.checklistType.setValue(nv.typeProperty().get());
-                for(Tag tag : nv.getTags()){
-                    EditorLayout.checklistTags.getCheckModel().check(tag);
-                }
-                EditorLayout.checklistInitials.setText(nv.getInitials());
-                EditorLayout.checklistDescription.setText(nv.getDescription());
+            (obs,ov,nv) -> {
+            EditorLayout.checklistTitle.setText(nv.titleProperty().get());
+            EditorLayout.checklistType.setValue(nv.typeProperty().get());
+            for(Tag tag : nv.getTags()){
+                EditorLayout.checklistTags.getCheckModel().check(tag);
             }
-            );
+            EditorLayout.checklistInitials.setText(nv.getInitials());
+            EditorLayout.checklistDescription.setText(nv.getDescription());
+        });
+
+        EditorLayout.checklistListView.setOnDragDetected(event -> {
+            Checklist selectedItem = EditorLayout.checklistListView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                Dragboard dragboard = EditorLayout.checklistListView.startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent content = new ClipboardContent();
+                content.putString(selectedItem.getID());
+                dragboard.setContent(content);
+                event.consume();
+                EditorLayout.checklistSelector.getSelectionModel().select(selectedItem);
+            }
+        });
 
         EditorLayout.swapChecklistView.setOnAction(event -> {
             if(EditorLayout.checklistEditor.isVisible()){
@@ -335,7 +364,7 @@ public class EditorController {
 
                     Checklist checklist = ChecklistManager.getItem(updatedChecklist.getID());
                     int index = ChecklistManager.getList().indexOf(checklist);
-                    ChecklistManager.getList().set(index, checklist);
+                    ChecklistManager.getList().set(index, updatedChecklist);
 
                     EditorLayout.checklistListView.getSelectionModel().select(null);
                     EditorLayout.checklistTitle.textProperty().set(null);
@@ -378,7 +407,6 @@ public class EditorController {
                 }
             }
         });
-
     }
 }
 

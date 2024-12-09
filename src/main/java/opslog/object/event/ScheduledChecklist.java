@@ -2,9 +2,11 @@ package opslog.object.event;
 
 import java.time.LocalDate;
 import javafx.beans.property.*;
+import javafx.collections.ListChangeListener;
 import opslog.interfaces.SQL;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import opslog.ui.checklist.controllers.StatusController;
 import opslog.util.DateTime;
 import opslog.object.Event;
 import java.util.Arrays;
@@ -13,14 +15,11 @@ import java.util.stream.Collectors;
 
 public class ScheduledChecklist extends Event implements SQL{
 
-	// id
 	final StringProperty id = new SimpleStringProperty();
-	// checklist 
-	final ObjectProperty<Checklist> checklist = new SimpleObjectProperty<>();
-	// startDate
+	final StringProperty title = new SimpleStringProperty();
 	final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
-	// stopDate 
 	final ObjectProperty<LocalDate> stopDate = new SimpleObjectProperty<>();
+	final ObservableList<Task> taskList = FXCollections.observableArrayList();
 	// offset from start date at 0000z composed of an HH and mm integer
 	final ObservableList<Integer []> offsets = FXCollections.observableArrayList();
 	// duration from offset calculated time composed of an HH and mm integer
@@ -32,46 +31,50 @@ public class ScheduledChecklist extends Event implements SQL{
 	
 	//Constructor
 	public ScheduledChecklist(){
-		super();
+		super(null, FXCollections.observableArrayList(), null, null);
 		this.id.set(null);
-		this.checklist.set(new Checklist());
+		this.title.set(null);
 		this.startDate.set(null);
 		this.stopDate.set(null);
+		this.taskList.setAll(FXCollections.observableArrayList());
 		this.offsets.setAll(FXCollections.observableArrayList());
 		this.durations.setAll(FXCollections.observableArrayList());
 		this.statusList.setAll(FXCollections.observableArrayList());
 		this.percentage.set(null);
 	}
 
-	// Mutator
+	// Accessor
+	public void setID(String newId) {id.set(newId);}
 	public String getID() {return id.get();}
+
+	// list
 	public ObservableList<Integer[]> getOffsets(){return offsets;}
 	public ObservableList<Integer[]> getDurations(){return durations;}
 	public ObservableList<Boolean> getStatusList() {return statusList;}
-
-	// Accessor
-	public void setID(String newId) {id.set(newId);}
-	public void setOffsets(ObservableList<Integer[]> newOffsets){offsets.setAll(newOffsets);}
-	public void setDurations(ObservableList<Integer[]> newDurations){durations.setAll(newDurations);}
-	public void setStatusList(ObservableList<Boolean> newStatusList) {statusList.setAll(newStatusList);}
+	public ObservableList<Task> getTaskList(){return taskList;}
 
 	// Properties
-	public ObjectProperty<Checklist> checklistProperty(){return checklist;}
+	public StringProperty titleProperty(){return title;}
 	public ObjectProperty<LocalDate> startDateProperty(){return startDate;}
 	public ObjectProperty<LocalDate> stopDateProperty(){return stopDate;}
 	public StringProperty percentageProperty(){return percentage;}
 
-
 	@Override public String [] toArray(){
+		String[] superArray = super.toArray();
 		return new String[]{
 				id.get(),
-				checklist.get().getID(),
+				title.get(),
 				DateTime.convertDate(startDate.get()),
 				DateTime.convertDate(stopDate.get()),
+				taskList.stream().map(Task::getID).collect(Collectors.joining(" | ")),
 				offsets.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
 				durations.stream().map(arr -> Arrays.toString(arr)).collect(Collectors.joining(" | ")),
 				statusList.stream().map(String::valueOf).collect(Collectors.joining(" | ")),
 				percentage.get(),
+				superArray[0], // type
+				superArray[1], // tags
+				superArray[2], // initials
+				superArray[3]  // description
 		};
 	}
 	
@@ -82,49 +85,46 @@ public class ScheduledChecklist extends Event implements SQL{
 	}
 
 	@Override public String toString() {
-		return checklist.get().getTitle();
+		return title.get();
 	}
 
 	@Override public boolean hasValue() {
 		// Check basic conditions
 		if (startDate == null || stopDate == null || percentage.get() == null || percentage.get().trim().isEmpty()) {
-			System.out.println("ChecklistEditor: returning false");
+			//System.out.println("ChecklistEditor: returning false");
 			return false;
 		}
-		System.out.println("ChecklistEditor: true");
+		//System.out.println("ChecklistEditor: true");
 
-		// Check if checklist has a value
-		if (!checklist.get().hasValue()) {
-			System.out.println("ChecklistEditor: returning false " + Arrays.toString(checklist.get().toArray()));
+		if(title.get() ==null){
 			return false;
 		}
-		System.out.println("ChecklistEditor: true");
 
 		// Validate offsets
 		for (Integer[] offset : offsets) {
 			for (int num : offset) {
 				if (num < 0) {
-					System.out.println("ChecklistEditor: returning false");
+					//System.out.println("ChecklistEditor: returning false");
 					return false;
 				}
 			}
 		}
-		System.out.println("ChecklistEditor: true");
+		//System.out.println("ChecklistEditor: true");
 
 		// Validate durations
 		for (Integer[] duration : durations) {
 			for (int num : duration) {
 				if (num < 0) {
-					System.out.println("ChecklistEditor: returning false");
+					//System.out.println("ChecklistEditor: returning false");
 					return false;
 				}
 			}
 		}
-		System.out.println("ChecklistEditor: true");
+		//System.out.println("ChecklistEditor: true");
 
-		System.out.println("ChecklistEditor: checking list sizes");
+		super.hasValue();
+		//System.out.println("ChecklistEditor: checking list sizes");
 		// Ensure size consistency across lists
         return statusList.size() == offsets.size() && statusList.size() == durations.size();
     }
-
 }

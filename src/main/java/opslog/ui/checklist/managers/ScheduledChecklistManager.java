@@ -3,9 +3,12 @@ package opslog.ui.checklist.managers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.event.ScheduledChecklist;
+import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.DatabaseQueryBuilder;
+import opslog.ui.settings.managers.TagManager;
+import opslog.ui.settings.managers.TypeManager;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -20,15 +23,20 @@ public class ScheduledChecklistManager{
 	public static ScheduledChecklist newItem(String [] row){
 		System.out.println("ScheduledChecklistManager: row :" + Arrays.toString(row));
 		ScheduledChecklist scheduledChecklist = new ScheduledChecklist();
-		scheduledChecklist.setID(row[0]);
-		scheduledChecklist.checklistProperty().set(ChecklistManager.getItem(row[1]));
-		scheduledChecklist.startDateProperty().set(LocalDate.parse(row[2]));
-		scheduledChecklist.stopDateProperty().set(LocalDate.parse(row[3]));
-		scheduledChecklist.setOffsets(toIntegerArrays(row[4]));
-		scheduledChecklist.setDurations(toIntegerArrays(row[5]));
-		scheduledChecklist.setStatusList(toBooleanList(row[6]));
-		scheduledChecklist.percentageProperty().set(row[7]);
-		System.out.println("ScheduledChecklistManager: row :" + Arrays.toString(scheduledChecklist.toArray()));
+		scheduledChecklist.setID(row[0]);//0
+		scheduledChecklist.titleProperty().set(row[1]);//1
+		scheduledChecklist.startDateProperty().set(LocalDate.parse(row[2]));//2
+		scheduledChecklist.stopDateProperty().set(LocalDate.parse(row[3]));//3
+		scheduledChecklist.getTaskList().setAll(toTaskArrays(row[4]));//4
+		scheduledChecklist.getOffsets().setAll(toIntegerArrays(row[5]));//5
+		scheduledChecklist.getDurations().setAll(toIntegerArrays(row[6]));//6
+		scheduledChecklist.getStatusList().setAll(toBooleanList(row[7]));//7
+		scheduledChecklist.percentageProperty().set(row[8]);//8
+		scheduledChecklist.typeProperty().set(TypeManager.getItem(row[9]));//9
+		scheduledChecklist.setTags(TagManager.getItems(row[10]));//10
+		scheduledChecklist.initialsProperty().set(row[11]);//11
+		scheduledChecklist.descriptionProperty().set(row[12]);//12
+		System.out.println("ScheduledChecklistManager: Object :" + Arrays.toString(scheduledChecklist.toArray()));
 		return scheduledChecklist;
 	}
 
@@ -67,9 +75,18 @@ public class ScheduledChecklistManager{
 	}
 
 	public static ObservableList<Boolean> toBooleanList(String row){
-		return Arrays.stream(row.split("\\|")).map(Boolean::parseBoolean) // Convert each string to a Boolean
+		return Arrays.stream(row.split("\\|"))
+				.map(value -> Boolean.parseBoolean(value.trim()))
 				.collect(Collectors.toCollection(FXCollections::observableArrayList));
+
 	}
+
+	public static ObservableList<Task> toTaskArrays(String row) {
+		return Arrays.stream(row.split("\\|"))
+				.map(TaskManager::getItem)  // Look up each ID in TaskManager
+				.collect(Collectors.toCollection(FXCollections::observableArrayList));  // Collect into ObservableList
+	}
+
 
 	public static void loadTable(){
 		try {

@@ -357,3 +357,27 @@
 .combo-box-base {
   -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, transparent;
 }
+
+.tree-table-view .tree-table-row-cell .tree-disclosure-node {
+    -fx-opacity: 0; /* Makes the arrow invisible */
+    -fx-shape: null; /* Removes any shape applied */
+    -fx-padding: 0; /* Removes any padding around the node */
+    -fx-border-color:transparent;
+    -fx-background-color: transparent; /* Ensures no background is visible */
+}
+
+.tree-table-view .tree-table-row-cell .tree-disclosure-node:focused {
+    -fx-background-color: transparent; /* Ensures no highlight appears when focused */
+     -fx-border-color:transparent;
+}
+
+.date-picker:editable > .arrow-button > * {
+    -fx-opacity: 0; /* Set the node in the button to be visible */
+}
+
+.date-picker > .arrow-button {
+    /*-fx-background-image: url("/icons/calendar.png"); /* Url of the icon */
+    -fx-background-size: 60% 60%; /* Can be `cover` or `100% 100%` ect. */
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center; /* Put the icon in the center */
+}

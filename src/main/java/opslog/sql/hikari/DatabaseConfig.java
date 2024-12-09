@@ -52,7 +52,7 @@ public class DatabaseConfig {
     public static final String SCHEDULED_CHECKLIST_TABLE =
             "scheduled_checklist_table";
     public static final String SCHEDULED_CHECKLIST_COLUMNS =
-            "id, checklist_id, start_date, stop_date, offsets, durations, status_list, percentage";
+            "id, title, start_date, stop_date, taskIDs, offsets, durations, status_list, percentage, typeID, tagIDs, initials, description";
 
     public static String [] tableNames(){
         return new String[]{

@@ -1,5 +1,6 @@
 package opslog.ui.checklist.controls;
 
+import javafx.scene.control.cell.CheckBoxTreeTableCell;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Task;
@@ -20,13 +21,15 @@ public class StatusTreeView extends TreeTableView<Task>{
 	public final Set<CheckBoxTreeItem<Task>> set = new HashSet<>();
 	
 	public StatusTreeView(){
-		
+
+		TreeTableColumn<Task, Boolean> checkBoxColumn = checkBoxColumn();
 		TreeTableColumn<Task, String> titleColumn = titleColumn();
 		TreeTableColumn<Task, Type> typeColumn = typeColumn();
 		TreeTableColumn<Task, ObservableList<Tag>> tagColumn = tagColumn();
 		TreeTableColumn<Task, String> descriptionColumn = descriptionColumn();
 
 		getColumns().addAll(
+				checkBoxColumn,
 			titleColumn,
 			typeColumn,
 			tagColumn, 
@@ -45,24 +48,32 @@ public class StatusTreeView extends TreeTableView<Task>{
 	}
 
 	public void setItems(ObservableList<Task> tasks, ObservableList<Boolean> status) {
-		for(int i = 0; i < tasks.size(); i++){
-			// Create the treeItem
+		for (int i = 0; i < tasks.size(); i++) {
+
 			CheckBoxTreeItem<Task> treeItem = new CheckBoxTreeItem<>(tasks.get(i));
-			// Set the status checked status of the task
 			treeItem.setSelected(status.get(i));
-			// add the TreeItem to the set
 			set.add(treeItem);
-			// Determine if root or child the place in treeView
-			if(getRoot() == null){
+			if (getRoot() == null) {
 				setRoot(treeItem);
-			}else{
+			} else {
 				getRoot().getChildren().add(treeItem);
 			}
 		}
 		// ...Make big
 		getRoot().setExpanded(true);
 	}
-	
+
+	private TreeTableColumn<Task, Boolean> checkBoxColumn(){
+		TreeTableColumn<Task, Boolean> checkBoxColumn = new TreeTableColumn<>();
+		checkBoxColumn.setCellValueFactory(param -> {
+			CheckBoxTreeItem<Task> treeItem = (CheckBoxTreeItem<Task>) param.getValue();
+			return treeItem.selectedProperty();
+		});
+		checkBoxColumn.setCellFactory(CheckBoxTreeTableCell.forTreeTableColumn(checkBoxColumn));
+		checkBoxColumn.setPrefWidth(50);
+		return checkBoxColumn;
+	}
+
 	private TreeTableColumn<Task, String> titleColumn() {
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
@@ -269,6 +280,8 @@ public class StatusTreeView extends TreeTableView<Task>{
 		row.backgroundProperty().bind(Settings.primaryBackground);
 		row.minHeight(50);
 		row.borderProperty().bind(Settings.primaryBorder);
+		row.setAlignment(Pos.CENTER);
+		row.setDisclosureNode(null);
 
 		row.itemProperty().addListener((obs, oldItem, newItem) -> {
 			if (row.isEmpty()) {

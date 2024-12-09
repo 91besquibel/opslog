@@ -60,7 +60,6 @@ public class ChecklistManager {
     public static ObservableList<Checklist> getList() {
         return list;
     }
-
 }
 
 	

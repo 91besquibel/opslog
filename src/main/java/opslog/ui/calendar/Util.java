@@ -61,11 +61,8 @@ public class Util {
         return vbox;
     }
 
-    public static VBox createTaskPopup(Task task, Checklist checklist , LocalTime [] times){
+    public static VBox createTaskPopup(Task task, LocalTime [] times){
         VBox vbox = new VBox();
-
-        Label id= new Label( "ID: " + task.getID());
-        propertyFactory(id);
 
         Label title = new Label( "Title: " + task.getTitle());
         propertyFactory(title);
@@ -76,9 +73,9 @@ public class Util {
         Label typeLabel = new Label("Type: " + task.getType().getTitle());
         propertyFactory(typeLabel);
 
-        vbox.getChildren().addAll(id,title,window,typeLabel);
+        vbox.getChildren().addAll(title,window,typeLabel);
 
-        FlowPane flowPane = createTagLabels(checklist.getTags());
+        FlowPane flowPane = createTagLabels(task.getTags());
         flowPane.maxWidth(250);
 
         vbox.getChildren().add(flowPane);
@@ -108,12 +105,7 @@ public class Util {
     public static VBox createChecklistPopup(ScheduledChecklist scheduledChecklist){
         VBox vbox = new VBox();
 
-        Checklist checklist = scheduledChecklist.checklistProperty().get();
-
-        Label id= new Label( "ID: " + checklist.getID());
-        propertyFactory(id);
-
-        Label title = new Label( "Title: " + checklist.getTitle());
+        Label title = new Label( "Title: " + scheduledChecklist.titleProperty());
         propertyFactory(title);
 
         Label start = new Label("Start: " + scheduledChecklist.startDateProperty().get());
@@ -122,20 +114,20 @@ public class Util {
         Label stop = new Label("Stop: " + scheduledChecklist.stopDateProperty().get());
         propertyFactory(stop);
 
-        Label typeLabel = new Label("Type: " + checklist.getType().getTitle());
+        Label typeLabel = new Label("Type: " + scheduledChecklist.typeProperty().get().getTitleProperty());
         propertyFactory(typeLabel);
 
-        vbox.getChildren().addAll(id, title, start, stop, typeLabel);
+        vbox.getChildren().addAll(title, start, stop, typeLabel);
 
-        FlowPane flowPane = createTagLabels(checklist.getTags());
+        FlowPane flowPane = createTagLabels(scheduledChecklist.getTags());
         flowPane.maxWidth(250);
 
         vbox.getChildren().add(flowPane);
 
-        Label initials = new Label("Initials: " + checklist.getInitials());
+        Label initials = new Label("Initials: " + scheduledChecklist.initialsProperty().get());
         propertyFactory(initials);
 
-        Label description = new Label("Description: " + checklist.getDescription());
+        Label description = new Label("Description: " + scheduledChecklist.descriptionProperty().get());
         propertyFactory(description);
 
         CheckBox cb = new CheckBox("Completed ");
