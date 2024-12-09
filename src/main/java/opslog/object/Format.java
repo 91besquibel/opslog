@@ -29,7 +29,6 @@ public class Format implements SQL {
     public String getID() {
         return ID.get();
     }
-    
 
     public void setID(String newID) {
         ID.set(newID);

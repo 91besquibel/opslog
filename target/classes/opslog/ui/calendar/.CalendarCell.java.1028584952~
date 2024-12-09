@@ -1,0 +1,202 @@
+/*
+ * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+package opslog.ui.calendar;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.AccessibleAttribute;
+import javafx.scene.AccessibleRole;
+import javafx.scene.control.Cell;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import opslog.object.Event;
+import opslog.object.event.Calendar;
+import opslog.object.event.Checklist;
+import opslog.ui.calendar.CalendarCellHeader;
+import opslog.util.Settings;
+
+/*
+	This class is not to be used with the CustomDatePicker. 
+	This class was designed to work with the CalendarContent.java class
+*/
+
+public class CalendarCell extends Cell<LocalDate> {
+
+    //Do Not Remove
+    private static final String DEFAULT_STYLE_CLASS = "date-cell";
+    private final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();  // container for all events taking place on that dat
+    private final VBox eventContainer = new VBox(); 
+    private final CalendarCellHeader header = new CalendarCellHeader();
+    private final LocalDate date;
+
+    //Do Not Remove
+    public CalendarCell(LocalDate date) {
+        super();
+        this.date = date;
+        
+        initializeListeners();
+    }
+
+    public void addEvent(Event event) {
+        dailyEvents.add(event);
+    }
+
+    public void removeEvent(Event event) {
+        dailyEvents.remove(event);
+    } 
+
+    public LocalDate getDate(){
+        return date;
+    }
+    public CalendarCellHeader getHeader(){
+        return header;
+    }
+
+    //Do Not Remove
+    @Override
+    public void updateItem(LocalDate item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty || item == null) {
+            setGraphic(null);
+        } else {
+            header.setDate(item);
+            dailyEvents.addListener(new ListChangeListener<Event>() {
+                @Override
+                public void onChanged(Change<? extends Event> change) {
+                    while (change.next()) {
+                        if (change.wasAdded()) {
+                            // sets the new number of events to be diplayed
+                            // in the cell header
+                            header.setNumEvents(getList().size());
+                            newLabel(change.getAddedSubList());
+                        } else if (change.wasRemoved()) {
+                            header.setNumEvents(getList().size());
+                            removeLabel(change.getRemoved());
+                        } else if (change.wasUpdated()) {
+                            
+                        }
+                    }
+                }
+            });
+            updateDisplay();
+            // add special interactions for each type of label
+        }
+    }
+
+    public void updateDisplay(){
+        if (!dailyEvents.isEmpty()) {
+            for (Event event : dailyEvents) {
+                newLabel(event);
+            }
+        }
+    }
+
+    private void removeLabel(List<Event> newEvents){
+        
+    }
+    
+    private void newLabel(List<Event> newEvents){
+        for(Event event : newEvents){
+            if (event instanceof Calendar) {
+                displayCalEvent(event);
+            } else if (event instanceof Checklist) {
+                displayChe(event);
+            }
+        }
+    }
+
+    private void displayCalEvent(Event event){
+        Calendar calendarEvent = (Calendar) event;
+        CalendarCellEvent displayEvent = new CalendarCellEevent(calendarEvent);
+        eventContainer.add(displayEvent);
+    }
+
+    private void displayChckEvent(Event event){
+        Checklist checklistEvent = (Checklist) event;
+        CalendarCellEvent displayEvent = new CalendarCellEevent(checklistEvent);
+        eventContainer.add(displayEvent);
+    }
+
+    private void initializeListeners(){
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
+        setAccessibleRole(AccessibleRole.TEXT);
+
+        hoverProperty().addListener((obs, noHov, hov) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (hov) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
+
+        focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (isFocused) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
+
+        selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            borderProperty().unbind();
+            backgroundProperty().unbind();
+            if (isSelected) {
+                setBackground(Settings.dateSelectBackground.get());
+                setBorder(Settings.dateSelectBorder.get());
+            } else {
+                backgroundProperty().bind(Settings.dateSelectBackground);
+                borderProperty().bind(Settings.dateSelectBorder);
+            }
+        });
+    }
+    //Do Not Remove
+    @Override
+    public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+        if (Objects.requireNonNull(attribute) == AccessibleAttribute.TEXT) {
+            if (isFocused()) {
+                return getText();
+            }
+            return "";
+        }
+        return super.queryAccessibleAttribute(attribute, parameters);
+    }
+}

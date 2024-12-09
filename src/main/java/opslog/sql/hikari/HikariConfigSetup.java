@@ -24,19 +24,14 @@ public class HikariConfigSetup {
 	public static HikariConfig configure(
 			String dbType, String address, String port, String dbName,
 			String username, String password) {
-
 		String jdbcUrl = "jdbc:" + dbType + ":" + address + ":" + port + "/" + dbName;
-
 		HikariConfig config = new HikariConfig();
 		config.setJdbcUrl(jdbcUrl);
 		config.setUsername(username);
 		config.setPassword(password);
-
-		// Pool settings
-		config.setMaximumPoolSize(10);
-		config.setIdleTimeout(300000); // 5 minutes
-		config.setConnectionTimeout(30000); // 30 seconds
-
+		config.setMaximumPoolSize(20);
+		config.setIdleTimeout(300000);
+		config.setConnectionTimeout(30000);
 		return config;
 	}
 }

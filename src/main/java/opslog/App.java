@@ -1,16 +1,21 @@
 package opslog;
 
 import javafx.application.Application;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 
 import javafx.stage.Stage;
+import opslog.object.event.Checklist;
 import opslog.ui.calendar.CalendarUI;
-import opslog.ui.calendar.control.MonthViewControl;
-import opslog.ui.calendar.control.WeekViewControl;
+import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.controls.CustomMenuBar;
+import opslog.ui.log.LogUI;
+import opslog.ui.settings.SettingsUI;
+import opslog.ui.startup.StartController;
+import opslog.ui.startup.StartUI;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import opslog.ui.*;
@@ -69,19 +74,14 @@ public class App extends Application {
             // Create and display database connection UI
             StartUI startUI = StartUI.getInstance();
             startUI.display(()->{
-
-                StartUp.loadTableData();
-                StartUp.loadCalendarData();
-
+                StartController.loadData();
+                StartController.startNotifications();
                 CustomMenuBar menuBar = createMenuBar();
                 //System.out.println("App: Displaying main application");
                 // Display the app after the user connects to a database
                 appWindow = new WindowPane(stage,Buttons.exitAppBtn());
                 appWindow.setMenuBar(menuBar);
                 appWindow.display();
-
-                // Force Update to set the ui
-                MonthViewControl.update();
             });
 
         } catch (Exception e) {

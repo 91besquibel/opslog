@@ -58,8 +58,8 @@ public class Type implements SQL {
     }
 
     public boolean hasValue() {
-        System.out.println("Type: Checking for Type title: " + title.get());
-        System.out.println("Type: Checking for Type pattern: " + pattern.get());
+        //System.out.println("Type: Checking for Type title: " + title.get());
+        //System.out.println("Type: Checking for Type pattern: " + pattern.get());
         return  title.get() != null && !title.get().trim().isEmpty() &&
                 pattern.get() != null && !pattern.get().trim().isEmpty();
     }

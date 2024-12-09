@@ -5,22 +5,20 @@ import java.util.List;
 
 import opslog.object.Event;
 import opslog.object.event.Calendar;
-import opslog.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
-import opslog.object.event.Checklist;
 
 // QuickSort Utility for List<Event>
 public class QuickSort {
 
 	// QuickSort method for List<Event>
 	public static void quickSort(List<Event> events, int low, int high) {
-		System.out.println("QuickSort: Starting sort");
+		//System.out.println("QuickSort: Starting sort");
 		if (low < high) {
 			int pivotIndex = partition(events, low, high);
 			quickSort(events, low, pivotIndex - 1);
 			quickSort(events, pivotIndex + 1, high);
 		}
-		System.out.println("QuickSort: End of sort");
+		//System.out.println("QuickSort: End of sort");
 	}
 
 	// Partition method to rearrange the list
@@ -43,7 +41,7 @@ public class QuickSort {
 	private static LocalDate getStartDate(Event event) {
 		if (event instanceof Calendar) {
 			return ((Calendar) event).getStartDate();
-		} else if (event instanceof Checklist) {
+		} else if (event instanceof ScheduledChecklist) {
 			return ((ScheduledChecklist) event).startDateProperty().get();
 		} else {
 			throw new IllegalArgumentException("Unknown Event type: " + event.getClass().getSimpleName());

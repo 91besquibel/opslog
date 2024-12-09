@@ -8,28 +8,26 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Popup;
 
-import opslog.managers.CalendarManager;
-import opslog.managers.ChecklistManager;
+import opslog.ui.calendar.managers.CalendarManager;
 import opslog.object.Event;
 import opslog.object.Tag;
 import opslog.object.event.Calendar;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.calendar.Util;
 import opslog.ui.calendar.layout.DayView;
 import opslog.ui.calendar.object.CalendarDay;
 import opslog.util.QuickSort;
 import opslog.util.Settings;
-import opslog.managers.ScheduledChecklistManager;
+import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.object.event.ScheduledChecklist;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -79,7 +77,7 @@ public class DayViewControl {
     public void initializeListeners(){
         // If the date changes clear the dayView
         calendarDay.dateProperty().addListener((obs, ov, nv) -> {
-            System.out.println("\nDayViewControl: New date detected: " + nv);
+            //System.out.println("\nDayViewControl: New date detected: " + nv);
             if (nv != null && nv!= ov) {
                 // find a way to not rebuild the grid every time
                 // it would be better to remove the event panes individually
@@ -95,7 +93,7 @@ public class DayViewControl {
 
         calendarDay.eventsProperty().addListener(
                 (ListChangeListener<? super Event>) change -> {
-            System.out.println("DayView: event list change detected");
+            //System.out.println("DayView: event list change detected");
             while(change.next()){
                 if(change.wasAdded()){
                     ObservableList<Event> events =
@@ -125,7 +123,7 @@ public class DayViewControl {
     private void processCalendar(Calendar calendar) {
         LocalDate viewedDate = calendarDay.dateProperty().get();
         Label label = new Label(calendar.getStartTime()+ " " + calendar.getTitle());
-        System.out.println("DayView: Processing calendar event: " + calendar.getTitle());
+        //System.out.println("DayView: Processing calendar event: " + calendar.getTitle());
         label.setBackground(
                 new Background(
                         new BackgroundFill(
@@ -188,13 +186,10 @@ public class DayViewControl {
     }
 
     private void processChecklist(ScheduledChecklist scheduledChecklist){
-    
-        Checklist checklist = scheduledChecklist.checklistProperty().get();
-        
         LocalDate viewedDate = calendarDay.dateProperty().get();
         Label label = new Label();
-        String title = checklist.getTitle();
-        Task firstTask = checklist.getTaskList().get(0);
+        String title = scheduledChecklist.titleProperty().get();
+        Task firstTask = scheduledChecklist.getTaskList().get(0);
         Integer [] offset = scheduledChecklist.getOffsets().get(0);
         Integer [] duration = scheduledChecklist.getDurations().get(0);
         LocalTime [] firstTaskTimes = calculateTime(offset,duration);
@@ -257,8 +252,8 @@ public class DayViewControl {
         if(scheduledChecklist.stopDateProperty().get().isAfter(viewedDate)){
             stopTime = LocalTime.of(23,59);
         }else{
-            int finalTaskIndex = checklist.getTaskList().size() - 1;
-            Task finalTask = checklist.getTaskList().get(finalTaskIndex);
+            int finalTaskIndex = scheduledChecklist.getTaskList().size() - 1;
+            Task finalTask = scheduledChecklist.getTaskList().get(finalTaskIndex);
             Integer [] offsetFinal = scheduledChecklist.getOffsets().get(finalTaskIndex);
             Integer [] durationFinal = scheduledChecklist.getDurations().get(finalTaskIndex);
             LocalTime [] finalTaskTimes = calculateTime(offsetFinal,durationFinal);
@@ -278,12 +273,11 @@ public class DayViewControl {
      * task offset is relative to the checklist start date.
      */
     private void processChecklistTasks(ScheduledChecklist scheduledChecklist){
-        Checklist checklist = scheduledChecklist.checklistProperty().get();
         LocalDate viewedDate = calendarDay.dateProperty().get();
         LocalDate startDate = scheduledChecklist.startDateProperty().get();
         // calculate the display window of the item
-        for(int i = 0; i< checklist.getTaskList().size(); i++){
-            Task task = checklist.getTaskList().get(i);
+        for(int i = 0; i< scheduledChecklist.getTaskList().size(); i++){
+            Task task = scheduledChecklist.getTaskList().get(i);
             Integer [] offset = scheduledChecklist.getOffsets().get(i);
             Integer [] duration = scheduledChecklist.getDurations().get(i);
             int taskStart = offset[0];
@@ -296,7 +290,7 @@ public class DayViewControl {
                 // if the task is not before the window and the task does not start after the window
                 if (!(taskStart < windowStart && taskStop < windowStart) && !(taskStart > windowStop)) {
                     // then it is in the window and needs to be displayed
-                    processTask(task, checklist, offset, duration);
+                    processTask(task, scheduledChecklist, offset, duration);
                     Label taskLabel = new Label();
                     taskLabel.setAlignment(Pos.TOP_LEFT);
                     LocalTime baseline = LocalTime.of(0,0);
@@ -315,7 +309,7 @@ public class DayViewControl {
                     // display task details if selected
                     Popup popup = new Popup();
                     LocalTime[] times = calculateTime(offset,duration);
-                    VBox vbox = Util.createTaskPopup(task, checklist, times);
+                    VBox vbox = Util.createTaskPopup(task, times);
                     vbox.prefWidthProperty().bind(popup.widthProperty());
                     popup.getContent().add(vbox);
                     popup.setHideOnEscape(true);
@@ -341,13 +335,13 @@ public class DayViewControl {
                 int timeToWindowClose = timeToWindowOpen + 24;
                 // send to processing if in window
                 if (!(taskStart < timeToWindowOpen && taskStop < timeToWindowOpen) && !(taskStart > timeToWindowClose)) {
-                    processTask(task, checklist, offset, duration);
+                    processTask(task, scheduledChecklist, offset, duration);
                 }
             }
         }
     }
 
-    private void processTask(Task task, Checklist checklist, Integer[] offset, Integer[]duration){
+    private void processTask(Task task, ScheduledChecklist scheduledChecklist, Integer[] offset, Integer[]duration){
         LocalTime[] times = calculateTime(offset,duration);
         Label label = new Label(times[0] + "\n" + task.getTitle());
         label.setBackground(
@@ -363,7 +357,7 @@ public class DayViewControl {
         label.setBorder(
                 new Border(
                         new BorderStroke(
-                                checklist.getTags().get(0).getColor(),
+                                scheduledChecklist.getTags().get(0).getColor(),
                                 BorderStrokeStyle.SOLID,
                                 Settings.CORNER_RADII_ZERO,
                                 Settings.BORDER_WIDTH
@@ -377,7 +371,7 @@ public class DayViewControl {
         // multi seleciton
 
         Popup popup = new Popup();
-        VBox vbox = Util.createTaskPopup(task,checklist,times);
+        VBox vbox = Util.createTaskPopup(task,times);
         vbox.prefWidthProperty().bind(popup.widthProperty());
         popup.getContent().add(vbox);
         popup.setHideOnEscape(true);
@@ -418,22 +412,16 @@ public class DayViewControl {
     }
 
     private List<Event> handleQuery(LocalDate date){
-        System.out.println("DayViewControl: DB Query for entries matching: " + date);
-        DatabaseExecutor executor = new DatabaseExecutor(ConnectionManager.getInstance());
+        //System.out.println("DayViewControl: DB Query for entries matching: " + date)
         List<Event> events = new ArrayList<>();
-        String dateStr = " '" + date +"' ";
         try{
-            String sql = String.format(
-                    "SELECT * FROM calendar_table WHERE start_date <= %s AND stop_date >= %s;"
-                    , dateStr
-                    , dateStr
-            );
-            System.out.println("DayViewControl: DB Query: " + sql);
-            List<String[]> results = executor.executeQuery(sql);
+            //System.out.println("DayViewControl: DB Query: " + sql);
+            DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+            List<String[]> results = databaseQueryBuilder.dateQuery("calendar_table",date);
             for (String[] row : results) {
-                System.out.println("DayViewControl: " + Arrays.toString(row));
+                // System.out.println("DayViewControl: " + Arrays.toString(row));
                 Calendar item = CalendarManager.newItem(row);
-                System.out.println("DayViewControl: adding calendar event " + item.getTitle());
+                // System.out.println("DayViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
             }
         }catch(SQLException e){
@@ -441,17 +429,13 @@ public class DayViewControl {
         }
 
         try{
-            String sql = String.format(
-                    "SELECT * FROM scheduled_checklist_table WHERE start_date <= %s AND stop_date >= %s;"
-                    , dateStr
-                    , dateStr
-            );
-            System.out.println("DayViewControl: DB Query: " + sql);
-            List<String[]> results = executor.executeQuery(sql);
+            //System.out.println("DayViewControl: DB Query: " + sql);
+            DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+            List<String[]> results = databaseQueryBuilder.dateQuery("scheduled_checklist_table",date);
             for (String[] row : results) {
-                System.out.println("DayViewControl: " + Arrays.toString(row));
+                //System.out.println("DayViewControl: " + Arrays.toString(row));
                 ScheduledChecklist item = ScheduledChecklistManager.newItem(row);
-                System.out.println("DayViewControl: adding ScheduledChecklist event " + item.toString());
+                //System.out.println("DayViewControl: adding calendar event " + item.getTitle());
                 events.add(item);
             }
         }catch(SQLException e){

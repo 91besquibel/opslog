@@ -90,7 +90,7 @@ public class Checklist extends Event implements SQL {
         return new String[]{
                 id.get(),
                 title.get(),
-                taskList.stream().map(Task::toString).collect(Collectors.joining(" | ")),
+                taskList.stream().map(Task::getID).collect(Collectors.joining(" | ")),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials

@@ -7,34 +7,35 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
-import opslog.managers.*;
 import opslog.object.Format;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Calendar;
 import opslog.object.event.Log;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseExecutor;
+import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.controls.*;
+import opslog.ui.log.managers.LogManager;
+import opslog.ui.settings.managers.FormatManager;
+import opslog.ui.settings.managers.TagManager;
+import opslog.ui.settings.managers.TypeManager;
 import opslog.util.*;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
 
 public class EventUI {
 
     private static Calendar tempCalendar = new Calendar();
     private static Log tempLog = new Log();
     private static Stage stage;
-    
     private static DatePicker startDatePicker;
     private static ComboBox<LocalTime> startTimeSelection;
     private static DatePicker stopDatePicker;
     private static ComboBox<LocalTime> stopTimeSelection;
     private static CustomTextArea descriptionTextArea;
-
     private static volatile EventUI instance;
 
     private EventUI() {}
@@ -69,9 +70,6 @@ public class EventUI {
     }
 
     private void handleCreateCalendar(ActionEvent e){
-        DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-        DBManager dbManager = new DBManager(databaseExecutor);
-        System.out.println("CalendarManager: Attempting to create calendar event");
         Calendar newCalendar = new Calendar();
         newCalendar.setTitle(tempCalendar.getTitle());
         newCalendar.setStartDate(tempCalendar.getStartDate());
@@ -82,16 +80,22 @@ public class EventUI {
         newCalendar.setTags(tempCalendar.getTags());
         newCalendar.setInitials(tempCalendar.getInitials());
         newCalendar.setDescription(tempCalendar.getDescription());
+
         if(newCalendar.hasValue()){
-            newCalendar = dbManager.insert(newCalendar,"calendar_table",CalendarManager.CAL_COL);
-            ListOperation.insert(newCalendar, CalendarManager.getList());
-            handleClearParam();
+            try {
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert( DatabaseConfig.CALENDAR_TABLE, DatabaseConfig.CALENDAR_COLUMNS, newCalendar.toArray());
+                if(!id.trim().isEmpty()){
+                    handleClearParam();
+                }
+            }catch (SQLException ex){
+                System.out.println("EventUI: Failed to insert log into database \n");
+                ex.printStackTrace();
+            }
         }
     }
 
     private void handleCreateLog(ActionEvent e){
-        DatabaseExecutor databaseExecutor = new DatabaseExecutor(ConnectionManager.getInstance());
-        DBManager dbManager = new DBManager(databaseExecutor);
 
         Log newLog = new Log();
         newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
@@ -103,13 +107,18 @@ public class EventUI {
 
         // Verify all values except id are filled
         if(newLog.hasValue()){
-            // Attempt SQL insert and get a UUID
-            newLog = dbManager.insert(newLog,"log_table",LogManager.LOG_COL);
-            // Add log to app memory if UUID is returned
-            ListOperation.insert(newLog, LogManager.getList());
-            handleClearParam();
-        }else{
-            showPopup("Log Error", "Failed to input log, ensure all fields are filled");
+            try {
+                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                String id = databaseQueryBuilder.insert(DatabaseConfig.LOG_TABLE, DatabaseConfig.LOG_COLUMN, newLog.toArray());
+                if (!id.trim().isEmpty()) {
+                    newLog.setID(id);
+                    LogManager.getList().add(newLog);
+                    handleClearParam();
+                }
+            } catch (SQLException ex){
+                System.out.println("EventUI: Failed to insert log into database \n");
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -290,11 +299,6 @@ public class EventUI {
         startTimeSelection.setValue(null);
         stopTimeSelection.setValue(null);
         descriptionTextArea.clear();
-    }
-
-    public void showPopup(String title, String message) {
-        PopupUI popup = new PopupUI();
-        popup.message(title, message);
     }
 
     public void display() {

@@ -40,7 +40,7 @@ public class CalendarWeek {
 
 		for (int i = 0; i < 7; i++) {
 			LocalDate date = startOfWeek.plusDays(i);
-			System.out.println("CalendarWeek: Adding new value" + date);
+			//System.out.println("CalendarWeek: Adding new value" + date);
 			newDates.add(date);
 		}
 		

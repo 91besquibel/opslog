@@ -100,6 +100,4 @@ public class Tag implements SQL{
     public int hashCode() {
         return title.hashCode() + color.hashCode();
     }
-
-    
 }
