@@ -21,7 +21,7 @@ public class ScheduledChecklistManager{
 	private static final ObservableList<ScheduledChecklist> list = FXCollections.observableArrayList();
 	
 	public static ScheduledChecklist newItem(String [] row){
-		System.out.println("ScheduledChecklistManager: row :" + Arrays.toString(row));
+		//System.out.println("ScheduledChecklistManager: row :" + Arrays.toString(row));
 		ScheduledChecklist scheduledChecklist = new ScheduledChecklist();
 		scheduledChecklist.setID(row[0]);//0
 		scheduledChecklist.titleProperty().set(row[1]);//1
@@ -36,7 +36,7 @@ public class ScheduledChecklistManager{
 		scheduledChecklist.setTags(TagManager.getItems(row[10]));//10
 		scheduledChecklist.initialsProperty().set(row[11]);//11
 		scheduledChecklist.descriptionProperty().set(row[12]);//12
-		System.out.println("ScheduledChecklistManager: Object :" + Arrays.toString(scheduledChecklist.toArray()));
+		//System.out.println("ScheduledChecklistManager: Object :" + Arrays.toString(scheduledChecklist.toArray()));
 		return scheduledChecklist;
 	}
 

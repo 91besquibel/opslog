@@ -128,9 +128,9 @@ public class DatabaseQueryBuilder {
         String sql = String.format("UPDATE %s SET %s WHERE id = ?", tableName, setClause);
         System.out.println("DatabaseQueryBuilder: " + sql);
 
-        for (int i = 0; i < columns.length; i++) {
-            System.out.println("DatabaseQueryBuilder: Setting column " + columns[i] + " with " + rawData[i]);
-        }
+        //for (int i = 0; i < columns.length; i++) {
+           // System.out.println("DatabaseQueryBuilder: Setting column " + columns[i] + " with " + rawData[i]);
+        //}
 
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -150,22 +150,23 @@ public class DatabaseQueryBuilder {
                     java.util.Date parsedDate = dateFormat.parse(rawData[i]);
                     Date sqlDate = new Date(parsedDate.getTime());
                     statement.setDate(i + 1, sqlDate);
-                    System.out.println("DatabaseQueryBuilder: Setting date value: " + rawData[i] + " @ position " + (i + 1));
+                    //System.out.println("DatabaseQueryBuilder: Setting date value: " + rawData[i] + " @ position " + (i + 1));
                 } catch (ParseException e) {
                     try{
                         java.util.Date parsedTime = timeFormat.parse(rawData[i]);
                         java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
                         statement.setTime(i + 1, sqlTime);
-                        System.out.println("DatabaseQueryBuilder: Setting time value: " + rawData[i] + " @ position " + (i + 1));
+                        //System.out.println("DatabaseQueryBuilder: Setting time value: " + rawData[i] + " @ position " + (i + 1));
                     } catch (ParseException ex) {
                         statement.setString(i + 1, rawData[i]);
-                        System.out.println("DatabaseQueryBuilder: Setting text value: " + rawData[i] + " @ position " + (i + 1));
+                        //System.out.println("DatabaseQueryBuilder: Setting text value: " + rawData[i] + " @ position " + (i + 1));
                     }
                 }
             }
 
             // Execute the update query
             statement.executeUpdate();
+            System.out.println("DatabaseQueryBuilder: Query complete \n" );
         }
     }
 
@@ -188,6 +189,7 @@ public class DatabaseQueryBuilder {
             statement.setObject(1, id);
             statement.executeUpdate();
         }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
     }
 
     /**
@@ -301,7 +303,8 @@ public class DatabaseQueryBuilder {
         PreparedStatement statement = connection.prepareStatement(sql);
 
         statement.setString(1, "%" + keyword + "%");
-
+        
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
         return statement.executeQuery();
     }
 

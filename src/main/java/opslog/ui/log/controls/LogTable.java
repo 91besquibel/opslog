@@ -53,6 +53,7 @@ public class LogTable extends TableView<Log>{
 		getColumns().add(tagColumn());
 		getColumns().add(initialsColumn());
 		getColumns().add(descriptionColumn());
+		
 		backgroundProperty().bind(Settings.primaryBackground);
 		setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 		setRowFactory(tv -> createRow());
@@ -139,58 +140,44 @@ public class LogTable extends TableView<Log>{
 	}
 
 	private TableColumn<Log, LocalDate> dateColumn() {
+		HBox hbox = createHeaderLabel("Date");
+		
 		TableColumn<Log, LocalDate> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
-		Label label = new Label("Date");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell());
+		
 		return column;
 	}
 
 	private TableColumn<Log, LocalTime> timeColumn() {
+		HBox hbox = createHeaderLabel("Time");
+		
 		TableColumn<Log, LocalTime> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
-		Label label = new Label("Time");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell());
+		
 		return column;
 	}
 
 	private TableColumn<Log, Type> typeColumn() {
+		HBox hbox = createHeaderLabel("Type");
+		
 		TableColumn<Log, Type> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
-		Label label = new Label("Type");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell());
+		
 		return column;
 	}
 
 	private TableColumn<Log, ObservableList<Tag>> tagColumn() {
+		HBox hbox = createHeaderLabel("Tag");
+		
 		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>();
-
-		column.setCellValueFactory(cellData ->
-				new SimpleObjectProperty<>(cellData.getValue().getTags())
-		);
-
-		Label label = new Label("Tags");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
+		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().getTags()));
 		column.setGraphic(hbox);
-
 		column.setCellFactory(col -> new TableCell<Log, ObservableList<Tag>>() {
 			@Override
 			protected void updateItem(ObservableList<Tag> item, boolean empty) {
@@ -220,21 +207,19 @@ public class LogTable extends TableView<Log>{
 				setPadding(Settings.INSETS);
 			}
 		});
-
+		
 		return column;
 	}
 
 	private TableColumn<Log, String> initialsColumn() {
+		HBox hbox = createHeaderLabel("Initials");
+		
 		TableColumn<Log, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
-		Label label = new Label("Initials");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
 		column.setGraphic(hbox);
 		column.setMinWidth(80);
 		column.setCellFactory(col -> createCell());
+		
 		return column;
 	}
 
@@ -246,7 +231,7 @@ public class LogTable extends TableView<Log>{
 		label.textFillProperty().bind(Settings.textColor);
 
 		HBox headerBox = new HBox(label);
-		headerBox.setAlignment(Pos.CENTER_LEFT);
+		headerBox.setAlignment(Pos.CENTER);
 		column.setGraphic(headerBox);
 		column.setCellFactory(col -> new TableCell<>() {
 			private final Text text = new Text();
@@ -289,16 +274,23 @@ public class LogTable extends TableView<Log>{
 		return column;
 	}
 
-	private <S, T> TableCell<S, T> createCell() {
-		return new TableCell<S, T>() {
-			private final Text text = new Text();
+	private HBox createHeaderLabel(String title){
+		Label label = new Label(title);
+		label.fontProperty().bind(Settings.fontPropertyBold);
+		label.textFillProperty().bind(Settings.textColor);
+		HBox hbox = new HBox(label);
+		hbox.setAlignment(Pos.CENTER);
+		return hbox;
+	}
 
+	private <S, T> TableCell<S, T> createCell() {
+		TableCell<S,T> cell = new TableCell<S, T>() {
+			private final Text text = new Text();
 			{
 				borderProperty().bind(Settings.transparentBorder);
 				setAlignment(Pos.TOP_CENTER);
 				setPadding(Settings.INSETS);
 			}
-
 			@Override
 			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
@@ -306,6 +298,7 @@ public class LogTable extends TableView<Log>{
 					setText(null);
 				} else {
 					text.setText(item.toString());
+					
 					text.setLineSpacing(2);
 					text.fontProperty().bind(Settings.fontProperty);
 					text.fillProperty().bind(Settings.textColor);
@@ -313,10 +306,14 @@ public class LogTable extends TableView<Log>{
 					label.setGraphic(text);
 					label.setAlignment(Pos.TOP_CENTER);
 					label.setPadding(Settings.INSETS);
+					
 					setGraphic(label);
 				}
 			}
 		};
+		
+		cell.setAlignment(Pos.TOP_CENTER);
+		return cell;
 	}
 
 	private <T> TableRow<T> createRow() {

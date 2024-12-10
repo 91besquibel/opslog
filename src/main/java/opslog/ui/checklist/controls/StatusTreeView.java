@@ -7,40 +7,36 @@ import opslog.object.event.Task;
 import opslog.util.Settings;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class StatusTreeView extends TreeTableView<Task>{
 	
-	public final Set<CheckBoxTreeItem<Task>> set = new HashSet<>();
+	public final Set<CheckBoxTreeItem<Task>> set = new LinkedHashSet<>();
 	
 	public StatusTreeView(){
 
-		TreeTableColumn<Task, Boolean> checkBoxColumn = checkBoxColumn();
-		TreeTableColumn<Task, String> titleColumn = titleColumn();
-		TreeTableColumn<Task, Type> typeColumn = typeColumn();
-		TreeTableColumn<Task, ObservableList<Tag>> tagColumn = tagColumn();
-		TreeTableColumn<Task, String> descriptionColumn = descriptionColumn();
-
-		getColumns().addAll(
-				checkBoxColumn,
-			titleColumn,
-			typeColumn,
-			tagColumn, 
-			descriptionColumn
-		);
+		getColumns().add(checkBoxColumn());
+		getColumns().add(titleColumn());
+		getColumns().add(typeColumn());
+		getColumns().add(tagColumn());
+		getColumns().add(descriptionColumn());
 
 		backgroundProperty().bind(Settings.primaryBackground);
 		setColumnResizePolicy(TreeTableView.UNCONSTRAINED_RESIZE_POLICY);
-		autosize();
 		setRowFactory(tv -> createRow());
 		setEditable(true);
+		initializeListeners();
 	}
 
 	public Set<CheckBoxTreeItem<Task>> getTreeItems(){
@@ -49,7 +45,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 
 	public void setItems(ObservableList<Task> tasks, ObservableList<Boolean> status) {
 		for (int i = 0; i < tasks.size(); i++) {
-
+			System.out.println("settings treeItem " + tasks.get(i).titleProperty().get() + " to " + status.get(i));
 			CheckBoxTreeItem<Task> treeItem = new CheckBoxTreeItem<>(tasks.get(i));
 			treeItem.setSelected(status.get(i));
 			set.add(treeItem);
@@ -69,65 +65,43 @@ public class StatusTreeView extends TreeTableView<Task>{
 			CheckBoxTreeItem<Task> treeItem = (CheckBoxTreeItem<Task>) param.getValue();
 			return treeItem.selectedProperty();
 		});
-		checkBoxColumn.setCellFactory(CheckBoxTreeTableCell.forTreeTableColumn(checkBoxColumn));
+		checkBoxColumn.setCellFactory(col -> createCheckBoxCell());
 		checkBoxColumn.setPrefWidth(50);
 		return checkBoxColumn;
 	}
 
 	private TreeTableColumn<Task, String> titleColumn() {
+		HBox hbox = createHeaderLabel("Title");
+		
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
-
-		Label label = new Label("Title");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-
 		column.setGraphic(hbox);
-		column.setCellFactory(col -> createCell());
-		column.setMinWidth(110);
+		column.setCellFactory(col -> createCell(column));
+		column.setMinWidth(150);
+		
 		return column;
 	}
 
 	private TreeTableColumn<Task, Type> typeColumn() {
+		HBox hbox = createHeaderLabel("Type");
+		
 		TreeTableColumn<Task, Type> column = new TreeTableColumn<>();
-
-		// Set cell value factory to bind to the `type` property in `Task`
 		column.setCellValueFactory(param -> param.getValue().getValue().typeProperty());
-
-		// Customize column header with styled label
-		Label label = new Label("Type");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-
-
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
-
-		// Create cell factory for custom cell rendering
-		column.setCellFactory(col -> createCell());
-
+		column.setCellFactory(col -> createCell(column));
+		
 		return column;
 	}
 
 	private TreeTableColumn<Task, ObservableList<Tag>> tagColumn() {
+		HBox hbox = createHeaderLabel("Tags");
+		
 		TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
 		column.setCellValueFactory(cellData -> {
 			ObservableList<Tag> tags = cellData.getValue().getValue().getTags();
 			return new SimpleObjectProperty<>(tags);
 		});
-
-		Label label = new Label("Tags");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
 
@@ -173,55 +147,13 @@ public class StatusTreeView extends TreeTableView<Task>{
 	}
 
 	private TreeTableColumn<Task, String> descriptionColumn() {
+		HBox hbox = createHeaderLabel("Description");
+		
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
-
 		column.setCellValueFactory(param -> param.getValue().getValue().descriptionProperty());
-
-		Label label = new Label("Description");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
-
-		// Cell Factory
-		column.setCellFactory(col -> new TreeTableCell<>() {
-			private final Text text = new Text();
-
-			{
-				// Configure cell properties
-				borderProperty().bind(Settings.transparentBorder);
-				setAlignment(Pos.CENTER);
-				setPadding(Settings.INSETS);
-
-				// Text styling
-				// text.wrappingWidthProperty().bind(getTableColumn().widthProperty().subtract(5));
-				text.setLineSpacing(2);
-				text.fontProperty().bind(Settings.fontProperty);
-				text.fillProperty().bind(Settings.textColor);
-			}
-
-			@Override
-			protected void updateItem(String item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setGraphic(null);
-				} else {
-					text.setText(item);
-					Label label = new Label();
-					label.setGraphic(text);
-					label.setPadding(Settings.INSETS);
-					label.setAlignment(Pos.CENTER);
-					label.borderProperty().bind(Settings.transparentBorder);
-					label.prefWidthProperty().bind(col.widthProperty());
-					label.setWrapText(true);
-					setGraphic(label);
-					setAlignment(Pos.CENTER);
-				}
-			}
-		});
+		column.setCellFactory(col -> createCell(column));
 
 		// Adjust column width based on treeTableView total width
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
@@ -237,42 +169,67 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return column;
 	}
 
-	private <S, T> TreeTableCell<S, T> createCell() {
-		return new TreeTableCell<S, T>() {
-			private final Text text = new Text();
+	private HBox createHeaderLabel(String title){
+		Label label = new Label(title);
+		label.fontProperty().bind(Settings.fontPropertyBold);
+		label.textFillProperty().bind(Settings.textColor);
+		HBox hbox = new HBox(label);
+		hbox.setAlignment(Pos.CENTER);
+		return hbox;
+	}
 
+	private <S,T> CheckBoxTreeTableCell<S,T> createCheckBoxCell(){
+		CheckBoxTreeTableCell<S,T> cell = new CheckBoxTreeTableCell<>();
+		cell.setAlignment(Pos.CENTER);
+		cell.backgroundProperty().bind(Settings.secondaryBackground);
+		cell.borderProperty().bind(Settings.transparentBorder);
+		return cell;
+	}
+
+	private <S, T> TreeTableCell<S, T> createCell(TreeTableColumn<Task, ?> column) {
+		
+		TreeTableCell<S,T> cell = new TreeTableCell<>() {
+			private final Text text = new Text();
+			
 			{
-				setMinWidth(110);
 				borderProperty().bind(Settings.transparentBorder);
-				setAlignment(Pos.CENTER);
+				setAlignment(Pos.TOP_CENTER);
 				setPadding(Settings.INSETS);
 			}
-
+			
 			@Override
 			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
 				} else {
-					VBox vbox = new VBox();
-					Label label = new Label();
-
-					label.minWidth(100);
-					label.setGraphic(text);
-					label.setAlignment(Pos.CENTER);
-
 					text.setText(item.toString());
-					text.setLineSpacing(2);
-					text.fontProperty().bind(Settings.fontProperty);
-					text.fillProperty().bind(Settings.textColor);
-					text.wrappingWidthProperty().bind(label.widthProperty());
-
-					vbox.getChildren().addAll(label);
+					text.wrappingWidthProperty().bind(column.widthProperty().subtract(8));
+					VBox vbox = createCellLabel(text);
+					setAlignment(Pos.TOP_CENTER);
 					setGraphic(vbox);
-					setAlignment(Pos.CENTER);
 				}
 			}
 		};
+		
+		cell.setAlignment(Pos.TOP_CENTER);
+		return cell;
+	}
+
+	private VBox createCellLabel(Text text){
+		text.setLineSpacing(2);
+		text.fontProperty().bind(Settings.fontProperty);
+		text.fillProperty().bind(Settings.textColor);
+		text.setTextAlignment(TextAlignment.CENTER);
+		Label label = new Label();
+		label.setGraphic(text);
+		label.setPadding(Settings.INSETS);
+		label.setAlignment(Pos.TOP_CENTER);
+		label.borderProperty().bind(Settings.transparentBorder);
+		VBox vbox = new VBox(label);
+		vbox.setAlignment(Pos.CENTER);
+		vbox.setPadding(Settings.INSETS);
+		return vbox;
 	}
 
 	private TreeTableRow<Task> createRow() {
@@ -280,13 +237,12 @@ public class StatusTreeView extends TreeTableView<Task>{
 		row.backgroundProperty().bind(Settings.primaryBackground);
 		row.minHeight(50);
 		row.borderProperty().bind(Settings.primaryBorder);
-		row.setAlignment(Pos.CENTER);
-		row.setDisclosureNode(null);
 
 		row.itemProperty().addListener((obs, oldItem, newItem) -> {
 			if (row.isEmpty()) {
 				row.borderProperty().bind(Settings.primaryBorder);
 				row.backgroundProperty().bind(Settings.secondaryBackground);
+				row.setDisclosureNode(null);
 			}
 		});
 
@@ -298,6 +254,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 				} else {
 					row.borderProperty().bind(Settings.primaryBorder);
 				}
+				row.setDisclosureNode(null);
 			}
 		});
 
@@ -309,6 +266,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 				} else {
 					row.borderProperty().bind(Settings.primaryBorder);
 				}
+				row.setDisclosureNode(null);
 			}
 		});
 
@@ -319,10 +277,32 @@ public class StatusTreeView extends TreeTableView<Task>{
 			} else {
 				row.backgroundProperty().bind(Settings.secondaryBackground);
 			}
+			row.setDisclosureNode(null);
 		});
 
 		row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
-		row.setDisclosureNode(null);
 		return row;
+	}
+
+	public void initializeListeners(){
+		widthProperty().addListener((obs, oldWidth, newWidth) -> {
+			refresh();
+		});
+
+		heightProperty().addListener((obs, oldHeight, newHeight) -> {
+			refresh();
+		});
+
+		getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+			if (newSelection != null) {
+				refresh();
+			}
+		});
+
+		getFocusModel().focusedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+			if (newSelection != null) {
+				refresh();
+			}
+		});
 	}
 }

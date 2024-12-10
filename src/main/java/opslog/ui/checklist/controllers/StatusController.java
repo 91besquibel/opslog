@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -43,30 +44,26 @@ public class StatusController {
 
     // listener for user selection to display checklist tree
     public static void listeners(){
+        
         StatusLayout.scheduledChecklistListView.getSelectionModel().getSelectedItems().addListener((
             ListChangeListener<ScheduledChecklist>) change -> {
             while (change.next()) {
-                //System.out.println("StatusController: selection made");
+                System.out.println("StatusController: selection made");
                 if (change.wasAdded()) {
-                    //System.out.println("StatusController: selection made");
+                    System.out.println("StatusController: selection made");
                     for (ScheduledChecklist scheduledChecklist : change.getAddedSubList()) {
-                        //System.out.println("StatusController: displaying " + scheduledChecklist.titleProperty().get());
+                        System.out.println("StatusController: displaying " + scheduledChecklist.titleProperty().get());
                         newChecklistDisplay(scheduledChecklist);
                     }
+                } 
+                
+                if (change.wasRemoved() && !change.wasReplaced()){
+                    
                 }
-
-                if(change.wasRemoved()){
-                    for (ScheduledChecklist scheduledChecklist: change.getRemoved()){
-                        // nothing should happen because displayed checklists are only
-                        // removed by using the remove button
-                    }
+                
+                if(change.wasReplaced()){
+                    //newChecklistDisplay(scheduledChecklist);
                 }
-
-                if(change.wasUpdated()){
-                    System.out.println("StatusController: ScheduledChecklist updated" );
-                    //does this refer to a change in a value in the observable lst?
-                }
-
             }
         });
 
@@ -96,7 +93,6 @@ public class StatusController {
                 200,
                 Settings.SINGLE_LINE_HEIGHT
         );
-
         // stopDate
         CustomLabel stopDate = new CustomLabel(
                 String.valueOf(
@@ -111,10 +107,13 @@ public class StatusController {
                 100,
                 Settings.SINGLE_LINE_HEIGHT
         );
+        
         // bind the percentage text for checklist updates
         percentage.textProperty().bindBidirectional(
                 scheduledChecklist.percentageProperty()
         );
+
+        
         // create the treeview to hold the tasks
         StatusTreeView statusTreeView = new StatusTreeView();
         statusTreeView.setItems(
@@ -131,6 +130,25 @@ public class StatusController {
             // map the references for later removal
             listenerMap.put(treeItem,selectedChangeListener);
         }
+        
+        
+        scheduledChecklist.getStatusList().addListener((
+            ListChangeListener<Boolean>) change -> {
+                while (change.next()) {
+                    System.out.println("StatusController: List updated resetting status of tree items");
+                    int i = 0;
+                    ObservableList<? extends Boolean> statusList = change.getList();
+                    for(CheckBoxTreeItem<Task> treeItem : statusTreeView.getTreeItems()){
+                        //only change the status if it needs to be changed
+                        if(treeItem.selectedProperty().get() != statusList.get(i)){
+                            System.out.println("StatusController: List updated resetting status of tree items");
+                            treeItem.setSelected(statusList.get(i));
+                        }
+                        i++;
+                    }
+                }
+            }
+        );
 
         CustomButton remove = new CustomButton(
                 Directory.TRASH_WHITE,
@@ -144,8 +162,12 @@ public class StatusController {
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setSpacing(Settings.SPACING);
         bar.backgroundProperty().bind(Settings.primaryBackground);
+        
         VBox display = new VBox(bar,statusTreeView);
         display.backgroundProperty().bind(Settings.secondaryBackground);
+        display.setPadding(Settings.INSETS);
+        display.setSpacing(Settings.SPACING);
+        
         StatusLayout.scheduledChecklistViewer.getChildren().add(display);
         map.put(scheduledChecklist,display);
 
@@ -179,44 +201,40 @@ public class StatusController {
         // Changelistener to update the database whenever the user changes the status.
         // this allows for realtime updates to the other user on the database.
         ChangeListener<Boolean> selectedChangeListener = (obs,ov,nv) -> {
-            // get the task
-            Task task = treeItem.getValue();
-
-            System.out.println("StatusController: ScheduledChecklist task " +
+            // if the value has changed to a new state
+            if(ov != nv){
+                // get the task
+                Task task = treeItem.getValue();
+    
+                System.out.println(
+                    "StatusController: ScheduledChecklist task " +
                     task.getTitle() +
                     " status updated to " +
-                    nv);
-            // get its index in the list
-            int index = scheduledChecklist.
-                    getTaskList().
-                    indexOf(task);
-            // using the index change the status in the item
-            scheduledChecklist.getStatusList().set(index,nv);
-            // update database with new scheduledChecklist
-            try{
-                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(
-                        ConnectionManager.getInstance()
+                    nv
                 );
-                databaseQueryBuilder.update(
-                        DatabaseConfig.SCHEDULED_CHECKLIST_TABLE,
-                        DatabaseConfig.SCHEDULED_CHECKLIST_COLUMNS,
-                        scheduledChecklist.toArray()
-                );
-
-                if(ScheduledChecklistManager.getList().contains(scheduledChecklist)){
-                    System.out.println(
-                            "StatusController: list allready contains updated checklist\n" +
-                                    Arrays.toString(scheduledChecklist.toArray())
+                
+                // get its index in the list
+                int index = scheduledChecklist.
+                        getTaskList().
+                        indexOf(task);
+                
+                // using the index change the status in the item
+                scheduledChecklist.getStatusList().set(index,nv);
+                
+                // update database with new scheduledChecklist
+                try{
+                    DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(
+                            ConnectionManager.getInstance()
                     );
-                } else{
-                    System.out.println(
-                            "StatusController: list allready does not contain updated checklist\n" +
-                                    Arrays.toString(scheduledChecklist.toArray())
+                    databaseQueryBuilder.update(
+                            DatabaseConfig.SCHEDULED_CHECKLIST_TABLE,
+                            DatabaseConfig.SCHEDULED_CHECKLIST_COLUMNS,
+                            scheduledChecklist.toArray()
                     );
+                }catch(SQLException e){
+                    System.out.println("StatusController: Failed to update the database\n");
+                    e.printStackTrace();
                 }
-            }catch(SQLException e){
-                System.out.println("StatusController: Failed to update the database\n");
-                e.printStackTrace();
             }
         };
         return selectedChangeListener;

@@ -63,6 +63,7 @@ public class Listen implements Runnable {
                 }
             } catch (SQLException e) {
                 logger.error("SQL Exception occurred: ", e);
+                System.out.println("Listen: Connection lost reconnection");
                 reconnect(); // Attempt to reconnect on SQL exception
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // Restore interrupted status

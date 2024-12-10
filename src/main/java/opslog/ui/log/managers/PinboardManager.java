@@ -34,7 +34,7 @@ public class PinboardManager {
         DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
         try {
             List<String[]> results = databaseQueryBuilder.loadTable(
-                    DatabaseConfig.LOG_TABLE
+                    DatabaseConfig.PINBOARD_TABLE
             );
             for(String[] row: results){
                 pinList.add(newItem(row));

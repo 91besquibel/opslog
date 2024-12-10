@@ -333,20 +333,39 @@ public class Notification {
             ScheduledChecklist scheduledChecklist = ScheduledChecklistManager.newItem(row);
             Platform.runLater(() -> {
                 if (operation.contains("INSERT")) {
-                    ScheduledChecklist orignalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (orignalScheduledChecklist == null) {
+                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
+                    if (originalScheduledChecklist == null) {
                         ScheduledChecklistManager.getList().add(scheduledChecklist);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    ScheduledChecklist orignalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (orignalScheduledChecklist != null) {
-                        int index = ScheduledChecklistManager.getList().indexOf(orignalScheduledChecklist);
-                        ScheduledChecklistManager.getList().set(index, scheduledChecklist);
+                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
+                    if (originalScheduledChecklist != null) {
+                        // scheduledchecklists are only updated when the status list is altered
+                        // to prevent listener disruption set the new boolean status individually
+                        for(int i = 0; i< scheduledChecklist.getStatusList().size();i++){
+                            boolean newBool = scheduledChecklist.getStatusList().get(i);
+                            boolean oldBool = originalScheduledChecklist.getStatusList().get(i);
+                            if(oldBool!=newBool){
+                                System.out.println(
+                                    "Notification: ScheduleChecklist statuslist changed from " +
+                                    oldBool + 
+                                    "to" + 
+                                    newBool + 
+                                    "\n" 
+                                );
+                                originalScheduledChecklist.getStatusList().set(i, newBool);
+                            } else{
+                                System.out.println(
+                                    "Notification: ScheduleChecklist statuslist no Change" 
+                                );
+                            }
+                        }
+                        System.out.println("\n");
                     }
                 } else if (operation.contains("DELETE")) {
-                    ScheduledChecklist orignalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (orignalScheduledChecklist != null) {
-                        ScheduledChecklistManager.getList().remove(orignalScheduledChecklist);
+                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
+                    if (originalScheduledChecklist != null) {
+                        ScheduledChecklistManager.getList().remove(originalScheduledChecklist);
                     }
                 }
             });

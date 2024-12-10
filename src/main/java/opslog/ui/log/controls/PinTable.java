@@ -126,20 +126,24 @@ public class PinTable extends TableView<Log> {
                 if (empty || item == null) {
                     setGraphic(null);
                 } else {
+                    
                     text.setText(item);
                     text.wrappingWidthProperty().bind(getTableColumn().widthProperty().subtract(5));
                     text.setLineSpacing(2);
                     text.fontProperty().bind(Settings.fontProperty);
                     text.fillProperty().bind(Settings.textColor);
+                    
                     Label label = new Label();
                     label.setGraphic(text);
                     label.setPadding(Settings.INSETS);
                     label.setAlignment(Pos.TOP_CENTER);
                     label.borderProperty().bind(Settings.transparentBorder);
+                    
                     setGraphic(label);
                 }
             }
         });
+        
         this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
             double totalWidth = newWidth.doubleValue();
             for (TableColumn<Log, ?> col : this.getColumns()) {
@@ -149,6 +153,7 @@ public class PinTable extends TableView<Log> {
             }
             column.setPrefWidth(totalWidth);
         });
+        
         return column;
     }
 

@@ -12,8 +12,8 @@
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomMenuItem.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomListView.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/MultiSelectBox.java
+/home/runner/opslog/src/main/java/opslog/ui/checklist/controls/ScheduleTable.java
 /home/runner/opslog/src/main/java/opslog/ui/search/controls/SearchBar.java
-/home/runner/opslog/src/main/java/opslog/ui/startup/StartUp.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/controls/StatusTreeView.java
 /home/runner/opslog/src/main/java/opslog/App.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/controls/TaskTreeView.java
@@ -33,12 +33,14 @@
 /home/runner/opslog/src/main/java/opslog/ui/settings/managers/FormatManager.java
 /home/runner/opslog/src/main/java/opslog/object/event/ScheduledChecklist.java
 /home/runner/opslog/src/main/java/module-info.java
+/home/runner/opslog/src/main/java/opslog/sql/pgsql/Notification.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/cell/Item.java
 /home/runner/opslog/src/main/java/opslog/ui/log/controls/PinTable.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/cell/CalendarCell.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/object/CalendarMonth.java
 /home/runner/opslog/src/main/java/opslog/util/Settings.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomTextArea.java
+/home/runner/opslog/src/main/java/opslog/ui/startup/StartController.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/Styles.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/control/DayViewControl.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomLabel.java
@@ -59,6 +61,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/calendar/Util.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/layout/EditorLayout.java
 /home/runner/opslog/src/main/java/opslog/util/Logging.java
+/home/runner/opslog/src/main/java/opslog/sql/pgsql/Listen.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/controllers/StatusController.java
 /home/runner/opslog/src/main/java/opslog/ui/EventUI.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/layout/StatusLayout.java
@@ -87,4 +90,3 @@
 /home/runner/opslog/src/main/java/opslog/ui/log/controls/LogTable.java
 /home/runner/opslog/src/main/java/opslog/util/AppClock.java
 /home/runner/opslog/src/main/java/opslog/ui/calendar/cell/Header.java
-/home/runner/opslog/src/main/java/opslog/ui/checklist/controls/ScheduledChecklistTableView.java

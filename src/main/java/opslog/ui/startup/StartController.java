@@ -46,9 +46,11 @@ public class StartController {
 	}
 
 	public static void startNotifications(){
+		System.out.println("\n");
 		ExecutorService executor = Executors.newFixedThreadPool(10);
 		for (String threadName : DatabaseConfig.threadNames()) {
 			executor.submit(new Listen(ConnectionManager.getInstance(), threadName));
 		}
+		System.out.println("\n");
 	}
 }
