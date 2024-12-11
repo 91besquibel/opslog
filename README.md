@@ -50,9 +50,7 @@ Why was this application created? The mission was simple: replace **Microsoft On
 - **Functionality:** Maintain a task list, ensuring all steps are completed in your operations.
 
 ### 🎨 Profile Customization
-- **Functionality:** Customize the interface and your profile settings for a personalized experience.
-
----
+- **Functionality:** Customize the interface and your profile settings for a personalized experience.---
 
 ## 🚀 **Future Enhancements**
 
@@ -68,5 +66,3 @@ We're just getting started! Here's what could be coming next:
 This application is my first foray into software design and development. It's been a challenging yet incredibly rewarding journey. Your feedback, contributions, and suggestions are not just welcome—they're encouraged!
 
 ---
-
-**Thank you for visiting! 🌟**
