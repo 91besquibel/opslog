@@ -2,7 +2,6 @@ package opslog.ui.checklist.controllers;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.beans.value.ChangeListener;
@@ -12,9 +11,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import opslog.ui.checklist.ChecklistUI;
@@ -69,10 +66,10 @@ public class StatusController {
 
         StatusLayout.checklistSelector.getSelectionModel().selectedItemProperty().addListener((obs,ov,nv) -> {
             if(nv != null){
-                int numTasks = nv.getTaskList().size();
+                int numTasks = nv.taskList().size();
                 List<Integer []> offsets = new ArrayList<>(numTasks);
                 List<Integer []> durations = new ArrayList<>(numTasks);
-                for(Task task : nv.getTaskList()){
+                for(Task task : nv.taskList()){
                     //System.out.println("StatusController: creating offsets and durations for " + task.getTitle());
                     offsets.add(new Integer[]{0,0});
                     durations.add(new Integer[]{0,0});
@@ -208,7 +205,7 @@ public class StatusController {
     
                 System.out.println(
                     "StatusController: ScheduledChecklist task " +
-                    task.getTitle() +
+                    task.titleProperty().get() +
                     " status updated to " +
                     nv
                 );
@@ -248,10 +245,10 @@ public class StatusController {
 
         StatusLayout.addSchedule.setOnAction(e ->{
             ScheduledChecklist temp = new ScheduledChecklist();
-            temp.titleProperty().set(StatusLayout.checklistSelector.getValue().getTitle());//1
+            temp.titleProperty().set(StatusLayout.checklistSelector.getValue().titleProperty().get());//1
             temp.startDateProperty().set(StatusLayout.checklistStartDate.getValue());//2
             temp.stopDateProperty().set(StatusLayout.checklistStopDate.getValue());//3
-            temp.getTaskList().setAll(StatusLayout.checklistSelector.getValue().getTaskList());//4
+            temp.getTaskList().setAll(StatusLayout.checklistSelector.getValue().taskList());//4
             temp.getOffsets().setAll(StatusLayout.scheduleTable.getOffsets());//5
             temp.getDurations().setAll(StatusLayout.scheduleTable.getDurations());//6
             List<Boolean> statusList = new ArrayList<>(temp.getTaskList().size());
@@ -261,7 +258,7 @@ public class StatusController {
             temp.getStatusList().setAll(statusList);//7
             temp.percentageProperty().set("0");//8
             temp.typeProperty().set(StatusLayout.checklistSelector.getValue().typeProperty().get());//9
-            temp.setTags(StatusLayout.checklistSelector.getValue().getTags());//10
+            temp.tagList().setAll(StatusLayout.checklistSelector.getValue().tagList());//10
             temp.initialsProperty().set(StatusLayout.checklistSelector.getValue().initialsProperty().get());//11
             temp.descriptionProperty().set(StatusLayout.checklistSelector.getValue().descriptionProperty().get());//12
 

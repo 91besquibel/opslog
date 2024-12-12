@@ -17,6 +17,7 @@ module test.opslog {
     requires com.zaxxer.hikari;
     requires jdk.compiler;
     requires org.slf4j;
+    requires com.calendarfx.view;
 
     opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 

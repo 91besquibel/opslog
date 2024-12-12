@@ -63,44 +63,6 @@ public class PopupUI {
         display();
     }
 
-    public void append(Log oldLog) {
-
-        CustomLabel label = new CustomLabel(oldLog.getDescription(), 200, 200);
-        label.wrapTextProperty().set(true);
-
-        CustomTextArea textArea = new CustomTextArea(200, 200);
-
-        CustomHBox hbox = new CustomHBox();
-        hbox.getChildren().addAll(label, textArea);
-
-        Button btn = ackBtn("Append");
-        btn.setOnAction(e -> {
-            if (textArea.getText() != null && !textArea.getText().trim().isEmpty()) {
-                String newDescription = textArea.getText() + "(" + oldLog.getDescription() + ")";
-
-                Log newLog = new Log(
-                        oldLog.getID(),
-                        oldLog.getDate(),
-                        oldLog.getTime(),
-                        oldLog.getType(),
-                        oldLog.getTags(),
-                        oldLog.getInitials(),
-                        newDescription
-                );
-
-                // CSV.append(oldLog, newLog);
-                //Update.edit(LogManager.getList(), oldLog, newLog);
-                Stage stage = (Stage) btn.getScene().getWindow();
-                stage.close();
-            }
-        });
-
-        root = new CustomVBox();
-        root.getChildren().addAll(hbox, btn);
-
-        display();
-    }
-
     public Boolean ackCheck(String title, String message) {
         BooleanProperty ack = new SimpleBooleanProperty(false);
 

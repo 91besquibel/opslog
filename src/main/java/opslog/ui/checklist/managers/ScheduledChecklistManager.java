@@ -33,7 +33,7 @@ public class ScheduledChecklistManager{
 		scheduledChecklist.getStatusList().setAll(toBooleanList(row[7]));//7
 		scheduledChecklist.percentageProperty().set(row[8]);//8
 		scheduledChecklist.typeProperty().set(TypeManager.getItem(row[9]));//9
-		scheduledChecklist.setTags(TagManager.getItems(row[10]));//10
+		scheduledChecklist.tagList().setAll(TagManager.getItems(row[10]));//10
 		scheduledChecklist.initialsProperty().set(row[11]);//11
 		scheduledChecklist.descriptionProperty().set(row[12]);//12
 		//System.out.println("ScheduledChecklistManager: Object :" + Arrays.toString(scheduledChecklist.toArray()));
@@ -87,7 +87,6 @@ public class ScheduledChecklistManager{
 				.collect(Collectors.toCollection(FXCollections::observableArrayList));  // Collect into ObservableList
 	}
 
-
 	public static void loadTable(){
 		try {
 			DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(
@@ -105,4 +104,5 @@ public class ScheduledChecklistManager{
 			throw new RuntimeException(e);
 		}
 	}
+	
 }

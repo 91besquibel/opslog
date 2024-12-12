@@ -16,17 +16,22 @@ import opslog.util.Settings;
 public class LogLayout extends VBox {
 
     public static final CustomButton swapView = new CustomButton(
-            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Swap");
+            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Swap"
+    );
     public static final CustomLabel labelLeftSide = new CustomLabel(
-            "Pin Board", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Create Log", 300, Settings.SINGLE_LINE_HEIGHT
+    );
     public static final HBox leftSideBar = new HBox(swapView,labelLeftSide);
     public static final LogCreator logCreator = new LogCreator();
     public static final PinTable pinTableView = new PinTable();
     public static final StackPane stackPane = new StackPane(pinTableView, logCreator);
     public static final VBox leftSide = new VBox(leftSideBar,stackPane);
 
+    public static final CustomLabel labelRightSide = new CustomLabel(
+            "Operations Log", 300, Settings.SINGLE_LINE_HEIGHT
+    );
     public static final LogTable logTable = new LogTable();
-    public static final VBox rightSide = new VBox(logTable);
+    public static final VBox rightSide = new VBox(labelRightSide,logTable);
     public static final SplitPane splitPane = new SplitPane(leftSide,rightSide);
 
     public LogLayout(){
@@ -71,5 +76,7 @@ public class LogLayout extends VBox {
         logTable.setItems(LogManager.getList());
         logTable.getSelectionModel().clearSelection();
         VBox.setVgrow(logTable,Priority.ALWAYS);
+        rightSide.setAlignment(Pos.CENTER);
+        rightSide.backgroundProperty().bind(Settings.primaryBackground);
     }
 }

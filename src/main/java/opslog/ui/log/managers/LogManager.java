@@ -41,12 +41,12 @@ public class LogManager {
     public static Log newItem(String [] row){
         Log newLog = new Log();
         newLog.setID(row[0]);
-        newLog.setDate(LocalDate.parse(row[1]));
-        newLog.setTime(LocalTime.parse(row[2]));
-        newLog.setType(TypeManager.getItem(row[3]));
-        newLog.setTags(TagManager.getItems(row[4]));
-        newLog.setInitials(row[5]);
-        newLog.setDescription(row[6]);
+        newLog.dateProperty().set(LocalDate.parse(row[1]));
+        newLog.timeProperty().set(LocalTime.parse(row[2]));
+        newLog.typeProperty().set(TypeManager.getItem(row[3]));
+        newLog.tagList().setAll(TagManager.getItems(row[4]));
+        newLog.initialsProperty().set(row[5]);
+        newLog.descriptionProperty().set(row[6]);
         return newLog;
     }
 

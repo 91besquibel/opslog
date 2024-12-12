@@ -2,13 +2,11 @@ package opslog.ui;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.Side;
 import javafx.scene.Scene;
-import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -20,7 +18,6 @@ import java.util.Objects;
 
 import opslog.ui.controls.Buttons;
 import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomMenuBar;
 import opslog.ui.controls.Styles;
 import opslog.util.Directory;
 import opslog.util.ResizeListener;

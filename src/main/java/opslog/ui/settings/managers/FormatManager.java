@@ -34,8 +34,8 @@ public class FormatManager {
     public static Format newItem(String [] row){
         Format format = new Format();
         format.setID(row[0]);
-        format.setTitle(row[1]);
-        format.setFormat(row[2]);
+        format.titleProperty().set(row[1]);
+        format.formatProperty().set(row[2]);
         return format;
     }
 

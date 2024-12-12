@@ -82,7 +82,7 @@ public class TaskTreeView extends TreeTableView<Task>{
 	private TreeTableColumn<Task, ObservableList<Tag>> tagColumn() {
 		TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
 		column.setCellValueFactory(cellData -> {
-			ObservableList<Tag> tags = cellData.getValue().getValue().getTags();
+			ObservableList<Tag> tags = cellData.getValue().getValue().tagList();
 			return new SimpleObjectProperty<>(tags);
 		});
 		
@@ -108,7 +108,7 @@ public class TaskTreeView extends TreeTableView<Task>{
                         lbl.setBackground(
                                 new Background(
                                         new BackgroundFill(
-                                                tag.getColor(),
+                                                tag.colorProperty().get(),
                                                 Settings.CORNER_RADII,
                                                 Settings.INSETS_ZERO
                                         )

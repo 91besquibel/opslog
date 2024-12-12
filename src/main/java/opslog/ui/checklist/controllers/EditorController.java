@@ -36,7 +36,7 @@ public class EditorController {
             if(nv !=null){
                 EditorLayout.taskTitle.textProperty().set(nv.titleProperty().get());
                 EditorLayout.taskType.valueProperty().set(nv.typeProperty().get());
-                for(Tag tag : nv.getTags()) {
+                for(Tag tag : nv.tagList()) {
                     if(EditorLayout.taskTags.getItems().contains(tag)){
                         EditorLayout.taskTags.getCheckModel().check(tag);
                     }
@@ -74,24 +74,22 @@ public class EditorController {
 
         EditorLayout.addTask.setOnAction(event -> {
             Task newTask = new Task();
-            newTask.setTitle(EditorLayout.taskTitle.getText());
-            newTask.setType(EditorLayout.taskType.getValue());
-            newTask.setTags(EditorLayout.taskTags.getCheckModel().getCheckedItems());
-            newTask.setInitials(EditorLayout.taskInitials.getText());
-            newTask.setDescription(EditorLayout.taskDescription.getText());
+            newTask.titleProperty().set(EditorLayout.taskTitle.getText());
+            newTask.typeProperty().set(EditorLayout.taskType.getValue());
+            newTask.tagList().setAll(EditorLayout.taskTags.getCheckModel().getCheckedItems());
+            newTask.initialsProperty().set(EditorLayout.taskInitials.getText());
+            newTask.descriptionProperty().set(EditorLayout.taskDescription.getText());
 
             if(newTask.hasValue()) {
                 try{
                     DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(
                             ConnectionManager.getInstance()
                     );
-
                     String id = databaseQueryBuilder.insert(
                             DatabaseConfig.TASK_TABLE,
                             DatabaseConfig.TASK_COLUMN,
                             newTask.toArray()
                     );
-
                     if(id != null) {
                         newTask.setID(id);
                         TaskManager.getList().add(newTask);
@@ -114,11 +112,11 @@ public class EditorController {
 
             Task updatedTask = new Task();
             updatedTask.setID(EditorLayout.taskSelector.getSelectionModel().getSelectedItem().getID());
-            updatedTask.setTitle(EditorLayout.taskTitle.getText());
-            updatedTask.setType(EditorLayout.taskType.getValue());
-            updatedTask.setTags(EditorLayout.taskTags.getCheckModel().getCheckedItems());
-            updatedTask.setInitials(EditorLayout.taskInitials.getText());
-            updatedTask.setDescription(EditorLayout.taskDescription.getText());
+            updatedTask.titleProperty().set(EditorLayout.taskTitle.getText());
+            updatedTask.typeProperty().set(EditorLayout.taskType.getValue());
+            updatedTask.tagList().setAll(EditorLayout.taskTags.getCheckModel().getCheckedItems());
+            updatedTask.initialsProperty().set(EditorLayout.taskInitials.getText());
+            updatedTask.descriptionProperty().set(EditorLayout.taskDescription.getText());
 
             if(updatedTask.hasValue() && updatedTask.getID() != null){
                 try{
@@ -208,7 +206,7 @@ public class EditorController {
                 } else if(ChecklistManager.getItem(droppedItem) != null){
                     EditorLayout.taskTreeView.setRoot(null);
                     Checklist checklist = ChecklistManager.getItem(droppedItem);
-                    for(Task task : checklist.getTaskList()){
+                    for(Task task : checklist.taskList()){
                         TreeItem<Task> treeItem = new TreeItem<>(task);
                         if(EditorLayout.taskTreeView.getRoot() == null){
                             EditorLayout.taskTreeView.setRoot(treeItem);
@@ -250,11 +248,11 @@ public class EditorController {
             (obs,ov,nv) -> {
             EditorLayout.checklistTitle.setText(nv.titleProperty().get());
             EditorLayout.checklistType.setValue(nv.typeProperty().get());
-            for(Tag tag : nv.getTags()){
+            for(Tag tag : nv.tagList()){
                 EditorLayout.checklistTags.getCheckModel().check(tag);
             }
-            EditorLayout.checklistInitials.setText(nv.getInitials());
-            EditorLayout.checklistDescription.setText(nv.getDescription());
+            EditorLayout.checklistInitials.setText(nv.initialsProperty().get());
+            EditorLayout.checklistDescription.setText(nv.descriptionProperty().get());
         });
 
         EditorLayout.checklistListView.setOnDragDetected(event -> {
@@ -285,15 +283,15 @@ public class EditorController {
             Checklist newChecklist = new Checklist();
             newChecklist.titleProperty().set(EditorLayout.checklistTitle.getText());
             newChecklist.typeProperty().set(EditorLayout.checklistType.getValue());
-            newChecklist.getTags().setAll(
+            newChecklist.tagList().setAll(
                     EditorLayout.checklistTags.getCheckModel().getCheckedItems()
             );
             if(EditorLayout.taskTreeView.getRoot() != null){
-                newChecklist.getTaskList().add(EditorLayout.taskTreeView.getRoot().getValue());
+                newChecklist.taskList().add(EditorLayout.taskTreeView.getRoot().getValue());
                 if(!EditorLayout.taskTreeView.getRoot().getChildren().isEmpty()){
                     for(TreeItem<Task> treeItem: EditorLayout.taskTreeView.getRoot().getChildren()) {
                         Task task = treeItem.getValue();
-                        newChecklist.getTaskList().add(task);
+                        newChecklist.taskList().add(task);
                     }
                 }
             }
@@ -335,15 +333,15 @@ public class EditorController {
             );
             updatedChecklist.titleProperty().set(EditorLayout.checklistTitle.getText());
             updatedChecklist.typeProperty().set(EditorLayout.checklistType.getValue());
-            updatedChecklist.getTags().setAll(
+            updatedChecklist.tagList().setAll(
                     EditorLayout.checklistTags.getCheckModel().getCheckedItems()
             );
             if(EditorLayout.taskTreeView.getRoot() != null){
-                updatedChecklist.getTaskList().add(EditorLayout.taskTreeView.getRoot().getValue());
+                updatedChecklist.taskList().add(EditorLayout.taskTreeView.getRoot().getValue());
                 if(!EditorLayout.taskTreeView.getRoot().getChildren().isEmpty()){
                     for(TreeItem<Task> treeItem: EditorLayout.taskTreeView.getRoot().getChildren()) {
                         Task task = treeItem.getValue();
-                        updatedChecklist.getTaskList().add(task);
+                        updatedChecklist.taskList().add(task);
                     }
                 }
             }

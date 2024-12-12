@@ -4,7 +4,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -78,20 +77,29 @@ public class Settings {
         public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
 
         // Color
+        public static ObjectProperty<Color> textColor =
+                new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
+        public static ObjectProperty<Color> promptTextColor =
+                new SimpleObjectProperty<Color>(darkenColor(textColor.get(), 0.15));
+        
         public static ObjectProperty<Color> rootColor =
-            new SimpleObjectProperty<>(Color.web("#040F0F"));
+                new SimpleObjectProperty<>(Color.web("#040F0F"));
         public static ObjectProperty<Color> primaryColor =
-            new SimpleObjectProperty<>(Color.web("#0F2D40"));
+                new SimpleObjectProperty<>(Color.web("#0F2D40"));
         public static ObjectProperty<Color> secondaryColor =
-            new SimpleObjectProperty<>(Color.web("#445C6A"));
+                new SimpleObjectProperty<>(Color.web("#445C6A"));
+        
         public static ObjectProperty<Color> transparent =
-            new SimpleObjectProperty<>(Color.TRANSPARENT);
+                new SimpleObjectProperty<>(Color.TRANSPARENT);
+        
         public static ObjectProperty<Color> focusColor =
-            new SimpleObjectProperty<>(Color.DARKORANGE);
+                new SimpleObjectProperty<>(Color.DARKORANGE);
+        
         public static ObjectProperty<Color> selectedColor =
-            new SimpleObjectProperty<>(darkenColor(secondaryColor.get(), 0.15));
+                new SimpleObjectProperty<>(darkenColor(secondaryColor.get(), 0.15));
+        
         public static ObjectProperty<Color> dateSelectColor =
-            new SimpleObjectProperty<>(secondaryColor.get().interpolate(focusColor.get(), 0.5));
+                new SimpleObjectProperty<>(secondaryColor.get().interpolate(focusColor.get(), 0.5));
         
         
         //Window Settings
@@ -244,8 +252,6 @@ public class Settings {
                             new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
 
         // Text
-        public static ObjectProperty<Color> textColor =
-                new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
         public static ObjectProperty<Integer> textSize =
                 new SimpleObjectProperty<Integer>(18);
         public static ObjectProperty<String> textFont =
@@ -257,6 +263,8 @@ public class Settings {
         public static ObjectProperty<Integer> textSizeExtraSmall =
                 new SimpleObjectProperty<Integer>(textSize.get() - 4);
         public static ObjectProperty<Font> fontCalendarExtraSmall =
+                new SimpleObjectProperty<>(Font.font(textFont.get(), textSizeExtraSmall.get()));
+        public static ObjectProperty<Font> fontCalendarExtraSmallBold =
                 new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeExtraSmall.get()));
         public static ObjectProperty<Integer> textSizeBig =
                 new SimpleObjectProperty<Integer>(textSize.get() + 4);

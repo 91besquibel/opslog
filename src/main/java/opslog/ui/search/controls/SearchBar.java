@@ -1,7 +1,6 @@
 package opslog.ui.search.controls;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.FXCollections;
@@ -15,6 +14,7 @@ import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.ui.controls.*;
+import opslog.ui.controls.CustomMenuItem;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
 import opslog.util.Directory;
@@ -95,22 +95,31 @@ public class SearchBar extends HBox {
 	}
 
 	private void createMainMenu(){
-		MenuItem table = new MenuItem("Table");
+		CustomMenuItem table = new CustomMenuItem();
 		table.setOnAction(event -> {
 			tableSubMenu.show(filterButton, Side.BOTTOM,0,0);
 		});
+		table.setDisplayed(
+			"Table"
+		);
 		table.setStyle(Styles.menuItem());
 
-		MenuItem tag = new MenuItem("Tag");
+		CustomMenuItem tag = new CustomMenuItem();
 		tag.setOnAction(event -> {
 			tagSubMenu.show(filterButton, Side.BOTTOM,0,0);
 		});
+		tag.setDisplayed(
+			"Tag"
+		);
 		tag.setStyle(Styles.menuItem());
 
-		MenuItem type = new MenuItem("Type");
+		CustomMenuItem type = new CustomMenuItem();
 		type.setOnAction(event -> {
 			typeSubMenu.show(filterButton, Side.BOTTOM,0,0);
 		});
+		type.setDisplayed(
+			"Type"
+		);
 		type.setStyle(Styles.menuItem());
 
 		mainMenu.getItems().addAll(table,type,tag);
@@ -127,7 +136,7 @@ public class SearchBar extends HBox {
 	private void createTagSubMenu(){
 		for(Tag tag: TagManager.getList()){
 			CheckMenuItem menuItem = new CheckMenuItem();
-			menuItem.textProperty().bind(tag.getTitleProperty());
+			menuItem.textProperty().bind(tag.titleProperty());
 			menuItem.setStyle(Styles.menuItem());
 			menuItem.selectedProperty().addListener((obs,ov,nv) -> {
 				if(menuItem.isSelected()){
@@ -144,14 +153,12 @@ public class SearchBar extends HBox {
 	private void createTypeSubMenu(){
 		for(Type type: TypeManager.getList()){
 			CheckMenuItem menuItem = new CheckMenuItem();
-			menuItem.textProperty().bind(type.getTitleProperty());
+			menuItem.textProperty().bind(type.titleProperty());
 			menuItem.setStyle(Styles.menuItem());
 			menuItem.selectedProperty().addListener((obs,ov,nv) -> {
 				if(menuItem.isSelected()){
-					System.out.println("SearchBar: adding type to list " + type.getTitle());
 					typeList.add(type);
 				}else{
-					System.out.println("SearchBar: removing type to list " + type.getTitle());
 					typeList.remove(type);
 				}
 			});

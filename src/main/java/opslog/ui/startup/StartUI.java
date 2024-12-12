@@ -16,7 +16,6 @@ import opslog.ui.controls.Buttons;
 import opslog.util.Settings;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.HikariConfigSetup;
-import opslog.sql.hikari.HikariConnectionProvider;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import com.zaxxer.hikari.HikariConfig;
@@ -163,8 +162,7 @@ public class StartUI {
         // Setup HikariCP connection pool
         HikariConfig config = HikariConfigSetup.configure(type, address, port, name, user, password);
         ConnectionManager.setInstance(config);
-        HikariConnectionProvider connectionProvider = ConnectionManager.getInstance();
-        DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(connectionProvider);
+        DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
 
         try {
             // test that the connection to the data base is good

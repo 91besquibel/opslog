@@ -2,7 +2,6 @@ package opslog.sql.pgsql;
 
 import org.postgresql.PGNotification;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 import javafx.application.Platform;
 import opslog.object.Format;
@@ -12,9 +11,7 @@ import opslog.object.Type;
 import opslog.object.event.*;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.ui.calendar.control.MonthViewControl;
-import opslog.ui.calendar.managers.CalendarManager;
-import opslog.ui.calendar.object.CalendarMonth;
+import opslog.ui.calendar2.event.manager.ScheduledEventManager;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;
@@ -88,38 +85,31 @@ public class Notification {
                 processProfile(id,operation,result);
                 break;
 
-            case "calendar_table":
-                processCalendar(id,operation,result);
+            case "scheduledEvent_table":
+                processScheduledEvent(id,operation,result);
                 break;
         }
     }
 
-    private static void processCalendar(String id, String operation, List<String[]> result) {
-        CalendarMonth calendarMonth = MonthViewControl.calendarMonth;
+    private static void processScheduledEvent(String id, String operation, List<String[]> result) {
         Platform.runLater(() -> {
             for(String [] row : result) {
-                Calendar calendar = CalendarManager.newItem(row);
-                LocalDate eventStart = calendar.startDateProperty().get();
-                LocalDate eventStop = calendar.stopDateProperty().get();
-                LocalDate monthFirst = calendarMonth.yearMonthProperty().get().atDay(1);
-                LocalDate monthLast = calendarMonth.yearMonthProperty().get().atEndOfMonth();
-                if (!eventStop.isBefore(monthFirst) && !eventStart.isAfter(monthLast)) {
-                    if (operation.contains("INSERT")) {
-                        CalendarManager.getMonthEvents().add(calendar);
+                ScheduledEvent scheduledEvent = ScheduledEventManager.newItem(row);
+                if (operation.contains("INSERT")) {
+                    ScheduledEventManager.getMonthEvents().add(scheduledEvent);
+                    System.out.println("Notification: processing complete");
+                } else if (operation.contains("UPDATE")) {
+                    if (ScheduledEventManager.getMonthEvents().contains(scheduledEvent)) {
+                        int index = ScheduledEventManager.getMonthEvents().indexOf(scheduledEvent);
+                        ScheduledEventManager.getMonthEvents().set(index, scheduledEvent);
                         System.out.println("Notification: processing complete");
-                    } else if (operation.contains("UPDATE")) {
-                        if (CalendarManager.getMonthEvents().contains(calendar)) {
-                            int index = CalendarManager.getMonthEvents().indexOf(calendar);
-                            CalendarManager.getMonthEvents().set(index, calendar);
-                            System.out.println("Notification: processing complete");
-                        }
-                    } else if (operation.contains("DELETE")) {
-                        Calendar originalCalendar = CalendarManager.getItem(id);
-                        if (originalCalendar != null) {
-                            CalendarManager.getMonthEvents().remove(originalCalendar);
-                            System.out.println("Notification: processing complete");
-                        };
                     }
+                } else if (operation.contains("DELETE")) {
+                    ScheduledEvent originalScheduledEvent = ScheduledEventManager.getItem(id);
+                    if (originalScheduledEvent != null) {
+                        ScheduledEventManager.getMonthEvents().remove(originalScheduledEvent);
+                        System.out.println("Notification: processing complete");
+                    };
                 }
             }
         });

@@ -19,18 +19,6 @@ public class Checklist extends Event implements SQL {
     private final StringProperty title = new SimpleStringProperty();
     private final ObservableList<Task> taskList = FXCollections.observableArrayList();
 
-    // Constructor
-    public Checklist(
-            String id, String title,
-            ObservableList<Task> taskList,
-            Type type, ObservableList<Tag> tags,
-            String initials, String description) {
-        super(type, tags, initials, description);
-        this.id.set(id);
-        this.title.set(title);
-        this.taskList.setAll(taskList);
-    }
-
     public Checklist() {
         super();
         this.id.set(null);
@@ -42,23 +30,14 @@ public class Checklist extends Event implements SQL {
     public String getID(){
         return id.get();
     }
-    public String getTitle() {
-        return title.get();
-    }
-    public ObservableList<Task> getTaskList() {
-        return taskList;
-    }
-    
 
     @Override
     public void setID(String id){
         this.id.set(id);
     }
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
-    }
-    public void setTaskList(ObservableList<Task> newTaskList) {
-        taskList.setAll(newTaskList);
+    
+    public ObservableList<Task> taskList() {
+        return taskList;
     }
 
     public StringProperty titleProperty(){
@@ -81,7 +60,7 @@ public class Checklist extends Event implements SQL {
 
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     @Override

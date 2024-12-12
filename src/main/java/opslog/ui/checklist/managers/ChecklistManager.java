@@ -10,7 +10,6 @@ import opslog.ui.settings.managers.TypeManager;
 import opslog.object.event.Checklist;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 public class ChecklistManager {
@@ -37,12 +36,12 @@ public class ChecklistManager {
     public static Checklist newItem(String [] row){
         Checklist checklist = new Checklist();
         checklist.setID(row[0]);
-        checklist.setTitle(row[1]);
-        checklist.setTaskList(TaskManager.getItems(row[2]));
-        checklist.setType(TypeManager.getItem(row[3]));
-        checklist.setTags(TagManager.getItems(row[4]));
-        checklist.setInitials(row[5]);
-        checklist.setDescription(row[6]);
+        checklist.titleProperty().set(row[1]);  // Assuming title is a StringProperty
+        checklist.taskList().setAll(TaskManager.getItems(row[2]));  // Assuming taskList is an ObservableList
+        checklist.typeProperty().set(TypeManager.getItem(row[3]));  // Assuming type is a Property type (e.g., ObjectProperty<Type>)
+        checklist.tagList().setAll(TagManager.getItems(row[4]));  // Assuming tags is an ObservableList
+        checklist.initialsProperty().set(row[5]);  // Assuming initials is a StringProperty
+        checklist.descriptionProperty().set(row[6]);  // Assuming description is a StringProperty
         return checklist;
     }
 

@@ -14,12 +14,6 @@ public class Tag implements SQL{
     private final StringProperty title = new SimpleStringProperty();
     private final ObjectProperty<Color> color = new SimpleObjectProperty<>();
 
-    public Tag(String ID, String title, Color color) {
-        this.ID.set(ID);
-        this.title.set(title);
-        this.color.set(color);
-    }
-
     public Tag() {
         this.ID.set(null);
         this.title.set(null);
@@ -34,32 +28,12 @@ public class Tag implements SQL{
         ID.set(newID);
     }
 
-    public String getTitle() {
-        return title.get();
-    }
-
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
-    }
-
-    public Color getColor() {
-        return color.get();
-    }
-
-    public void setColor(Color newColor) {
-        color.set(newColor);
-    }
-
-    public StringProperty getTitleProperty() {
+    public StringProperty titleProperty() {
         return title;
     }
 
-    public ObjectProperty<Color> getColorProperty() {
+    public ObjectProperty<Color> colorProperty() {
         return color;
-    }
-
-    public boolean hasID(String newID) {
-        return getID().equals(newID);
     }
 
     public boolean hasValue() {
@@ -68,17 +42,20 @@ public class Tag implements SQL{
     }
 
     public String[] toArray() {
-        return new String[]{getID(), getTitle(), Utilities.toHex(getColor())};
+        return new String[]{
+            getID(),                 
+            title.get(), 
+            Utilities.toHex(color.get())
+        };
     }
 
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     @Override
     public String toSQL() {
-        // If the id value is null it will send NULL to the DB and the db will generate an ID
         return Arrays.stream(toArray())
             .map(value -> value == null ? "DEFAULT" : "'" + value + "'")
             .collect(Collectors.joining(", "));
@@ -87,17 +64,10 @@ public class Tag implements SQL{
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
-
         if (other == null || getClass() != other.getClass()) return false;
-
         Tag otherTag = (Tag) other;
         return
-                title.get().equals(otherTag.getTitle()) &&
-                        color.get().equals(otherTag.getColor());
-    }
-
-    @Override
-    public int hashCode() {
-        return title.hashCode() + color.hashCode();
+            title.get().equals(otherTag.titleProperty().get()) &&
+            color.get().equals(otherTag.colorProperty().get());
     }
 }

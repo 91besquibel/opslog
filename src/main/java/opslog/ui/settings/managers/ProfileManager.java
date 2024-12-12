@@ -30,66 +30,26 @@ public class ProfileManager {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
-        loadPrefs();
     }
 
-    private static void loadPrefs() {
-        profileList.add(getLightMode());
-        profileList.add(getDarkMode());
-    }
-
-    private static Profile getLightMode() {
-        String id = "-2";
-        String title = "Light Mode";
-        Color rootColor = Color.web("#121212");
-        Color primaryColor = Color.web("#D0D0D0");
-        Color secondaryColor = Color.web("#C0C0C0");
-        Color borderColor = Color.web("#A0A0A0");
-        Color textColor = Color.web("#333333");
-        int textSize = 14;
-        String textFont = "Arial";
-        return new Profile(
-                id, title, rootColor, primaryColor, secondaryColor,
-                borderColor, textColor, textSize, textFont
-        );
-    }
-
-    private static Profile getDarkMode() {
-        String id = "-2";
-        String title = "Dark Mode";
-        Color rootColor = Color.web("#121212");
-        Color primaryColor = Color.web("#1D1D1D");
-        Color secondaryColor = Color.web("#2A2A2A");
-        Color borderColor = Color.web("#333333");
-        Color textColor = Color.web("#E0E0E0");
-        int textSize = 14;
-        String textFont = "Arial";
-        return new Profile(
-                id, title, rootColor, primaryColor, secondaryColor,
-                borderColor, textColor, textSize, textFont
-        );
-    }
-
-    public static Profile newItem(String [] row){
+    public static Profile newItem(String[] row) {
         Profile profile = new Profile();
         profile.setID(row[0]);
-        profile.setTitle(row[1]);
-        profile.setRoot(Color.web(row[2]));
-        profile.setPrimary(Color.web(row[3]));
-        profile.setSecondary(Color.web(row[4]));
-        profile.setBorder(Color.web(row[5]));
-        profile.setTextColor(Color.web(row[6]));
-        profile.setTextSize(Integer.parseInt(row[7]));
-        profile.setTextFont(row[8]);
+        profile.titleProperty().set(row[1]);
+        profile.rootProperty().set(Color.web(row[2]));
+        profile.primaryProperty().set(Color.web(row[3]));
+        profile.secondaryProperty().set(Color.web(row[4]));
+        profile.borderProperty().set(Color.web(row[5]));
+        profile.textColorProperty().set(Color.web(row[6]));
+        profile.textSizeProperty().set(Integer.parseInt(row[7]));
+        profile.textFontProperty().set(row[8]);
         return profile;
     }
+
 
     public static Profile getItem(String ID) {
         for (Profile profile : profileList) {
             if (profile.getID().equals(ID)) {
-                return profile;
-            }
-            if (profile.getTitle().equals(ID)){
                 return profile;
             }
         }

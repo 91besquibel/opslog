@@ -1,18 +1,11 @@
 package opslog.ui.startup;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javafx.collections.ListChangeListener;
-import opslog.object.event.Checklist;
-import opslog.object.event.ScheduledChecklist;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.pgsql.Listen;
-import opslog.ui.calendar.control.MonthViewControl;
-import opslog.ui.checklist.controllers.StatusController;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;
@@ -22,6 +15,7 @@ import opslog.ui.settings.managers.FormatManager;
 import opslog.ui.settings.managers.ProfileManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
+import opslog.ui.calendar2.event.manager.ScheduledEventManager;
 
 public class StartController {
 
@@ -41,7 +35,7 @@ public class StartController {
 		// load  end-user information tables
 		// this will load the correct
 		// calendar and scheduled checklist data
-		MonthViewControl.update();
+		//MonthViewControl.initialize();
 		LogManager.loadTable(LocalDate.now());
 	}
 

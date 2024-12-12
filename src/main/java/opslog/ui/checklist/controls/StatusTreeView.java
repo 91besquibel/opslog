@@ -7,8 +7,6 @@ import opslog.object.event.Task;
 import opslog.util.Settings;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -16,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.LinkedHashSet;
 
@@ -99,7 +96,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 		
 		TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
 		column.setCellValueFactory(cellData -> {
-			ObservableList<Tag> tags = cellData.getValue().getValue().getTags();
+			ObservableList<Tag> tags = cellData.getValue().getValue().tagList();
 			return new SimpleObjectProperty<>(tags);
 		});
 		column.setGraphic(hbox);
@@ -118,7 +115,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 						lbl.setBackground(
 								new Background(
 										new BackgroundFill(
-												tag.getColor(),
+												tag.colorProperty().get(),
 												Settings.CORNER_RADII,
 												Settings.INSETS_ZERO
 										)

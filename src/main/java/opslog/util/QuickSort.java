@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import opslog.object.Event;
-import opslog.object.event.Calendar;
 import opslog.object.event.ScheduledChecklist;
+import opslog.object.event.ScheduledEvent;
 
 // QuickSort Utility for List<Event>
 public class QuickSort {
@@ -39,8 +39,8 @@ public class QuickSort {
 
 	// Helper method to get the start date from an Event (with casting)
 	private static LocalDate getStartDate(Event event) {
-		if (event instanceof Calendar) {
-			return ((Calendar) event).startDateProperty().get();
+		if (event instanceof ScheduledEvent) {
+			return ((ScheduledEvent) event).startProperty().get().toLocalDate();
 		} else if (event instanceof ScheduledChecklist) {
 			return ((ScheduledChecklist) event).startDateProperty().get();
 		} else {

@@ -8,16 +8,15 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import opslog.object.event.ScheduledChecklist;
-import opslog.object.event.Task;
 import opslog.ui.controls.CustomTextField;
 import opslog.util.Settings;
 
 public class ScheduleTable extends TableView<Integer[]> {
+	
 	private final TableColumn<Integer[], String> offsetColumn = new TableColumn<>();
 	private final TableColumn<Integer[], String> durationColumn = new TableColumn<>();
 	private int currentRowIndex;
@@ -252,6 +251,7 @@ public class ScheduleTable extends TableView<Integer[]> {
 						backgroundProperty().bind(Settings.primaryBackground);
 					}
 				});
+				
 				prefWidthProperty().bind(this.widthProperty().subtract(10.0));
 				prefHeightProperty().set(50);
 

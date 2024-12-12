@@ -1,6 +1,5 @@
 package opslog.ui.log.controls;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -13,7 +12,6 @@ import opslog.object.event.Log;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.log.managers.PinboardManager;
-import opslog.ui.settings.managers.ProfileManager;
 import opslog.util.FileSaver;
 import opslog.util.Settings;
 
@@ -24,7 +22,6 @@ import java.util.List;
 public class PinTable extends TableView<Log> {
 
     public PinTable(){
-        ObservableList<Log> list = FXCollections.observableArrayList();
         initializeColumns();
         initializeContextMenu();
         initializeListeners();

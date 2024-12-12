@@ -17,17 +17,10 @@ import java.util.stream.Collectors;
 import opslog.interfaces.SQL;
 
 public class Log extends Event implements SQL {
+    
     private final StringProperty id = new SimpleStringProperty();
     private final ObjectProperty<LocalDate> date = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalTime> time = new SimpleObjectProperty<>();
-
-    // Construct: Parameterized
-    public Log(String id, LocalDate date, LocalTime time, Type type, ObservableList<Tag> tags, String initials, String description) {
-        super(type, tags, initials, description);
-        this.id.set(id);
-        this.date.set(date);
-        this.time.set(time);
-    }
 
     // Construct: Default
     public Log() {
@@ -47,35 +40,14 @@ public class Log extends Event implements SQL {
         return id.get();
     }
 
-    public LocalDate getDate() {
-        return date.get();
-    }
-
-    public void setDate(LocalDate newDate) {
-        date.set(newDate);
-    }
-
     public ObjectProperty<LocalDate> dateProperty() {
         return date;
-    }
-
-    public LocalTime getTime() {
-        return time.get();
-    }
-
-    public void setTime(LocalTime newTime) {
-        time.set(newTime);
     }
 
     public ObjectProperty<LocalTime> timeProperty() {
         return time;
     }
 
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
-    }
-
-    // Return true if all elements have a value
     @Override
     public boolean hasValue() {
         System.out.println("Checking if log has values: " + toSQL());
@@ -89,8 +61,8 @@ public class Log extends Event implements SQL {
         String[] superArray = super.toArray();
         return new String[]{
                 getID(),
-                DateTime.convertDate(getDate()),
-                DateTime.convertTime(getTime()),
+                DateTime.convertDate(date.get()),
+                DateTime.convertTime(time.get()),
                 superArray[0], // typeID
                 superArray[1], // tagIDs
                 superArray[2], // initials
@@ -107,12 +79,12 @@ public class Log extends Event implements SQL {
 
     @Override
     public String toString() {
-        String dateStr = getDate() != null ? DateTime.convertDate(getDate()) : "";
-        String timeStr = getTime() != null ? DateTime.convertTime(getTime()) : "";
-        String typeStr = super.getType() != null ? super.getType().toString() : "";
-        String tagStr = super.getTags() != null && !super.getTags().isEmpty() ? super.getTags().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
-        String initialsStr = super.getInitials() != null ? super.getInitials() : "";
-        String descriptionStr = super.getDescription() != null ? super.getDescription() : "";
+        String dateStr = date.get() != null ? DateTime.convertDate(date.get()) : "";
+        String timeStr = time.get() != null ? DateTime.convertTime(time.get()) : "";
+        String typeStr = super.typeProperty().get() != null ? super.typeProperty().get().toString() : "";
+        String tagStr = super.tagList() != null && !super.tagList().isEmpty() ? super.tagList().stream().map(Tag::getID).collect(Collectors.joining("|")) : "";
+        String initialsStr = super.initialsProperty().get() != null ? super.initialsProperty().get() : "";
+        String descriptionStr = super.descriptionProperty().get() != null ? super.descriptionProperty().get() : "";
 
         return  dateStr +
                 ", " +

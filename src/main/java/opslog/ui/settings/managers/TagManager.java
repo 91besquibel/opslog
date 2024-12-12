@@ -31,8 +31,8 @@ public class TagManager {
     public static Tag newItem(String [] row){
         Tag tag = new Tag();
         tag.setID(row[0]);
-        tag.setTitle(row[1]);
-        tag.setColor(Color.web(row[2]));
+        tag.titleProperty().set(row[1]);
+        tag.colorProperty().set(Color.web(row[2]));
         return tag;
     }
 

@@ -1,32 +1,16 @@
 package opslog.object.event;
 
 import javafx.beans.property.*;
-import javafx.collections.ObservableList;
 import opslog.object.Event;
-import opslog.object.Tag;
-import opslog.object.Type;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.stream.Collectors;
 import java.util.Arrays;
-import java.util.Objects;
 import opslog.interfaces.SQL;
 
 public class Task extends Event implements SQL {
 
     private final StringProperty id = new SimpleStringProperty();
     private final StringProperty title = new SimpleStringProperty();
-
-    //Constructor parameterized
-    public Task(
-            String id, String title,
-			Type type, ObservableList<Tag> tags,
-			String initials, String description) {
-        super(type, tags, initials, description);
-        this.id.set(id);
-        this.title.set(title);
-    }
 
     //Constructor non parameterized
     public Task() {
@@ -45,14 +29,6 @@ public class Task extends Event implements SQL {
         return id.get();
     }
 
-    public String getTitle() {
-        return title.get();
-    }
-
-    public void setTitle(String title) {
-        this.title.set(title);
-    }
-
     public StringProperty titleProperty() {
         return title;
     }
@@ -64,15 +40,15 @@ public class Task extends Event implements SQL {
     //Utility Methods
     public boolean hasValue() {
         return
-                title.get() != null && !title.get().trim().isEmpty() &&
-                        super.hasValue();
+            title.get() != null && !title.get().trim().isEmpty() &&
+            super.hasValue();
     }
 
     public String [] toArray() {
         String [] superArray = super.toArray();
         return new String [] {
                 getID(),
-                getTitle(),
+                title.get(),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials
@@ -89,7 +65,7 @@ public class Task extends Event implements SQL {
 
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     @Override
@@ -99,6 +75,6 @@ public class Task extends Event implements SQL {
         if (!super.equals(other)) return false;
         Task otherTask = (Task) other;
         return
-                title.get().equals(otherTask.getTitle());
+                title.get().equals(otherTask.titleProperty().get());
     }
 }

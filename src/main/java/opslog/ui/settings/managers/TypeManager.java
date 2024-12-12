@@ -34,8 +34,8 @@ public class TypeManager {
     public static Type newItem(String [] row){
         Type type = new Type();
         type.setID(row[0]);
-        type.setTitle(row[1]);
-        type.setPattern(row[2]);
+        type.titleProperty().set(row[1]);
+        type.patternProperty().set(row[2]);
         return type;
     }
 

@@ -9,11 +9,11 @@ import javafx.collections.ObservableList;
 
 import opslog.object.Tag;
 import opslog.object.Type;
-import opslog.object.event.Calendar;
 import opslog.object.event.Log;
+import opslog.object.event.ScheduledEvent;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.HikariConnectionProvider;
-import opslog.ui.calendar.managers.CalendarManager;
+import opslog.ui.calendar2.event.manager.ScheduledEventManager;
 import opslog.ui.log.managers.LogManager;
 import opslog.ui.search.SearchUI;
 
@@ -79,10 +79,10 @@ public class SearchQuery {
     public void calendarQuery(){
         searchQuery.append(DatabaseConfig.CALENDAR_TABLE);
         buildQuery();
-        List<Calendar> list = new ArrayList<>();
+        List<ScheduledEvent> list = new ArrayList<>();
         for(String[] row : results){
-            Calendar calendar = CalendarManager.newItem(row);
-            list.add(calendar);
+            ScheduledEvent scheduledEvent = ScheduledEventManager.newItem(row);
+            list.add(scheduledEvent);
         }
         display(list);
     }

@@ -2,11 +2,9 @@ package opslog.object.event;
 
 import java.time.LocalDate;
 import javafx.beans.property.*;
-import javafx.collections.ListChangeListener;
 import opslog.interfaces.SQL;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.ui.checklist.controllers.StatusController;
 import opslog.util.DateTime;
 import opslog.object.Event;
 import java.util.Arrays;

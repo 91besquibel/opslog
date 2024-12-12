@@ -39,7 +39,6 @@ public class LogTable extends TableView<Log>{
 	private final ContextMenu contextMenu = new ContextMenu();
 
     public LogTable(){
-        ObservableList<Log> list = FXCollections.observableArrayList();
 		initializeColumns();
 		initializeContextMenu();
 		initializeListeners();
@@ -61,13 +60,6 @@ public class LogTable extends TableView<Log>{
 	}
 
 	public void initializeContextMenu(){
-		MenuItem editItem = new MenuItem("Append");
-		editItem.setOnAction(e -> {
-			Log log = getSelectionModel().getSelectedItem();
-			PopupUI popup = new PopupUI();
-			popup.append(log);
-
-		});
 		
 		MenuItem copyItem = new MenuItem("Copy");
 		copyItem.setOnAction(e -> {
@@ -113,7 +105,7 @@ public class LogTable extends TableView<Log>{
 			FileSaver.saveFile(stage, exportingItems);
 		});
 		
-		contextMenu.getItems().addAll(copyItem, editItem, pinItem, exportItem);
+		contextMenu.getItems().addAll(copyItem, pinItem, exportItem);
 		setContextMenu(contextMenu);
 	}
 
@@ -165,7 +157,7 @@ public class LogTable extends TableView<Log>{
 
 	private TableColumn<Log, ObservableList<Tag>> tagColumn() {
 		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>();
-		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().getTags()));
+		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().tagList()));
 		column.setGraphic(createHeaderLabel("Tag"));
 
 		column.setCellFactory(col -> new TableCell<Log, ObservableList<Tag>>() {
@@ -178,7 +170,7 @@ public class LogTable extends TableView<Log>{
 					VBox vbox = new VBox();
 					for (Tag tag : item) {
 						Label lbl = new Label(tag.toString());
-						lbl.setBackground(new Background(new BackgroundFill(tag.getColor(),
+						lbl.setBackground(new Background(new BackgroundFill(tag.colorProperty().get(),
 								Settings.CORNER_RADII, Settings.INSETS_ZERO)));
 						lbl.setPadding(Settings.INSETS);
 						lbl.textFillProperty().bind(Settings.textColor);

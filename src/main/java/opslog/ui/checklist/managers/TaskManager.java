@@ -36,18 +36,18 @@ public class TaskManager {
     public static Task newItem(String [] row){
         Task task = new Task();
         task.setID(row[0]);
-        task.setTitle(row[1]);
-        task.setType(TypeManager.getItem(row[2]));
-        task.setTags(TagManager.getItems(row[3]));
-        task.setInitials(row[4]);
-        task.setDescription(row[5]);
+        task.titleProperty().set(row[1]);
+        task.typeProperty().set(TypeManager.getItem(row[2]));
+        task.tagList().setAll(TagManager.getItems(row[3]));
+        task.initialsProperty().set(row[4]);
+        task.descriptionProperty().set(row[5]);
         return task;
     }
 
     public static Task getItem(String ID) {
         for (Task task : taskList) {
             //System.out.println("TaskManager: Checking for item with ID: \n" + ID + "\n against \n" + task.getID());
-            if (task.hasID(ID.trim())) {
+            if (task.getID().contains(ID.trim())){
                 //System.out.println("TaskManager: Task found returning: " + ID);
                 return task;
             }

@@ -21,7 +21,7 @@ public class LogController {
             LogLayout.logCreator.tagSelection.getCheckModel().clearChecks();
             if(nv != null){
                 LogLayout.logCreator.typeSelection.valueProperty().set(nv.typeProperty().get());
-                for(Tag tag : nv.getTags()) {
+                for(Tag tag : nv.tagList()) {
                     if(LogLayout.logCreator.tagSelection.getItems().contains(tag)){
                         LogLayout.logCreator.tagSelection.getCheckModel().check(tag);
                     }
@@ -37,7 +37,7 @@ public class LogController {
         });
         LogLayout.logCreator.formatSelection.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
             if(nv != null){
-                LogLayout.logCreator.descriptionField.setText(nv.getFormat());
+                LogLayout.logCreator.descriptionField.setText(nv.formatProperty().get());
             } else{
                 LogLayout.logCreator.descriptionField.clear();
             }
@@ -47,14 +47,9 @@ public class LogController {
 
     private static void handleAddLog(){
         Log newLog = new Log();
-        newLog.setDate(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
-        newLog.setTime(LocalTime.parse(DateTime.convertTime(DateTime.getTime())));
-        newLog.setType(LogLayout.logCreator.typeSelection.getValue());
-        newLog.setTags(LogLayout.logCreator.tagSelection.getCheckModel().getCheckedItems());
-        newLog.setInitials(LogLayout.logCreator.initialsField.getText().trim());
-        newLog.setDescription(LogLayout.logCreator.descriptionField.getText().trim());
-
-        // Verify all values except id are filled
+        newLog.dateProperty().set(LocalDate.parse(DateTime.convertDate(DateTime.getDate())));
+        newLog.timeProperty().set(LocalTime.parse(DateTime.convertTime(DateTime.getTime())));
+        getLogFieldValues(newLog);
         if(newLog.hasValue()){
             try {
                 DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
@@ -72,12 +67,8 @@ public class LogController {
     }
 
     private static void handleUpdateLog(){
-        LogLayout.logCreator.logProperty.get().setType(LogLayout.logCreator.typeSelection.getValue());
-        LogLayout.logCreator.logProperty.get().setTags(LogLayout.logCreator.tagSelection.getCheckModel().getCheckedItems());
-        LogLayout.logCreator.logProperty.get().setInitials(LogLayout.logCreator.initialsField.getText().trim());
-        LogLayout.logCreator.logProperty.get().setDescription(LogLayout.logCreator.descriptionField.getText().trim());
+        getLogFieldValues(LogLayout.logCreator.logProperty.get());
         Log log = LogLayout.logCreator.logProperty.get();
-        // Verify all values except id are filled
         if(log.hasValue()){
             try {
                 DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
@@ -94,14 +85,20 @@ public class LogController {
 
     public static void handleSwapView(){
         if(LogLayout.pinTableView.isVisible()){
-            LogLayout.labelLeftSide.setText("Event Board");
+            LogLayout.labelLeftSide.setText("Create Log");
             LogLayout.logCreator.setVisible(true);
             LogLayout.pinTableView.setVisible(false);
         }else {
             LogLayout.pinTableView.setVisible(true);
             LogLayout.logCreator.setVisible(false);
-            LogLayout.labelLeftSide.setText("PinBoard");
+            LogLayout.labelLeftSide.setText("Pin Board");
         }
     }
 
+    private static void getLogFieldValues(Log log){
+        log.typeProperty().set(LogLayout.logCreator.typeSelection.getValue());
+        log.tagList().setAll(LogLayout.logCreator.tagSelection.getCheckModel().getCheckedItems());
+        log.initialsProperty().set(LogLayout.logCreator.initialsField.getText().trim());
+        log.descriptionProperty().set(LogLayout.logCreator.descriptionField.getText().trim());
+    }
 }

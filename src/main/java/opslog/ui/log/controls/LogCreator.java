@@ -2,7 +2,6 @@ package opslog.ui.log.controls;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -11,27 +10,16 @@ import opslog.object.Format;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Log;
-import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseConfig;
-import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.ui.checklist.layout.EditorLayout;
 import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomComboBox;
 import opslog.ui.controls.CustomTextArea;
 import opslog.ui.controls.CustomTextField;
-import opslog.ui.log.LogController;
-import opslog.ui.log.managers.LogManager;
 import opslog.ui.settings.managers.FormatManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
-import opslog.util.DateTime;
 import opslog.util.Directory;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
-
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 public class LogCreator extends VBox {
 

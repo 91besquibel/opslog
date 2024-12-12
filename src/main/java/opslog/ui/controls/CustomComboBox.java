@@ -7,23 +7,18 @@ import javafx.scene.control.ListCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
-import opslog.object.Profile;
 import opslog.util.Settings;
 
 public class CustomComboBox<T> extends ComboBox<T> {
 
     public CustomComboBox(String prompt, double width, double height) {
+        
         setPrefWidth(width);
         setPrefHeight(height);
         setMinHeight(height);
         setEditable(false);
         setFocusTraversable(true);
         setPromptText(prompt);
-        getEditor().setPromptText(prompt);
-        getEditor().fontProperty().bind(Settings.fontProperty);
-        getEditor().backgroundProperty().bind(Settings.secondaryBackground);
-        getEditor().borderProperty().bind(Settings.secondaryBorder);
-        getEditor().setStyle(Styles.getTextStyle());
         setStyle(Styles.getTextStyle());
         backgroundProperty().bind(Settings.secondaryBackground);
         borderProperty().bind(Settings.secondaryBorder);
@@ -50,16 +45,12 @@ public class CustomComboBox<T> extends ComboBox<T> {
 
         Settings.textColor.addListener((obs, oldColor, newColor) -> {
             setStyle(Styles.getTextStyle());
-            getEditor().setStyle(Styles.getTextStyle());
         });
-        
         Settings.textSize.addListener((obs, oldSize, newSize) -> {
             setStyle(Styles.getTextStyle());
-            getEditor().setStyle(Styles.getTextStyle());
         });
         Settings.textFont.addListener((obs, oldFont, newFont) -> {
             setStyle(Styles.getTextStyle());
-            getEditor().setStyle(Styles.getTextStyle());
         });
 
         addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -86,10 +77,13 @@ public class CustomComboBox<T> extends ComboBox<T> {
             }
         });
 
-        setCellFactory(lv -> new ListCell<>() {
+        setCellFactory(listView -> new ListCell<>() {
             {
+                listView.backgroundProperty().bind(Settings.primaryBackground);
+                listView.borderProperty().bind(Settings.secondaryBorder);
+                
                 borderProperty().bind(Settings.transparentBorder);
-                backgroundProperty().bind(Settings.secondaryBackgroundZ);
+                backgroundProperty().bind(Settings.primaryBackground);
                 setAlignment(Pos.CENTER);
                 setPadding(Settings.INSETS);
 
@@ -116,7 +110,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
                     if (isSelected) {
                         setBackground(Settings.selectedBackground.get());
                     } else {
-                        backgroundProperty().bind(Settings.secondaryBackgroundZ);
+                        backgroundProperty().bind(Settings.primaryBackground);
                     }
                 });
             }
@@ -132,30 +126,31 @@ public class CustomComboBox<T> extends ComboBox<T> {
                     label.fontProperty().bind(Settings.fontProperty);
                     label.textFillProperty().bind(Settings.textColor);
                     label.setWrapText(true);
-
                     setGraphic(label);
                     setFocusTraversable(true);
                 }
             }
         });
 
-        setButtonCell(new ListCell<T>() {
-            @Override
-            protected void updateItem(T item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    Label label = new Label(item.toString());
-                    label.fontProperty().bind(Settings.fontProperty);
-                    label.textFillProperty().bind(Settings.textColor);
-                    label.setWrapText(true);
-                    setGraphic(label);
-                    setFocusTraversable(true);
-                    backgroundProperty().bind(Settings.secondaryBackgroundZ);
-                }
-            }
-        });
+        // Custom button cell 
+        ListCell<T> buttonCell = new ListCell<>() { 
+            Label label = new Label(); 
+            { 
+                label.setText(prompt); 
+                label.fontProperty().bind(Settings.fontProperty); 
+                label.textFillProperty().bind(Settings.textColor); 
+                label.setWrapText(true); 
+                setGraphic(label); 
+            } 
+            @Override protected void updateItem(T item, boolean empty) { 
+                super.updateItem(item, empty); 
+                if (empty || item == null) { 
+                    label.setText(prompt); 
+                } else { 
+                    label.setText(item.toString()); 
+                } 
+            } 
+        };
+        setButtonCell(buttonCell);
     }
 }
