@@ -24,13 +24,13 @@ public class Util {
         Label id= new Label( "ID: " + calendar.getID());
         propertyFactory(id);
 
-        Label title = new Label( "Title: " + calendar.getTitle());
+        Label title = new Label( "Title: " + calendar.titleProperty().get());
         propertyFactory(title);
 
-        Label start = new Label("Start: " + calendar.getStartDate() + " @"+ calendar.getStartTime());
+        Label start = new Label("Start: " + calendar.startDateProperty().get() + " @"+ calendar.startTimeProperty().get());
         propertyFactory(start);
 
-        Label stop = new Label("Stop: " + calendar.getStopDate()+ " @" + calendar.getStopTime());
+        Label stop = new Label("Stop: " + calendar.stopDateProperty().get()+ " @" + calendar.stopTimeProperty().get());
         propertyFactory(stop);
 
         Label typeLabel = new Label("Type: " + calendar.getType().getTitle());

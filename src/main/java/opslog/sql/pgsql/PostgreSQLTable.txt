@@ -37,8 +37,8 @@ CREATE TABLE pinboard_table (
 CREATE OR REPLACE FUNCTION notify_pinboard_table_change()
 RETURNS TRIGGER AS $$
 BEGIN
-	-- Send a notification to the 'pinboard_changes' channel
-	PERFORM pg_notify('pinboard_changes', TG_OP || ' on pinboard id: ' || NEW.id::text);
+	-- Send a notification to the 'pinboard_table' channel
+	PERFORM pg_notify('pinboard_table', TG_OP || ' on pinboard_table id: ' || NEW.id::text);
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

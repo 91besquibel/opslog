@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Menu;
-
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -16,7 +15,7 @@ import javafx.stage.Stage;
 import opslog.object.event.Log;
 import opslog.ui.WindowPane;
 import opslog.ui.controls.Buttons;
-import opslog.ui.controls.CustomMenuBar;
+import opslog.ui.controls.Styles;
 import opslog.ui.log.controls.LogTable;
 import opslog.object.event.Calendar;
 import opslog.ui.search.controls.CalendarTable;
@@ -24,37 +23,23 @@ import opslog.util.FileSaver;
 
 public class SearchUI <T>{
 
-    private Stage stage;
+    private final Stage stage = new Stage();
+    private final WindowPane windowPane = new WindowPane(
+            stage,
+            Buttons.exitWinBtn()
+    );
+    private final VBox root = new VBox();
+    private final ContextMenu contextMenu = new ContextMenu();
+    private List<T> list = new ArrayList<>();
 
-    private List<T> list;
-
-    public SearchUI() {
-        this.list = null;
-    }
-
-    public void setList(List<T> list){
+    public SearchUI(List<T> list) {
         this.list = list;
+        root();
+        contextMenu();
+        windowPane();
     }
 
-    public void display() {
-        stage = new Stage();
-        VBox root = createRoot();
-        CustomMenuBar menuBar = createMenuBar();
-        WindowPane windowPane = new WindowPane(
-                stage,
-                Buttons.exitWinBtn());
-        windowPane.setMenuBar(menuBar);
-        windowPane.viewAreaProperty().get().getChildren().clear();
-        windowPane.viewAreaProperty().get().getChildren().add(root);
-        AnchorPane.setTopAnchor(root, 0.0);
-        AnchorPane.setBottomAnchor(root, 0.0);
-        AnchorPane.setLeftAnchor(root, 0.0);
-        AnchorPane.setRightAnchor(root, 0.0);
-        windowPane.display();
-    }
-
-    private VBox createRoot() {
-        VBox root = new VBox();
+    private void root() {
         if(!list.isEmpty()) {
             if (list.get(0) instanceof Calendar) {
                 ObservableList<Calendar> calList = FXCollections.observableArrayList();
@@ -65,10 +50,9 @@ public class SearchUI <T>{
                 );
                 CalendarTable calendarTable = new CalendarTable();
                 calendarTable.setList(calList);
+                VBox.setVgrow(calendarTable,Priority.ALWAYS);
                 root.getChildren().addAll(calendarTable);
             }
-
-
             if (list.get(0) instanceof Log) {
                 ObservableList<Log> logList = FXCollections.observableArrayList();
                 logList.setAll(list.stream()
@@ -78,24 +62,27 @@ public class SearchUI <T>{
                 );
                 LogTable logTable = new LogTable();
                 logTable.setItems(logList);
+                VBox.setVgrow(logTable,Priority.ALWAYS);
                 root.getChildren().addAll(logTable);
             }
         }
-        return root;
     }
 
-    private CustomMenuBar createMenuBar(){
-        CustomMenuBar menuBar = new CustomMenuBar();
-
-        Menu viewMenu = new Menu("File");
-
+    private void contextMenu(){
         MenuItem save = new MenuItem("Save All");
         save.setOnAction(this::saveSelections);
+        contextMenu.getItems().add(save);
+        contextMenu.setStyle(Styles.contextMenu());
+    }
 
-        viewMenu.getItems().addAll(save);
-        menuBar.getMenus().addAll(viewMenu);
-
-        return menuBar;
+    private void windowPane(){
+        windowPane.getMenuButton().contextMenuProperty().set(contextMenu);
+        windowPane.viewAreaProperty().get().getChildren().clear();
+        windowPane.viewAreaProperty().get().getChildren().add(root);
+        AnchorPane.setTopAnchor(root, 0.0);
+        AnchorPane.setBottomAnchor(root, 0.0);
+        AnchorPane.setLeftAnchor(root, 0.0);
+        AnchorPane.setRightAnchor(root, 0.0);
     }
 
     private void saveSelections(ActionEvent actionEvent) {
@@ -117,6 +104,10 @@ public class SearchUI <T>{
             }
             FileSaver.saveFile(stage, data);
         }
+    }
+
+    public void display() {
+        windowPane.display();
     }
 }
 

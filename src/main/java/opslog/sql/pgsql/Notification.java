@@ -99,8 +99,8 @@ public class Notification {
         Platform.runLater(() -> {
             for(String [] row : result) {
                 Calendar calendar = CalendarManager.newItem(row);
-                LocalDate eventStart = calendar.getStartDate();
-                LocalDate eventStop = calendar.getStopDate();
+                LocalDate eventStart = calendar.startDateProperty().get();
+                LocalDate eventStop = calendar.stopDateProperty().get();
                 LocalDate monthFirst = calendarMonth.yearMonthProperty().get().atDay(1);
                 LocalDate monthLast = calendarMonth.yearMonthProperty().get().atEndOfMonth();
                 if (!eventStop.isBefore(monthFirst) && !eventStart.isAfter(monthLast)) {

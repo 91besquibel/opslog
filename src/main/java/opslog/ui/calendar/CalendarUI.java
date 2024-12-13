@@ -233,7 +233,7 @@ public class CalendarUI{
                 LocalDate cellDate = cell.getDate();
                 dates.add(cellDate);
             }
-            searchBar.setDates(dates);
+            searchBar.dateList().setAll(dates);
             searchBar.setEffect(Settings.DROPSHADOW);
             Popup popup = new Popup();
             popup.getContent().add(searchBar);
@@ -284,8 +284,7 @@ public class CalendarUI{
 
                     if (!data.isEmpty()) {
                         try{
-                            SearchUI<Log> searchUI = new SearchUI<>();
-                            searchUI.setList(data);
+                            SearchUI<Log> searchUI = new SearchUI<>(data);;
                             searchUI.display();
                         }catch(Exception ey ){
                             ey.printStackTrace();

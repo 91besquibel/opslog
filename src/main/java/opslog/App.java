@@ -1,30 +1,27 @@
 package opslog;
 
+import java.io.IOException;
+
 import javafx.application.Application;
-import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
-
 import javafx.stage.Stage;
-import opslog.object.event.Checklist;
+
 import opslog.ui.calendar.CalendarUI;
-import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.controls.CustomMenuBar;
-import opslog.ui.log.LogUI;
+import opslog.ui.controls.Styles;
+import opslog.ui.controls.actions.Icon;
+import opslog.ui.log.LogLayout;
 import opslog.ui.settings.SettingsUI;
 import opslog.ui.startup.StartController;
 import opslog.ui.startup.StartUI;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import opslog.ui.*;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.controls.Buttons;
 import opslog.util.*;
 
-import java.io.IOException;
-
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 // Look at swapping to the Builder interface and making a ScreenBuilder class
@@ -34,33 +31,22 @@ import java.io.IOException;
 public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();
-
-    private static LogUI logUI;
+    private static final LogLayout LOG_LAYOUT = new LogLayout();
     private static CalendarUI calendarUI;
     private static SettingsUI settingsUI;
     private static ChecklistUI checklistUI;
-
     private static WindowPane appWindow;
 
     public static void main(String[] args) {
-
-        // Initialize Spring Boot
-        // SpringApplication.run(App.class, args); 
-        // Initialize JavaFX
         launch(args);
     }
 
     @Override
     public void start(Stage stage) throws IOException {
-
         try {
             
             System.out.println("App: Starting application");
             DateTime.timeListPopulate();
-
-            // Create and initialize each UI
-            logUI = LogUI.getInstance();
-            logUI.initialize();
             
             calendarUI = CalendarUI.getInstance();
             calendarUI.initialize();
@@ -76,11 +62,9 @@ public class App extends Application {
             startUI.display(()->{
                 StartController.loadData();
                 StartController.startNotifications();
-                CustomMenuBar menuBar = createMenuBar();
-                //System.out.println("App: Displaying main application");
-                // Display the app after the user connects to a database
+                ContextMenu contextMenu = createContextMenu();
                 appWindow = new WindowPane(stage,Buttons.exitAppBtn());
-                appWindow.setMenuBar(menuBar);
+                appWindow.getMenuButton().contextMenuProperty().set(contextMenu);
                 appWindow.display();
             });
 
@@ -89,42 +73,39 @@ public class App extends Application {
         }
     }
 
-    private CustomMenuBar createMenuBar(){
-        CustomMenuBar menuBar = new CustomMenuBar();
+    private ContextMenu createContextMenu(){
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.setStyle(Styles.contextMenu());
 
-        Menu viewMenu = new Menu("View");
-
-        MenuItem logItem = new MenuItem("Log View");
+        MenuItem logItem = new MenuItem("Log", Icon.loadImage(Directory.LOG_WHITE));
         logItem.setOnAction(this::goToLog);
 
-        MenuItem calendarItem = new MenuItem("Calendar View");
+        MenuItem calendarItem = new MenuItem("Calendar", Icon.loadImage(Directory.CALENDAR_WHITE));
         calendarItem.setOnAction(this::goToCalendar);
 
-        MenuItem checklistItem = new MenuItem("Checklist View");
+        MenuItem checklistItem = new MenuItem("Checklist", Icon.loadImage(Directory.CHECKLIST_WHITE));
         checklistItem.setOnAction(this::goToChecklist);
 
-        MenuItem settingsItem = new MenuItem("Settings View");
+        MenuItem settingsItem = new MenuItem("Settings", Icon.loadImage(Directory.SETTINGS_WHITE));
         settingsItem.setOnAction(this::goToSettings);
 
-        MenuItem eventItem = new MenuItem("Event Window");
+        MenuItem eventItem = new MenuItem("Event", Icon.loadImage(Directory.EVENT_WHITE));
         eventItem.setOnAction(e -> {
             EventUI eventUI = EventUI.getInstance();
             eventUI.display();
         });
 
-        viewMenu.getItems().addAll(logItem, calendarItem, checklistItem, settingsItem, eventItem);
-        menuBar.getMenus().addAll(viewMenu);
-
-        return menuBar;
+        contextMenu.getItems().addAll(logItem, calendarItem, checklistItem, settingsItem, eventItem);
+        return contextMenu;
     }
 
     private void goToLog(ActionEvent event) {
         appWindow.viewAreaProperty().get().getChildren().clear();
-        appWindow.viewAreaProperty().get().getChildren().add(logUI.getRootNode());
-        AnchorPane.setLeftAnchor(logUI.getRootNode(), 0.0);
-        AnchorPane.setRightAnchor(logUI.getRootNode(), 0.0);
-        AnchorPane.setTopAnchor(logUI.getRootNode(), 0.0);
-        AnchorPane.setBottomAnchor(logUI.getRootNode(), 0.0);
+        appWindow.viewAreaProperty().get().getChildren().add(LOG_LAYOUT);
+        AnchorPane.setTopAnchor(LOG_LAYOUT, 0.0);
+        AnchorPane.setBottomAnchor(LOG_LAYOUT, 0.0);
+        AnchorPane.setLeftAnchor(LOG_LAYOUT, 0.0);
+        AnchorPane.setRightAnchor(LOG_LAYOUT, 0.0);
     }
 
     private void goToCalendar(ActionEvent event) {
@@ -152,10 +133,5 @@ public class App extends Application {
         AnchorPane.setRightAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setTopAnchor(settingsUI.getRootNode(), 0.0);
         AnchorPane.setBottomAnchor(settingsUI.getRootNode(), 0.0);
-    }
-    
-    public static void showPopup(String title, String message) {
-        PopupUI popupUI = new PopupUI();
-        popupUI.message(title, message);
     }
 }

@@ -23,7 +23,7 @@ public class CustomTextField extends TextField {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 
@@ -32,7 +32,7 @@ public class CustomTextField extends TextField {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 

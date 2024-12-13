@@ -64,16 +64,18 @@ public class Settings {
         public static final int WIDTH_LARGE = 200;
         public static final int WIDTH_XLARGE = 400;
         public static final int SPACING = 5;
-        
+        public static final int BORDER_WIDTH_VALUE = 2;
+        public static final int CORNER_RADII_VALUE = 4;
+        public static final int CORNER_RADII_BG_VALUE = 6;
         // Button Size
         public static DoubleProperty buttonSize = new SimpleDoubleProperty(20.0);
-        public static BorderWidths BORDER_WIDTH = new BorderWidths(2.0); // border width
+        public static BorderWidths BORDER_WIDTH = new BorderWidths(BORDER_WIDTH_VALUE); // border width
         public static BorderWidths BORDER_WEEKVIEW =
                 new BorderWidths(0.0, 2.0, 0.0, 0.0);
-        public static CornerRadii CORNER_RADII_BG = new CornerRadii(6.0); 
-        public static CornerRadii CORNER_RADII = new CornerRadii(4.0); // corner radius
+        public static CornerRadii CORNER_RADII_BG = new CornerRadii(CORNER_RADII_BG_VALUE);
+        public static CornerRadii CORNER_RADII = new CornerRadii(CORNER_RADII_VALUE); // corner radius
         public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
-        
+
         // Color
         public static ObjectProperty<Color> rootColor =
             new SimpleObjectProperty<>(Color.web("#040F0F"));

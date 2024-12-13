@@ -278,6 +278,7 @@ public class DatabaseQueryBuilder {
         List<String[]> results = new ArrayList<>();
         try(Connection connection = connectionProvider.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql);) {
+
             try (ResultSet resultSet = statement.executeQuery()) {
                 processResultSet(resultSet, results);
             }
@@ -295,17 +296,19 @@ public class DatabaseQueryBuilder {
      * @return a {@code ResultSet} containing the matching rows
      * @throws SQLException if an error occurs
      */
-    public ResultSet keywordSearch(String tableName, String column, String keyword) throws SQLException {
+    public List<String[]> keywordSearch(String tableName, String column, String keyword) throws SQLException {
         String sql = String.format("SELECT * FROM %s WHERE %s LIKE ?", tableName, column);
         System.out.println("DatabaseQueryBuilder: " + sql);
-        
-        Connection connection = connectionProvider.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql);
-
-        statement.setString(1, "%" + keyword + "%");
-        
+        List<String[]> results = new ArrayList<>();
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, "%" + keyword + "%");
+            try (ResultSet resultSet = statement.executeQuery()) {
+                processResultSet(resultSet, results);
+            }
+        }
         System.out.println("DatabaseQueryBuilder: Query complete \n" );
-        return statement.executeQuery();
+        return results;
     }
 
     public Boolean executeTest() throws SQLException {

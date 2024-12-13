@@ -122,7 +122,7 @@ public class DayViewControl {
 
     private void processCalendar(Calendar calendar) {
         LocalDate viewedDate = calendarDay.dateProperty().get();
-        Label label = new Label(calendar.getStartTime()+ " " + calendar.getTitle());
+        Label label = new Label(calendar.startTimeProperty().get()+ " " + calendar.titleProperty().get());
         //System.out.println("DayView: Processing calendar event: " + calendar.getTitle());
         label.setBackground(
                 new Background(
@@ -170,16 +170,16 @@ public class DayViewControl {
         LocalTime startTime;
         LocalTime stopTime;
 
-        if(calendar.getStartDate().isBefore(viewedDate)){
+        if(calendar.startDateProperty().get().isBefore(viewedDate)){
             startTime = LocalTime.of(0,0);
         }else{
-            startTime = calendar.getStartTime();
+            startTime = calendar.startTimeProperty().get();
         }
 
-        if(calendar.getStopDate().isAfter(viewedDate)){
+        if(calendar.stopDateProperty().get().isAfter(viewedDate)){
             stopTime = LocalTime.of(23,30);
         }else{
-            stopTime = calendar.getStopTime();
+            stopTime = calendar.stopTimeProperty().get();
         }
 
         dayView.displayLabel(label, startTime, stopTime);

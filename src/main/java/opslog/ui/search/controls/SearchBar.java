@@ -1,154 +1,202 @@
 package opslog.ui.search.controls;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Side;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javafx.beans.property.*;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.ToggleGroup;
+import opslog.object.Tag;
+import opslog.object.Type;
 import opslog.sql.hikari.ConnectionManager;
-import opslog.ui.controls.CustomMenu;
-import opslog.ui.controls.CustomMenuBar;
-import opslog.ui.controls.CustomTextField;
-import opslog.ui.search.SearchUI;
+import opslog.ui.controls.*;
+import opslog.ui.settings.managers.TagManager;
+import opslog.ui.settings.managers.TypeManager;
+import opslog.util.Directory;
 import opslog.util.Settings;
 import javafx.geometry.Pos;
 
 public class SearchBar extends HBox {
 
-	private List<LocalDate> dates = new ArrayList<>();
-	private final CustomTextField tf = new CustomTextField("Search", 300, Settings.SINGLE_LINE_HEIGHT);
-	private final CustomMenuBar menuBar = new CustomMenuBar();
-	private final CustomMenu filterMenu = new CustomMenu();
-	private final CustomMenu tableMenu = new CustomMenu();
-	private final ToggleGroup toggleGroup = new ToggleGroup();
-	private final StringProperty tableName = new SimpleStringProperty();
+	// Search Values and filters
+	private final ObservableList<LocalDate> dates = FXCollections.observableArrayList();
+	private final ObservableList<Tag> tagList = FXCollections.observableArrayList();
+	private final ObservableList<Type> typeList = FXCollections.observableArrayList();
+	private final StringProperty keywordProperty = new SimpleStringProperty();
+
+	// Search Bar
+	public final CustomTextField textField = new CustomTextField("Search", 300, Settings.SINGLE_LINE_HEIGHT);
+	private final CustomButton filterButton = new CustomButton(
+			Directory.FILTER_WHITE,
+			Directory.FILTER_GREY,
+			"Filter"
+	);
+
+	// Menus
+	private final ContextMenu mainMenu = new ContextMenu();
+	private final ContextMenu tableSubMenu = new ContextMenu();
+	private final CheckMenuItem log = new CheckMenuItem("Log");
+	private final CheckMenuItem calendar = new CheckMenuItem("Calendar");
+	private final ContextMenu tagSubMenu = new ContextMenu();
+	private final ContextMenu typeSubMenu = new ContextMenu();
 
 	public SearchBar() {
-		tf.setOnAction(e -> handleQuery());
-		tableName.addListener((obs, oldValue, newValue) -> tableMenu.setDisplayed(newValue));
-		createTableSelector();
-		createFilters();
-		
+		createTagSubMenu();
+		createTypeSubMenu();
+		createTableSubMenu();
+		createMainMenu();
+		createMenuButton();
+		createTextField();
 		this.setAlignment(Pos.CENTER);
 		this.borderProperty().bind(Settings.primaryBorder);
-		this.backgroundProperty().bind(Settings.secondaryBackground);
-		this.getChildren().addAll(tf, menuBar);
-	}
-
-	public void setDates(List<LocalDate> dates) {
-		this.dates = dates;
-	}
-
-	public void setVisible(Boolean bool) {
-		tf.setVisible(bool);
-		tableMenu.setVisible(bool);
-		filterMenu.setVisible(bool);
-	}
-
-	private void createTableSelector() {
-		RadioMenuItem log = new RadioMenuItem("Log");
-		log.setOnAction(e -> tableName.set("Log"));
-		log.setSelected(true);
-		log.setToggleGroup(toggleGroup);
-
-		RadioMenuItem calendar = new RadioMenuItem("Calendar");
-		calendar.setOnAction(e -> tableName.set("Calendar"));
-		calendar.setToggleGroup(toggleGroup);
-
-		tableMenu.setDisplayed("Log");
-		tableMenu.getItems().addAll(log, calendar);
-		menuBar.getMenus().add(tableMenu);
-	}
-
-	private void createFilters() {
-		CheckMenuItem tag = new CheckMenuItem("Tag");
-		//tag.setHideOnClick(false);
-		CheckMenuItem type = new CheckMenuItem("Type");
-		//type.setHideOnClick(false);
-		CheckMenuItem initials = new CheckMenuItem("Initials");
-		//initials.setHideOnClick(false);
-		CheckMenuItem description = new CheckMenuItem("Description");
-		//description.setHideOnClick(false);
-		
-		filterMenu.setDisplayed("Filter");
-		filterMenu.getItems().addAll(tag, type, initials, description);
-		menuBar.getMenus().add(filterMenu);
-	}
-
-	private void handleQuery() {
-		for (LocalDate date : dates) {
-			String keyword = tf.getText();
-			int numColumns = filterMenu.getItems().size();
-
-			StringBuilder queryBuilder = new StringBuilder();
-			queryBuilder.append("SELECT * FROM ").append(tableName.get()).append(" WHERE date = ? AND (");
-
-			for (int i = 0; i < numColumns; i++) {
-				CheckMenuItem menuItem = (CheckMenuItem) filterMenu.getItems().get(i);
-				if (menuItem.isSelected()) {
-					queryBuilder.append(menuItem.getText().toLowerCase()).append(" LIKE ? ");
-					if (i < numColumns - 1) {
-						queryBuilder.append("OR ");
-					}
-				}
-			}
-			queryBuilder.append(")");
-
-			String query = queryBuilder.toString().trim();
-
-			List<String[]> results = new ArrayList<>();
-
-			try (Connection connection = ConnectionManager.getInstance().getConnection();
-				 PreparedStatement statement = connection.prepareStatement(query)) {
-
-				statement.setString(1, date.toString());
-
-				for (int i = 0, paramIndex = 2; i < numColumns; i++) {
-					CheckMenuItem menuItem = (CheckMenuItem) filterMenu.getItems().get(i);
-					if (menuItem.isSelected()) {
-						statement.setString(paramIndex++, "%" + keyword + "%");
-					}
-				}
-
-				try (ResultSet resultSet = statement.executeQuery()) {
-					int columnCount = resultSet.getMetaData().getColumnCount();
-					while (resultSet.next()) {
-						String[] row = new String[columnCount];
-						for (int i = 0; i < columnCount; i++) {
-							row[i] = resultSet.getString(i + 1);
-						}
-						results.add(row);
-					}
-				}
-			} catch (SQLException ex) {
-				System.out.println("SearchBar: Error executing search query");
-				ex.printStackTrace();
-			}
-
-			handleResults(results);
-		}
+		this.backgroundProperty().bind(Settings.primaryBackground);
+		this.getChildren().addAll(textField, filterButton);
 	}
 
 	public CustomTextField getTextField(){
-		return tf;
+		return textField;
 	}
 
-	private <T> void handleResults(List<T> data) {
-		try {
-			SearchUI<T> searchUI = new SearchUI<>();
-			searchUI.setList(data);
-			searchUI.display();
-		} catch (Exception e) {
-			e.printStackTrace();
+	public ObservableList<LocalDate> dateList(){
+		return dates;
+	}
+
+	private void createTextField(){
+		textField.setOnAction(e -> handleQuery());
+		textField.backgroundProperty().unbind();
+		textField.backgroundProperty().bind(Settings.primaryBackground);
+		textField.borderProperty().unbind();
+		textField.borderProperty().bind(Settings.primaryBorder);
+	}
+
+	private void createMenuButton(){
+		filterButton.contextMenuProperty().set(mainMenu);
+		filterButton.backgroundProperty().bind(Settings.primaryBackground);
+		filterButton.borderProperty().bind(Settings.transparentBorder);
+
+		filterButton.pressedProperty().addListener((obs, ov, nv) -> {
+			filterButton.backgroundProperty().unbind();
+			if (filterButton.isPressed()){
+				filterButton.setBackground(Settings.selectedBackground.get());
+			}else {
+				filterButton.backgroundProperty().bind(Settings.primaryBackground);
+			}
+		});
+
+		filterButton.setOnAction(event -> {
+			mainMenu.show(filterButton,Side.BOTTOM,0,0);
+		});
+
+	}
+
+	private void createMainMenu(){
+		MenuItem table = new MenuItem("Table");
+		table.setOnAction(event -> {
+			tableSubMenu.show(filterButton, Side.BOTTOM,0,0);
+		});
+		table.setStyle(Styles.menuItem());
+
+		MenuItem tag = new MenuItem("Tag");
+		tag.setOnAction(event -> {
+			tagSubMenu.show(filterButton, Side.BOTTOM,0,0);
+		});
+		tag.setStyle(Styles.menuItem());
+
+		MenuItem type = new MenuItem("Type");
+		type.setOnAction(event -> {
+			typeSubMenu.show(filterButton, Side.BOTTOM,0,0);
+		});
+		type.setStyle(Styles.menuItem());
+
+		mainMenu.getItems().addAll(table,type,tag);
+		mainMenu.setStyle(Styles.contextMenu());
+	}
+
+	private void createTableSubMenu() {
+		log.setStyle(Styles.menuItem());
+		calendar.setStyle(Styles.menuItem());
+		tableSubMenu.getItems().addAll(log, calendar);
+		tableSubMenu.setStyle(Styles.contextMenu());
+	}
+
+	private void createTagSubMenu(){
+		for(Tag tag: TagManager.getList()){
+			CheckMenuItem menuItem = new CheckMenuItem();
+			menuItem.textProperty().bind(tag.getTitleProperty());
+			menuItem.setStyle(Styles.menuItem());
+			menuItem.selectedProperty().addListener((obs,ov,nv) -> {
+				if(menuItem.isSelected()){
+					tagList.add(tag);
+				}else {
+					tagList.remove(tag);
+				}
+			});
+			tagSubMenu.getItems().add(menuItem);
+			tagSubMenu.setStyle(Styles.contextMenu());
+		}
+	}
+
+	private void createTypeSubMenu(){
+		for(Type type: TypeManager.getList()){
+			CheckMenuItem menuItem = new CheckMenuItem();
+			menuItem.textProperty().bind(type.getTitleProperty());
+			menuItem.setStyle(Styles.menuItem());
+			menuItem.selectedProperty().addListener((obs,ov,nv) -> {
+				if(menuItem.isSelected()){
+					System.out.println("SearchBar: adding type to list " + type.getTitle());
+					typeList.add(type);
+				}else{
+					System.out.println("SearchBar: removing type to list " + type.getTitle());
+					typeList.remove(type);
+				}
+			});
+			typeSubMenu.getItems().add(menuItem);
+			typeSubMenu.setStyle(Styles.contextMenu());
+		}
+	}
+
+	private void handleQuery() {
+		System.out.println("SearchBar: Handleing query");
+		if (!log.isSelected() && !calendar.isSelected()) {
+			SearchQuery searchQueryLog = new SearchQuery(ConnectionManager.getInstance());
+			prepQuery(searchQueryLog);
+			searchQueryLog.logQuery();
+
+			SearchQuery searchQueryCalendar = new SearchQuery(ConnectionManager.getInstance());
+			prepQuery(searchQueryCalendar);
+			searchQueryCalendar.calendarQuery();
+		} else {
+			if (log.isSelected()) {
+				SearchQuery searchQuery = new SearchQuery(ConnectionManager.getInstance());
+				prepQuery(searchQuery);
+				searchQuery.logQuery();
+			}
+			if (calendar.isSelected()) {
+				SearchQuery searchQuery = new SearchQuery(ConnectionManager.getInstance());
+				prepQuery(searchQuery);
+				searchQuery.calendarQuery();
+			}
+		}
+	}
+
+	private void prepQuery(SearchQuery searchQuery){
+		printLoop(dates);
+		printLoop(tagList);
+		printLoop(typeList);
+		searchQuery.dateList().setAll(dates);
+		searchQuery.tagList().setAll(tagList);
+		searchQuery.typeList().setAll(typeList);
+		searchQuery.keywordProperty().set(textField.getText());
+	}
+
+	private <T>void printLoop(List<T> list){
+		for(T item : list){
+			System.out.println(item.toString());
 		}
 	}
 }

@@ -53,11 +53,11 @@ public class Item extends HBox{
 		this.calendarProperty.set(calendar);
 		this.checklistProperty = new SimpleObjectProperty<>();
 		
-		eventLabel.setText(calendarProperty.get().getTitle());
+		eventLabel.setText(calendarProperty.get().titleProperty().get());
 		// Label Visual effects go here
-			calendarProperty.addListener((obs,ov,nv) -> {
+		calendarProperty.addListener((obs,ov,nv) -> {
 			//if the calendar changes update the label
-			eventLabel.setText(nv.getTitle());
+			eventLabel.setText(nv.titleProperty().get());
 		});
 
 		// add mouse events here for popup displaying event information

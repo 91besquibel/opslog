@@ -1,5 +1,6 @@
 package opslog.ui.search.controls;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TableView;
 
@@ -9,11 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
@@ -32,11 +31,9 @@ import opslog.util.*;
 
 public class CalendarTable extends TableView<Calendar>{
 
-	private ContextMenu contextMenu = new ContextMenu();
-	private ObservableList<Calendar> list;
+	private final ContextMenu contextMenu = new ContextMenu();
 
 	public CalendarTable(){
-		this.list = FXCollections.observableArrayList();
 		initializeColumns();
 		initializeContextMenu();
 		initializeListeners();
@@ -47,6 +44,7 @@ public class CalendarTable extends TableView<Calendar>{
 	}
 
 	public void initializeColumns(){
+		getColumns().add(titleColumn());
 		getColumns().add(startDateColumn());
 		getColumns().add(startTimeColumn());
 		getColumns().add(stopDateColumn());
@@ -54,7 +52,7 @@ public class CalendarTable extends TableView<Calendar>{
 		getColumns().add(typeColumn());
 		getColumns().add(tagColumn());
 		getColumns().add(initialsColumn());
-		getColumns().add(descriptionColumn("Description"));
+		getColumns().add(descriptionColumn());
 		backgroundProperty().bind(Settings.primaryBackground);
 		setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 		setRowFactory(tv -> createRow());
@@ -62,14 +60,6 @@ public class CalendarTable extends TableView<Calendar>{
 	}
 
 	public void initializeContextMenu(){
-		MenuItem editItem = new MenuItem("Append");
-		editItem.setOnAction(e -> {
-			Calendar calendar = getSelectionModel().getSelectedItem();
-			//PopupUI popup = new PopupUI();
-			//popup.append(log);
-
-		});
-
 		MenuItem copyItem = new MenuItem("Copy");
 		copyItem.setOnAction(e -> {
 			String [] data = getSelectionModel().getSelectedItem().toArray();
@@ -91,18 +81,14 @@ public class CalendarTable extends TableView<Calendar>{
 			FileSaver.saveFile(stage, exportingItems);
 		});
 
-		contextMenu.getItems().addAll(copyItem, editItem, exportItem);
+		contextMenu.getItems().addAll(copyItem, exportItem);
 		setContextMenu(contextMenu);
 	}
 
 	public void initializeListeners(){
-		widthProperty().addListener((obs, oldWidth, newWidth) -> {
-			refresh();
-		});
+		widthProperty().addListener((obs, oldWidth, newWidth) -> refresh());
 
-		heightProperty().addListener((obs, oldHeight, newHeight) -> {
-			refresh();
-		});
+		heightProperty().addListener((obs, oldHeight, newHeight) -> refresh());
 
 		getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
 			if (newSelection != null) {
@@ -117,147 +103,104 @@ public class CalendarTable extends TableView<Calendar>{
 		});
 	}
 
+	private TableColumn<Calendar, String> titleColumn(){
+		TableColumn<Calendar, String> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
+		column.setGraphic(createHeader("Title"));
+		column.setMinWidth(80);
+		column.setCellFactory(col -> createCell());
+		return column;
+	}
+
 	private TableColumn<Calendar, LocalDate> startDateColumn() {
 		TableColumn<Calendar, LocalDate> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-
-		Label label = new Label("Start Time");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().startDateProperty());
+		column.setGraphic(createHeader("Start Date"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
 	private TableColumn<Calendar, LocalTime> startTimeColumn() {
 		TableColumn<Calendar, LocalTime> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-		Label label = new Label("Start Time");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+		column.setGraphic(createHeader("Start Time"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 	
 	private TableColumn<Calendar, LocalDate> stopDateColumn() {
 		TableColumn<Calendar, LocalDate> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("stopDate"));
-
-		Label label = new Label("Stop Date");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().stopDateProperty());
+		column.setGraphic(createHeader("Stop Date"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
 	private TableColumn<Calendar, LocalTime> stopTimeColumn() {
 		TableColumn<Calendar, LocalTime> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("stopTime"));
-		Label label = new Label("Stop Time");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().stopTimeProperty());
+		column.setGraphic(createHeader("Stop Time"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
 	private TableColumn<Calendar, Type> typeColumn() {
 		TableColumn<Calendar, Type> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("type"));
-		Label label = new Label("Type");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
+		column.setGraphic(createHeader("Type"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
 	private TableColumn<Calendar, ObservableList<Tag>> tagColumn() {
 		TableColumn<Calendar, ObservableList<Tag>> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("tags"));
-		Label label = new Label("Tags");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-		column.setGraphic(hbox);
-		column.setCellFactory(col -> new TableCell<Calendar, ObservableList<Tag>>() {
-			@Override
-			protected void updateItem(ObservableList<Tag> item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setGraphic(null);
-				} else {
-					VBox vbox = new VBox();
-					for (Tag tag : item) {
-						Label lbl = new Label(tag.toString());
-						lbl.setBackground(
-								new Background(
-										new BackgroundFill(
-												tag.getColor(),
-												Settings.CORNER_RADII,
-												Settings.INSETS_ZERO
-										)
-								)
-						);
-						lbl.setPadding(Settings.INSETS);
-						lbl.textFillProperty().bind(Settings.textColor);
-						lbl.setAlignment(Pos.TOP_CENTER);
-						lbl.maxHeight(30);
-						lbl.borderProperty().bind(Settings.transparentBorder);
-						vbox.getChildren().add(lbl);
-					}
-					vbox.setSpacing(Settings.SPACING);
-					vbox.setAlignment(Pos.TOP_CENTER);
-					vbox.setPadding(Settings.INSETS);
-					setGraphic(vbox);
-				}
-				{
-					borderProperty().bind(Settings.transparentBorder);
-					setAlignment(Pos.TOP_CENTER);
-					setPadding(Settings.INSETS);
-				}
-			}
-		});
+		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().getTags()));
+		column.setGraphic(createHeader("Tags"));
+		column.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(ObservableList<Tag> item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setGraphic(null);
+                } else {
+                    VBox vbox = new VBox();
+                    for (Tag tag : item) {
+                        Label lbl = new Label(tag.toString());
+                        lbl.setBackground(new Background(new BackgroundFill(tag.getColor(),
+                                Settings.CORNER_RADII, Settings.INSETS_ZERO)));
+                        lbl.setPadding(Settings.INSETS);
+                        lbl.textFillProperty().bind(Settings.textColor);
+                        lbl.setAlignment(Pos.TOP_CENTER);
+                        lbl.setMaxHeight(30);
+                        lbl.borderProperty().bind(Settings.transparentBorder);
+                        vbox.getChildren().add(lbl);
+                    }
+                    vbox.setSpacing(Settings.SPACING);
+                    vbox.setAlignment(Pos.TOP_CENTER);
+                    vbox.setPadding(Settings.INSETS);
+                    setGraphic(vbox);
+                }
+                borderProperty().bind(Settings.transparentBorder);
+                setAlignment(Pos.TOP_CENTER);
+                setPadding(Settings.INSETS);
+            }
+        });
 		return column;
 	}
 
 	private TableColumn<Calendar, String> initialsColumn() {
 		TableColumn<Calendar, String> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("initials"));
-		Label label = new Label("Initials");
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-		HBox hbox = new HBox(label);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-		column.setGraphic(hbox);
+		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
+		column.setGraphic(createHeader("Initials"));
 		column.setMinWidth(80);
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
-	private TableColumn<Calendar, String> descriptionColumn(String header) {
+	private TableColumn<Calendar, String> descriptionColumn() {
 		TableColumn<Calendar, String> column = new TableColumn<>();
-		column.setCellValueFactory(new PropertyValueFactory<>("description"));
-		Label label = new Label(header);
-		label.fontProperty().bind(Settings.fontPropertyBold);
-		label.textFillProperty().bind(Settings.textColor);
-
-		HBox headerBox = new HBox(label);
-		headerBox.setAlignment(Pos.CENTER_LEFT);
-		column.setGraphic(headerBox);
+		column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
+		column.setGraphic(createHeader("Description"));
 		column.setCellFactory(col -> new TableCell<>() {
 			private final Text text = new Text();
 
@@ -287,6 +230,7 @@ public class CalendarTable extends TableView<Calendar>{
 				}
 			}
 		});
+
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
 			double totalWidth = newWidth.doubleValue();
 			for (TableColumn<Calendar, ?> col : this.getColumns()) {
@@ -299,37 +243,40 @@ public class CalendarTable extends TableView<Calendar>{
 		return column;
 	}
 
-	private  <S, T> TableCell<S, T> createCell() {
-		return new TableCell<S, T>() {
-			private final Text text = new Text();
+	private <S, T> TableCell<S, T> createCell() {
+		TableCell<S,T> cell = new TableCell<>() {
+            private final Text text = new Text();
 
-			{
-				borderProperty().bind(Settings.transparentBorder);
-				setAlignment(Pos.TOP_CENTER);
-				setPadding(Settings.INSETS);
-			}
+            {
+                borderProperty().bind(Settings.transparentBorder);
+                setAlignment(Pos.TOP_CENTER);
+                setPadding(Settings.INSETS);
+            }
 
-			@Override
-			protected void updateItem(T item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setText(null);
-				} else {
-					text.setText(item.toString());
-					text.setLineSpacing(2);
-					text.fontProperty().bind(Settings.fontProperty);
-					text.fillProperty().bind(Settings.textColor);
-					Label label = new Label();
-					label.setGraphic(text);
-					label.setAlignment(Pos.TOP_CENTER);
-					label.setPadding(Settings.INSETS);
-					setGraphic(label);
-				}
-			}
-		};
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    text.setText(item.toString());
+                    text.setLineSpacing(2);
+                    text.fontProperty().bind(Settings.fontProperty);
+                    text.fillProperty().bind(Settings.textColor);
+                    Label label = new Label();
+                    label.setGraphic(text);
+                    label.setAlignment(Pos.TOP_CENTER);
+                    label.setPadding(Settings.INSETS);
+                    setGraphic(label);
+                }
+            }
+        };
+
+		cell.setAlignment(Pos.TOP_CENTER);
+		return cell;
 	}
 
-	private  <T> TableRow<T> createRow() {
+	private <T> TableRow<T> createRow() {
 		TableRow<T> row = new TableRow<>();
 		row.backgroundProperty().bind(Settings.primaryBackground);
 		row.minHeight(50);
@@ -377,5 +324,13 @@ public class CalendarTable extends TableView<Calendar>{
 
 		return row;
 	}
-	
+
+	private HBox createHeader(String title){
+		Label label = new Label(title);
+		label.fontProperty().bind(Settings.fontPropertyBold);
+		label.textFillProperty().bind(Settings.textColor);
+		HBox hbox = new HBox(label);
+		hbox.setAlignment(Pos.CENTER);
+		return hbox;
+	}
 }

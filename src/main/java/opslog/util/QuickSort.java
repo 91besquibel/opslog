@@ -40,7 +40,7 @@ public class QuickSort {
 	// Helper method to get the start date from an Event (with casting)
 	private static LocalDate getStartDate(Event event) {
 		if (event instanceof Calendar) {
-			return ((Calendar) event).getStartDate();
+			return ((Calendar) event).startDateProperty().get();
 		} else if (event instanceof ScheduledChecklist) {
 			return ((ScheduledChecklist) event).startDateProperty().get();
 		} else {

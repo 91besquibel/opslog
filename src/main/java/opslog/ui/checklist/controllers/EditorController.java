@@ -409,6 +409,3 @@ public class EditorController {
         });
     }
 }
-
-
-

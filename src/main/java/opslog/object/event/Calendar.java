@@ -52,44 +52,24 @@ public class Calendar extends Event implements SQL {
         return id.get();
     }
 
-    public String getTitle() {
-        return title.get();
+    public StringProperty titleProperty(){
+        return title;
     }
 
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
+    public ObjectProperty<LocalDate> startDateProperty() {
+        return startDate;
     }
 
-    public LocalDate getStartDate() {
-        return startDate.get();
+    public ObjectProperty<LocalDate> stopDateProperty(){
+        return stopDate;
     }
 
-    public void setStartDate(LocalDate newStartDate) {
-        startDate.set(newStartDate);
+    public ObjectProperty<LocalTime> startTimeProperty() {
+        return startTime;
     }
 
-    public LocalDate getStopDate() {
-        return stopDate.get();
-    }
-
-    public void setStopDate(LocalDate newStopDate) {
-        stopDate.set(newStopDate);
-    }
-
-    public LocalTime getStartTime() {
-        return startTime.get();
-    }
-
-    public void setStartTime(LocalTime newStartTime) {
-        startTime.set(newStartTime);
-    }
-
-    public LocalTime getStopTime() {
-        return stopTime.get();
-    }
-
-    public void setStopTime(LocalTime newStopTime) {
-        stopTime.set(newStopTime);
+    public ObjectProperty<LocalTime> stopTimeProperty() {
+        return stopTime;
     }
 
     public boolean hasID(String newID) {
@@ -108,7 +88,7 @@ public class Calendar extends Event implements SQL {
 
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     @Override
@@ -116,11 +96,11 @@ public class Calendar extends Event implements SQL {
         String[] superArray = super.toArray();
         return new String[]{
                 getID(),
-                getTitle(),
-                getStartDate().format(DateTime.DATE_FORMAT),
-                getStopDate().format(DateTime.DATE_FORMAT),
-                getStartTime().format(DateTime.TIME_FORMAT),
-                getStopTime().format(DateTime.TIME_FORMAT),
+                title.toString(),
+                startDateProperty().get().format(DateTime.DATE_FORMAT),
+                stopDateProperty().get().format(DateTime.DATE_FORMAT),
+                startTimeProperty().get().format(DateTime.TIME_FORMAT),
+                stopTimeProperty().get().format(DateTime.TIME_FORMAT),
                 superArray[0], // type
                 superArray[1], // tags
                 superArray[2], // initials

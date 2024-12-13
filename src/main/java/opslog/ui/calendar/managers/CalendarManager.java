@@ -20,11 +20,11 @@ public class CalendarManager {
     public static Calendar newItem(String [] row){
         Calendar calendar = new Calendar();
         calendar.setID(row[0]);
-        calendar.setTitle(row[1]);
-        calendar.setStartDate(LocalDate.parse(row[2]));
-        calendar.setStopDate(LocalDate.parse(row[3]));
-        calendar.setStartTime(LocalTime.parse(row[4]));
-        calendar.setStopTime(LocalTime.parse(row[5]));
+        calendar.titleProperty().set(row[1]);
+        calendar.startDateProperty().set(LocalDate.parse(row[2]));
+        calendar.stopDateProperty().set(LocalDate.parse(row[3]));
+        calendar.startTimeProperty().set(LocalTime.parse(row[4]));
+        calendar.stopTimeProperty().set(LocalTime.parse(row[5]));
         calendar.setType(TypeManager.getItem(row[6]));
         calendar.setTags(TagManager.getItems(row[7]));
         calendar.setInitials(row[8]);

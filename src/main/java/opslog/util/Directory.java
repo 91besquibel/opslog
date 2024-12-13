@@ -1,7 +1,13 @@
 package opslog.util;
 
 public class Directory {
-    
+
+    public static final String MENU_WHITE = "/IconLib/menu_IW.png";
+    public static final String MENU_GREY = "/IconLib/menu_IG.png";
+
+    public static final String FILTER_WHITE = "/IconLib/filter_IW.png";
+    public static final String FILTER_GREY = "/IconLib/filter_IG.png";
+
     public static final String ADD_WHITE = "/IconLib/addIW.png";
     public static final String ADD_GREY = "/IconLib/addIG.png";
     

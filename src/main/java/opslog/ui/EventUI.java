@@ -28,8 +28,8 @@ import java.time.LocalTime;
 
 public class EventUI {
 
-    private static Calendar tempCalendar = new Calendar();
-    private static Log tempLog = new Log();
+    private static final Calendar tempCalendar = new Calendar();
+    private static final Log tempLog = new Log();
     private static Stage stage;
     private static DatePicker startDatePicker;
     private static ComboBox<LocalTime> startTimeSelection;
@@ -51,40 +51,40 @@ public class EventUI {
         return instance;
     }
 
-    private CustomMenuBar createMenuBar() {
-        CustomMenuBar menuBar = new CustomMenuBar();
+    private ContextMenu createContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.setStyle(Styles.contextMenu());
 
-        Menu menu = new Menu("Menu");
+        MenuItem calendar = new MenuItem("Schedule Event");
+        calendar.setOnAction(this::handleCreateCalendar);
 
-        MenuItem createCalendar = new MenuItem("New Event");
-        createCalendar.setOnAction(this::handleCreateCalendar);
+        MenuItem log = new MenuItem("Log Event");
+        log.setOnAction(this::handleCreateLog);
 
-        MenuItem createLog = new MenuItem("New Log");
-        //CustomButton log = new CustomButton(Directory.LOG_WHITE, Directory.LOG_GREY, "Create Log");
-        createLog.setOnAction(this::handleCreateLog);
-
-        menu.getItems().addAll(createCalendar,createLog);
-        menuBar.getMenus().addAll(menu);
-
-        return menuBar;
+        contextMenu.getItems().addAll(log,calendar);
+        return contextMenu;
     }
 
     private void handleCreateCalendar(ActionEvent e){
-        Calendar newCalendar = new Calendar();
-        newCalendar.setTitle(tempCalendar.getTitle());
-        newCalendar.setStartDate(tempCalendar.getStartDate());
-        newCalendar.setStopDate(tempCalendar.getStopDate());
-        newCalendar.setStartTime(tempCalendar.getStartTime());
-        newCalendar.setStopTime(tempCalendar.getStopTime());
-        newCalendar.setType(tempCalendar.getType());
-        newCalendar.setTags(tempCalendar.getTags());
-        newCalendar.setInitials(tempCalendar.getInitials());
-        newCalendar.setDescription(tempCalendar.getDescription());
+        Calendar calendar = new Calendar();
+        calendar.titleProperty().set(tempCalendar.titleProperty().get());
+        calendar.startDateProperty().set(tempCalendar.startDateProperty().get());
+        calendar.stopDateProperty().set(tempCalendar.stopDateProperty().get());
+        calendar.startTimeProperty().set(tempCalendar.startTimeProperty().get());
+        calendar.stopTimeProperty().set(tempCalendar.stopTimeProperty().get());
+        calendar.typeProperty().set(tempCalendar.typeProperty().get());
+        calendar.getTags().setAll(tempCalendar.getTags());
+        calendar.initialsProperty().set(tempCalendar.initialsProperty().get());
+        calendar.descriptionProperty().set(tempCalendar.descriptionProperty().get());
 
-        if(newCalendar.hasValue()){
+        if(calendar.hasValue()){
             try {
                 DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-                String id = databaseQueryBuilder.insert( DatabaseConfig.CALENDAR_TABLE, DatabaseConfig.CALENDAR_COLUMNS, newCalendar.toArray());
+                String id = databaseQueryBuilder.insert(
+                        DatabaseConfig.CALENDAR_TABLE,
+                        DatabaseConfig.CALENDAR_COLUMNS,
+                        calendar.toArray()
+                );
                 if(!id.trim().isEmpty()){
                     handleClearParam();
                 }
@@ -255,34 +255,34 @@ public class EventUI {
 
         CustomTextField textField = new CustomTextField(
 				"Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            tempCalendar.setTitle(newValue);
+        textField.textProperty().addListener((obs, ov, nv) -> {
+            tempCalendar.titleProperty().set(nv);
         });
         textField.setPromptText("Calendar Title");
 
         startDatePicker = new CustomDatePicker(
 				"Start Date", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-            tempCalendar.setStartDate(newVal);
+        startDatePicker.valueProperty().addListener((obs, ov, nv) -> {
+            tempCalendar.startDateProperty().set(nv);
         });
 
         startTimeSelection = new CustomComboBox<>(
 				"Start Time", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        startTimeSelection.valueProperty().addListener((obs, oldVal, newVal) -> {
-            tempCalendar.setStartTime(newVal);
+        startTimeSelection.valueProperty().addListener((obs, ov, nv) -> {
+            tempCalendar.startTimeProperty().set(nv);
         });
         startTimeSelection.setItems(DateTime.timeList);
 
         stopDatePicker = new CustomDatePicker(
 				"Stop Date", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        stopDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-            tempCalendar.setStopDate(newVal);
+        stopDatePicker.valueProperty().addListener((obs, ov, nv) -> {
+            tempCalendar.stopDateProperty().set(nv);
         });
 
         stopTimeSelection = new CustomComboBox<>(
 				"Stop Time", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT);
-        stopTimeSelection.valueProperty().addListener((obs, oldVal, newVal) -> {
-            tempCalendar.setStopTime(newVal);
+        stopTimeSelection.valueProperty().addListener((obs, ov, nv) -> {
+            tempCalendar.stopTimeProperty().set(nv);
         });
         stopTimeSelection.setItems(DateTime.timeList);
 
@@ -304,11 +304,11 @@ public class EventUI {
     public void display() {
         stage = new Stage();
         VBox root = createRoot();
-        CustomMenuBar menuBar = createMenuBar();
+        ContextMenu contextMenu = createContextMenu();
         WindowPane windowPane = new WindowPane(stage, Buttons.exitWinBtn());
         windowPane.viewAreaProperty().get().getChildren().clear();
         windowPane.viewAreaProperty().get().getChildren().add(root);
-        windowPane.setMenuBar(menuBar);
+        windowPane.getMenuButton().contextMenuProperty().set(contextMenu);
         AnchorPane.setTopAnchor(root, 0.0);
         AnchorPane.setBottomAnchor(root, 0.0);
         AnchorPane.setLeftAnchor(root, 0.0);

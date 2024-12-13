@@ -255,8 +255,8 @@ public class MonthViewControl {
         LocalDate eventStopDate = null;
         LocalDate [] dates = new LocalDate[2];
         if(event instanceof Calendar calendar){
-            eventStartDate = calendar.getStartDate();
-            eventStopDate = calendar.getStopDate();
+            eventStartDate = calendar.startDateProperty().get();
+            eventStopDate = calendar.stopDateProperty().get();
         }
 
         if(event instanceof ScheduledChecklist scheduledChecklist){

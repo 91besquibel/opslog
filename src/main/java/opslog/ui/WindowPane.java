@@ -2,9 +2,11 @@ package opslog.ui;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.Side;
 import javafx.scene.Scene;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
@@ -17,7 +19,10 @@ import javafx.scene.Cursor;
 import java.util.Objects;
 
 import opslog.ui.controls.Buttons;
+import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomMenuBar;
+import opslog.ui.controls.Styles;
+import opslog.util.Directory;
 import opslog.util.ResizeListener;
 import opslog.util.Settings;
 import opslog.ui.search.controls.SearchBar;
@@ -30,19 +35,36 @@ public class WindowPane {
     private double originalWidth;
     private double originalHeight;
 
+    private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
     private final Button exitButton;
     private final SearchBar searchBar = new SearchBar();
-    private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
-    private final ObjectProperty<CustomMenuBar> menuBarProperty = new SimpleObjectProperty<>();
+    private final CustomButton menuButton = new CustomButton(
+            Directory.MENU_WHITE,
+            Directory.MENU_GREY,
+            "Menu"
+    );
 
     // Constructor: Accepts a Stage and MenuBar for flexible window customization
     public WindowPane(Stage stage, Button exitButton) {
         this.stage = stage;
         this.exitButton = exitButton;
         viewAreaProperty.set(new AnchorPane());
-        menuBarProperty.set(createDefaultMenuBar());
-        setupMenuBarListener();  // Add listener to menuBarProperty
-        createUI();  // Initialize the UI components
+        menuButton.setOnAction(event -> {
+            menuButton.contextMenuProperty().get().show(this.getMenuButton(), Side.BOTTOM,0,0);
+        });
+        createUI();
+    }
+
+    public SearchBar getSearchBar(){
+        return searchBar;
+    }
+
+    public CustomButton getMenuButton(){
+        return menuButton;
+    }
+
+    public ObjectProperty<AnchorPane> viewAreaProperty() {
+        return viewAreaProperty;
     }
 
     // Display method to show the window
@@ -103,13 +125,9 @@ public class WindowPane {
     }
 
     private void createUI() {
-
         HBox windowBar = createWindowBar();
         windowBar.layout();
-
         viewAreaProperty.get().setPadding(Settings.INSETS);
-        searchBar.getTextField().prefHeightProperty().bind(menuBarProperty.get().prefHeightProperty());
-
         root = new BorderPane();
         root.setTop(windowBar);
         root.setCenter(viewAreaProperty.get());
@@ -123,13 +141,16 @@ public class WindowPane {
 
         HBox windowButtons = createWindowButtons();
 
-        Region leftSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Region rightSpacer = new Region();
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+        menuButton.contextMenuProperty().addListener((obs,ov,nv) ->{
+            for(MenuItem menuItem: nv.getItems()){
+                menuItem.setStyle(Styles.menuItem());
+            }
+        });
 
-        HBox windowBar = new HBox(windowButtons,leftSpacer, searchBar, rightSpacer, menuBarProperty.get());
+        HBox windowBar = new HBox(windowButtons,spacer, searchBar, menuButton);
         windowBar.borderProperty().bind(Settings.windowBarBorder);
         windowBar.backgroundProperty().bind(Settings.windowBarBackground);
         windowBar.setAlignment(Pos.CENTER);
@@ -148,52 +169,6 @@ public class WindowPane {
 
         hbox.getChildren().addAll(exitButton, minimize, maximize);
         return hbox;
-    }
-    
-    private CustomMenuBar createDefaultMenuBar() {
-
-        Menu defaultMenu = new Menu();
-        MenuItem file = new MenuItem("Menu");
-        CustomMenuBar defaultMenuBar = new CustomMenuBar();
-        defaultMenu.getItems().addAll(file);
-        defaultMenuBar.getMenus().add(defaultMenu);
-        defaultMenuBar.setVisible(false);
-        searchBar.setPrefHeight(defaultMenuBar.getPrefHeight());
-
-        return defaultMenuBar;
-    }
-
-    private void setupMenuBarListener() {
-        // Listener to update the top bar when the menu bar changes
-        menuBarProperty.addListener((obs, oldMenuBar, newMenuBar) -> {
-            //System.out.println("WindowPane: MenuBar updated!");
-
-            // put this in the CustomMenu then create a CustomMenuItem class
-            String title = newMenuBar.getMenus().get(0).getText();
-            newMenuBar.getMenus().get(0).setText(null);
-            Text text = new Text();
-            text.setText(title);
-            text.fontProperty().bind(Settings.fontProperty);
-            text.fillProperty().bind(Settings.textColor);
-            newMenuBar.getMenus().get(0).setGraphic(text);
-
-            HBox windowBar = createWindowBar();
-            root.setTop(windowBar);
-        });
-    }
-
-    public SearchBar getSearchBar(){
-        return searchBar;
-    }
-
-    public ObjectProperty<AnchorPane> viewAreaProperty() {
-        return viewAreaProperty;
-    }
-
-    public void setMenuBar(CustomMenuBar menuBar) {
-        //System.out.println("WindowPane: Setting new MenuBar");
-        menuBarProperty.set(menuBar);
-        root.layout();
     }
 
 }
