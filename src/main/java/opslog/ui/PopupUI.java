@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import opslog.object.event.Log;
 import opslog.ui.controls.*;
+import opslog.ui.window.WindowPane;
 import opslog.util.Settings;
 
 public class PopupUI {
@@ -60,44 +60,6 @@ public class PopupUI {
 
         root = new CustomVBox();
         root.getChildren().addAll(label, btn);
-        display();
-    }
-
-    public void append(Log oldLog) {
-
-        CustomLabel label = new CustomLabel(oldLog.getDescription(), 200, 200);
-        label.wrapTextProperty().set(true);
-
-        CustomTextArea textArea = new CustomTextArea(200, 200);
-
-        CustomHBox hbox = new CustomHBox();
-        hbox.getChildren().addAll(label, textArea);
-
-        Button btn = ackBtn("Append");
-        btn.setOnAction(e -> {
-            if (textArea.getText() != null && !textArea.getText().trim().isEmpty()) {
-                String newDescription = textArea.getText() + "(" + oldLog.getDescription() + ")";
-
-                Log newLog = new Log(
-                        oldLog.getID(),
-                        oldLog.getDate(),
-                        oldLog.getTime(),
-                        oldLog.getType(),
-                        oldLog.getTags(),
-                        oldLog.getInitials(),
-                        newDescription
-                );
-
-                // CSV.append(oldLog, newLog);
-                //Update.edit(LogManager.getList(), oldLog, newLog);
-                Stage stage = (Stage) btn.getScene().getWindow();
-                stage.close();
-            }
-        });
-
-        root = new CustomVBox();
-        root.getChildren().addAll(hbox, btn);
-
         display();
     }
 

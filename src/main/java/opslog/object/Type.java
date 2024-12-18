@@ -18,12 +18,6 @@ public class Type implements SQL {
         this.title.set(null);
         this.pattern.set(null);
     }
-
-    public Type(String ID, String title, String pattern) {
-        this.ID.set(ID);
-        this.title.set(title);
-        this.pattern.set(pattern);
-    }
     
     public String getID() {
         return ID.get();
@@ -33,39 +27,25 @@ public class Type implements SQL {
         ID.set(newID);
     }
 
-    public String getTitle() {
-        return title.get();
-    }
-
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
-    }
-
-    public String getPattern() {
-        return pattern.get();
-    }
-
-    public void setPattern(String newPattern) {
-        pattern.set(newPattern);
-    }
-
-    public StringProperty getTitleProperty() {
+    public StringProperty titleProperty() {
         return title;
     }
 
-    public StringProperty getPatternProperty() {
+    public StringProperty patternProperty() {
         return pattern;
     }
 
     public boolean hasValue() {
-        System.out.println("Type: Checking for Type title: " + title.get());
-        System.out.println("Type: Checking for Type pattern: " + pattern.get());
         return  title.get() != null && !title.get().trim().isEmpty() &&
                 pattern.get() != null && !pattern.get().trim().isEmpty();
     }
 
     public String[] toArray() {
-        return new String[]{getID(), getTitle(), getPattern()};
+        return new String[]{
+            getID(), 
+            title.get(), 
+            pattern.get()
+        };
     }
 
     @Override
@@ -77,7 +57,7 @@ public class Type implements SQL {
 
     @Override
     public String toString() {
-       return getTitle();
+       return title.get();
     }
 
     @Override

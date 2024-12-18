@@ -20,21 +20,6 @@ public class Profile implements SQL{
     ObjectProperty<Integer> textSize = new SimpleObjectProperty<>();
     StringProperty textFont = new SimpleStringProperty();
 
-    public Profile(
-            String ID, String title, Color root,
-            Color primary, Color secondary, Color border,
-            Color textColor, int textSize, String textFont) {
-        this.ID.set(ID);
-        this.title.set(title);
-        this.root.set(root);
-        this.primary.set(primary);
-        this.secondary.set(secondary);
-        this.border.set(border);
-        this.textColor.set(textColor);
-        this.textSize.set(textSize);
-        this.textFont.set(textFont);
-    }
-
     public Profile() {
         this.ID.set(null);
         this.title.set(null);
@@ -55,121 +40,50 @@ public class Profile implements SQL{
         ID.set(newID);
     }
 
-    public String getTitle() {
-        return title.get();
-    }
-
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
-    }
-
-    public Color getRoot() {
-        return root.get();
-    }
-
-    public void setRoot(Color newRoot) {
-        root.set(newRoot);
-    }
-
-    public Color getPrimary() {
-        return primary.get();
-    }
-
-    public void setPrimary(Color newPrimary) {
-        primary.set(newPrimary);
-    }
-
-    public Color getSecondary() {
-        return secondary.get();
-    }
-
-    public void setSecondary(Color newSecondary) {
-        primary.set(newSecondary);
-    }
-
-    public Color getBorder() {
-        return border.get();
-    }
-
-    public void setBorder(Color newBorder) {
-        border.set(newBorder);
-    }
-
-    public Color getTextColor() {
-        return textColor.get();
-    }
-
-    public void setTextColor(Color newText) {
-        textColor.set(newText);
-    }
-
-    public int getTextSize() {
-        return textSize.get();
-    }
-
-    public void setTextSize(int newTextSize) {
-        textSize.set(newTextSize);
-    }
-
-    public String getTextFont() {
-        return textFont.get();
-    }
-
-    public void setTextFont(String newTextFont) {
-        textFont.set(newTextFont);
-    }
-
-    public StringProperty getTitleProperty() {
+    public StringProperty titleProperty() {
         return title;
     }
 
-    public ObjectProperty<Color> getRootProperty() {
+    public ObjectProperty<Color> rootProperty() {
         return root;
     }
 
-    public ObjectProperty<Color> getPrimaryProperty() {
+    public ObjectProperty<Color> primaryProperty() {
         return primary;
     }
 
-    public ObjectProperty<Color> getSecondaryProperty() {
+    public ObjectProperty<Color> secondaryProperty() {
         return secondary;
     }
 
-    public ObjectProperty<Color> getBorderProperty() {
+    public ObjectProperty<Color> borderProperty() {
         return border;
     }
 
-    public ObjectProperty<Color> getTextColorProperty() {
+    public ObjectProperty<Color> textColorProperty() {
         return textColor;
     }
 
-    public ObjectProperty<Integer> getTextSizeProperty() {
+    public ObjectProperty<Integer> textSizeProperty() {
         return textSize;
     }
 
-    public StringProperty getTextFontProperty() {
+    public StringProperty textFontProperty() {
         return textFont;
     }
 
-    //Add a buttonsize
-
-    //Add a Tooltip Toggle
-
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
-    }
 
     public String[] toArray() {
         return new String[]{
                 getID(),
-                getTitle(),
-                Utilities.toHex(getRoot()),
-                Utilities.toHex(getPrimary()),
-                Utilities.toHex(getSecondary()),
-                Utilities.toHex(getBorder()),
-                Utilities.toHex(getTextColor()),
-                String.valueOf(getTextSize()),
-                getTextFont()
+                title.get(),
+                Utilities.toHex(root.get()),
+                Utilities.toHex(primary.get()),
+                Utilities.toHex(secondary.get()),
+                Utilities.toHex(border.get()),
+                Utilities.toHex(textColor.get()),
+                String.valueOf(textSize.get()),
+                textFont.get()
         };
     }
     
@@ -182,19 +96,19 @@ public class Profile implements SQL{
 
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     public boolean hasValue() {
         return
                 title.get() != null && !title.get().trim().isEmpty() &&
-                        root.get() != null &&
-                        primary.get() != null &&
-                        secondary.get() != null &&
-                        border.get() != null &&
-                        textColor.get() != null &&
-                        textSize.get() != null &&
-                        textFont.get() != null && !textFont.get().trim().isEmpty();
+                root.get() != null &&
+                primary.get() != null &&
+                secondary.get() != null &&
+                border.get() != null &&
+                textColor.get() != null &&
+                textSize.get() != null &&
+                textFont.get() != null && !textFont.get().trim().isEmpty();
     }
 
     @Override
