@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import opslog.object.event.Log;
 import opslog.ui.controls.*;
+import opslog.ui.window.WindowPane;
 import opslog.util.Settings;
 
 public class PopupUI {

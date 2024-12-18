@@ -3,6 +3,7 @@ package opslog.ui.checklist.controls;
 import javafx.scene.control.cell.CheckBoxTreeTableCell;
 import opslog.object.Tag;
 import opslog.object.Type;
+import opslog.object.event.ScheduledTask;
 import opslog.object.event.Task;
 import opslog.util.Settings;
 import javafx.scene.control.TreeTableRow;
@@ -17,9 +18,9 @@ import javafx.scene.text.TextAlignment;
 import java.util.Set;
 import java.util.LinkedHashSet;
 
-public class StatusTreeView extends TreeTableView<Task>{
+public class StatusTreeView extends TreeTableView<ScheduledTask>{
 	
-	public final Set<CheckBoxTreeItem<Task>> set = new LinkedHashSet<>();
+	public final Set<CheckBoxTreeItem<ScheduledTask>> set = new LinkedHashSet<>();
 	
 	public StatusTreeView(){
 
@@ -36,15 +37,15 @@ public class StatusTreeView extends TreeTableView<Task>{
 		initializeListeners();
 	}
 
-	public Set<CheckBoxTreeItem<Task>> getTreeItems(){
+	public Set<CheckBoxTreeItem<ScheduledTask>> getTreeItems(){
 		return set;
 	}
 
-	public void setItems(ObservableList<Task> tasks, ObservableList<Boolean> status) {
+	public void setItems(ObservableList<ScheduledTask> tasks) {
 		for (int i = 0; i < tasks.size(); i++) {
-			System.out.println("settings treeItem " + tasks.get(i).titleProperty().get() + " to " + status.get(i));
-			CheckBoxTreeItem<Task> treeItem = new CheckBoxTreeItem<>(tasks.get(i));
-			treeItem.setSelected(status.get(i));
+			System.out.println("settings treeItem " + tasks.get(i).titleProperty().get() + " to " + tasks.get(i).completionProperty().get());
+			CheckBoxTreeItem<ScheduledTask> treeItem = new CheckBoxTreeItem<>(tasks.get(i));
+			treeItem.setSelected(tasks.get(i).completionProperty().get());
 			set.add(treeItem);
 			if (getRoot() == null) {
 				setRoot(treeItem);
@@ -56,10 +57,10 @@ public class StatusTreeView extends TreeTableView<Task>{
 		getRoot().setExpanded(true);
 	}
 
-	private TreeTableColumn<Task, Boolean> checkBoxColumn(){
-		TreeTableColumn<Task, Boolean> checkBoxColumn = new TreeTableColumn<>();
+	private TreeTableColumn<ScheduledTask, Boolean> checkBoxColumn(){
+		TreeTableColumn<ScheduledTask, Boolean> checkBoxColumn = new TreeTableColumn<>();
 		checkBoxColumn.setCellValueFactory(param -> {
-			CheckBoxTreeItem<Task> treeItem = (CheckBoxTreeItem<Task>) param.getValue();
+			CheckBoxTreeItem<ScheduledTask> treeItem = (CheckBoxTreeItem<ScheduledTask>) param.getValue();
 			return treeItem.selectedProperty();
 		});
 		checkBoxColumn.setCellFactory(col -> createCheckBoxCell());
@@ -67,10 +68,10 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return checkBoxColumn;
 	}
 
-	private TreeTableColumn<Task, String> titleColumn() {
+	private TreeTableColumn<ScheduledTask, String> titleColumn() {
 		HBox hbox = createHeaderLabel("Title");
 		
-		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
+		TreeTableColumn<ScheduledTask, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
 		column.setGraphic(hbox);
 		column.setCellFactory(col -> createCell(column));
@@ -79,10 +80,10 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return column;
 	}
 
-	private TreeTableColumn<Task, Type> typeColumn() {
+	private TreeTableColumn<ScheduledTask, Type> typeColumn() {
 		HBox hbox = createHeaderLabel("Type");
 		
-		TreeTableColumn<Task, Type> column = new TreeTableColumn<>();
+		TreeTableColumn<ScheduledTask, Type> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().typeProperty());
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
@@ -91,10 +92,10 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return column;
 	}
 
-	private TreeTableColumn<Task, ObservableList<Tag>> tagColumn() {
+	private TreeTableColumn<ScheduledTask, ObservableList<Tag>> tagColumn() {
 		HBox hbox = createHeaderLabel("Tags");
 		
-		TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
+		TreeTableColumn<ScheduledTask, ObservableList<Tag>> column = new TreeTableColumn<>();
 		column.setCellValueFactory(cellData -> {
 			ObservableList<Tag> tags = cellData.getValue().getValue().tagList();
 			return new SimpleObjectProperty<>(tags);
@@ -143,10 +144,10 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return column;
 	}
 
-	private TreeTableColumn<Task, String> descriptionColumn() {
+	private TreeTableColumn<ScheduledTask, String> descriptionColumn() {
 		HBox hbox = createHeaderLabel("Description");
 		
-		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
+		TreeTableColumn<ScheduledTask, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().descriptionProperty());
 		column.setGraphic(hbox);
 		column.setMinWidth(110);
@@ -155,7 +156,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 		// Adjust column width based on treeTableView total width
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
 			double totalWidth = newWidth.doubleValue();
-			for (TreeTableColumn<Task, ?> col : this.getColumns()) {
+			for (TreeTableColumn<ScheduledTask, ?> col : this.getColumns()) {
 				if (col != column) {
 					totalWidth -= col.getWidth();
 				}
@@ -183,7 +184,7 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return cell;
 	}
 
-	private <S, T> TreeTableCell<S, T> createCell(TreeTableColumn<Task, ?> column) {
+	private <S, T> TreeTableCell<S, T> createCell(TreeTableColumn<ScheduledTask, ?> column) {
 		
 		TreeTableCell<S,T> cell = new TreeTableCell<>() {
 			private final Text text = new Text();
@@ -229,8 +230,8 @@ public class StatusTreeView extends TreeTableView<Task>{
 		return vbox;
 	}
 
-	private TreeTableRow<Task> createRow() {
-		TreeTableRow<Task> row = new TreeTableRow<>();
+	private TreeTableRow<ScheduledTask> createRow() {
+		TreeTableRow<ScheduledTask> row = new TreeTableRow<>();
 		row.backgroundProperty().bind(Settings.primaryBackground);
 		row.minHeight(50);
 		row.borderProperty().bind(Settings.primaryBorder);

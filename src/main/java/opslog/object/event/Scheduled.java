@@ -8,7 +8,7 @@ import opslog.interfaces.SQL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-public class ScheduledEvent extends Event implements SQL {
+public class Scheduled extends Event implements SQL {
 
 	private final StringProperty id = new SimpleStringProperty();
 	private final ObjectProperty<LocalDateTime> start = new SimpleObjectProperty<>();
@@ -18,7 +18,7 @@ public class ScheduledEvent extends Event implements SQL {
 	private final StringProperty title = new SimpleStringProperty();
 	private final StringProperty location = new SimpleStringProperty();
 	
-	public ScheduledEvent() {
+	public Scheduled() {
 		super();
 		this.id.set(null);
 		this.stop.set(null);
@@ -108,8 +108,7 @@ public class ScheduledEvent extends Event implements SQL {
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) return true; // check if its the same reference 
-		if (!(other instanceof ScheduledEvent)) return false; // check if it is the same type
-		ScheduledEvent otherScheduledEvent = (ScheduledEvent) other; // if same type cast type
-		return getID().equals(otherScheduledEvent.getID()); // if same id return true
+		if (!(other instanceof Scheduled otherScheduledEvent)) return false; // check if it is the same type
+        return getID().equals(otherScheduledEvent.getID()); // if same id return true
 	}
 }

@@ -18,6 +18,7 @@ module test.opslog {
     requires jdk.compiler;
     requires org.slf4j;
     requires com.calendarfx.view;
+    requires spring.core;
 
     opens opslog.object to javafx.base;
     opens opslog to javafx.fxml; 

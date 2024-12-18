@@ -1,5 +1,6 @@
 package opslog.ui.checklist.layout;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -8,13 +9,12 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Orientation;
 
 import opslog.object.event.Checklist;
+import opslog.object.event.ScheduledTask;
+import opslog.ui.checklist.controls.ScheduleTable;
 import opslog.util.Settings;
 import opslog.ui.checklist.ChecklistUI;
-import opslog.ui.checklist.controls.ScheduleTable;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.controls.*;
-import opslog.ui.checklist.managers.ScheduledChecklistManager;
-import opslog.object.event.ScheduledChecklist;
 import opslog.util.Directory;
 
 public class StatusLayout {
@@ -27,25 +27,10 @@ public class StatusLayout {
     // Scheduled Checklist Status Viewer
     public static final VBox scheduledChecklistViewer = new VBox();
 
-    // Scheduled Checklist Selector
-    public static final CustomListView<ScheduledChecklist> scheduledChecklistListView =
-            new CustomListView<>(
-                    ScheduledChecklistManager.getList(), Settings.WIDTH_LARGE,
-                    Settings.WIDTH_LARGE, SelectionMode.MULTIPLE
-            );
+    public static final ListView<ObservableList<ScheduledTask>> scheduledTaskListView = new ListView<>();
 
-    // Checklist Schedular
-    public static final CustomComboBox<ScheduledChecklist> scheduledChecklistSelector = new CustomComboBox<>(
-            "Scheduled",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomComboBox<Checklist> checklistSelector = new CustomComboBox<>(
+    public static final CustomComboBox<Checklist> checklistTemplateSelector = new CustomComboBox<>(
             "Template",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomDatePicker checklistStartDate = new CustomDatePicker(
-            "Start",140,Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomDatePicker checklistStopDate = new CustomDatePicker(
-            "Stop",140,Settings.SINGLE_LINE_HEIGHT
     );
     public static final ScheduleTable scheduleTable = new ScheduleTable();
 
@@ -105,9 +90,14 @@ public class StatusLayout {
                 "Scheduled Checklist's", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
         );
         CustomVBox vbox = new CustomVBox();
-        scheduledChecklistListView.prefWidthProperty().bind(vbox.widthProperty());
-        scheduledChecklistListView.prefHeightProperty().bind(vbox.heightProperty().subtract(label.heightProperty()));
-        vbox.getChildren().addAll(label, scheduledChecklistListView);
+        scheduledTaskListView.prefWidthProperty().bind(vbox.widthProperty());
+        scheduledTaskListView.prefHeightProperty().bind(vbox.heightProperty().subtract(label.heightProperty()));
+        CustomHBox buttons = new CustomHBox();
+        buttons.getChildren().addAll(
+                addSchedule
+        );
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+        vbox.getChildren().addAll(label, scheduledTaskListView,buttons);
         return vbox;
     }
 
@@ -120,37 +110,21 @@ public class StatusLayout {
         );
         label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
 
-        checklistSelector.setItems(ChecklistManager.getList());
-        checklistSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        checklistSelector.prefWidthProperty().bind(vbox.widthProperty());
-        VBox.setVgrow(checklistSelector, Priority.ALWAYS);
+        checklistTemplateSelector.setItems(ChecklistManager.getList());
+        checklistTemplateSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
+        checklistTemplateSelector.prefWidthProperty().bind(vbox.widthProperty());
+        VBox.setVgrow(checklistTemplateSelector, Priority.ALWAYS);
 
-        HBox datePickers = new HBox(
-                checklistStartDate, checklistStopDate
-        );
-        datePickers.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        datePickers.setSpacing(Settings.SPACING);
-        datePickers.prefWidthProperty().bind(vbox.widthProperty());
-        datePickers.setAlignment(Pos.CENTER);
-        checklistStopDate.prefWidthProperty().bind(
-                datePickers.prefWidthProperty().subtract(Settings.SPACING)
-        );
-
-        checklistStartDate.prefWidthProperty().bind(
-                datePickers.prefWidthProperty().subtract(Settings.SPACING)
-        );
 
         CustomHBox buttons = new CustomHBox();
         buttons.getChildren().addAll(
-                addSchedule,
-                removeSchedule
+                addSchedule
         );
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
         vbox.getChildren().addAll(
                 label,
-                checklistSelector,
-                datePickers,
+                checklistTemplateSelector,
                 scheduleTable,
                 buttons
         );

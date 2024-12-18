@@ -1,0 +1,189 @@
+/* General Styles for the CalendarFX Application */
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f4f4f4;
+}
+
+/* Toolbar and Navigation Buttons */
+.toolbar {
+    -fx-background-color: #0078d7;
+    -fx-padding: 10;
+    -fx-alignment: center-left;
+}
+
+.button {
+    -fx-background-color: #005a9e;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 5 10;
+    -fx-cursor: hand;
+    -fx-border-radius: 5px;
+}
+
+.button:hover {
+    -fx-background-color: #003f7d;
+}
+
+.button:disabled {
+    -fx-background-color: #cccccc;
+    -fx-text-fill: #666666;
+    -fx-cursor: not-allowed;
+}
+
+/* Month View */
+.month-view {
+    -fx-background-color: #ffffff;
+}
+
+.month-view .day {
+    -fx-border-color: #dddddd;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-background-color: #f9f9f9;
+    -fx-text-fill: #333333;
+}
+
+.month-view .day:hover {
+    -fx-background-color: #f2f2f2;
+}
+
+.month-view .today {
+    -fx-background-color: #0078d7;
+    -fx-text-fill: white;
+}
+
+.month-view .weekend {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: #888888;
+}
+
+.month-view .day-header {
+    -fx-background-color: #eeeeee;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+    -fx-padding: 5;
+}
+
+/* Week View */
+.week-view {
+    -fx-background-color: #f9f9f9;
+}
+
+.week-view .time-slot {
+    -fx-border-color: #dddddd;
+    -fx-border-width: 1px;
+    -fx-background-color: #ffffff;
+}
+
+.week-view .time-slot:hover {
+    -fx-background-color: #f4f4f4;
+}
+
+.week-view .today {
+    -fx-background-color: rgba(0, 120, 215, 0.1);
+    -fx-border-color: #0078d7;
+    -fx-border-width: 2px;
+}
+
+/* Day View */
+.day-view {
+    -fx-background-color: #ffffff;
+}
+
+.day-view .time-label {
+    -fx-background-color: #eeeeee;
+    -fx-text-fill: #555555;
+    -fx-padding: 5;
+}
+
+.day-view .entry {
+    -fx-background-color: #4caf50;
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-padding: 5;
+    -fx-font-size: 12px;
+}
+
+/* Agenda View */
+.agenda-view {
+    -fx-background-color: #ffffff;
+}
+
+.agenda-view .entry {
+    -fx-background-color: #ff5722;
+    -fx-border-radius: 5px;
+    -fx-padding: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.agenda-view .date {
+    -fx-background-color: #f0f0f0;
+    -fx-text-fill: #555555;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+}
+
+/* Year View */
+.year-view {
+    -fx-background-color: #ffffff;
+}
+
+.year-view .month {
+    -fx-border-color: #dddddd;
+    -fx-border-width: 1px;
+    -fx-padding: 5;
+}
+
+.year-view .month:hover {
+    -fx-background-color: #f2f2f2;
+}
+
+.year-view .today {
+    -fx-background-color: #0078d7;
+    -fx-text-fill: white;
+}
+
+/* Entry Pop-Up Dialog */
+.entry-popover {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #0078d7;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-padding: 10;
+    -fx-font-size: 14px;
+}
+
+.entry-popover .header {
+    -fx-background-color: #0078d7;
+    -fx-text-fill: white;
+    -fx-padding: 10;
+    -fx-font-weight: bold;
+}
+
+.entry-popover .details {
+    -fx-text-fill: #333333;
+    -fx-padding: 5;
+}
+
+/* Scroll Bars */
+.scroll-bar {
+    -fx-background-color: #eeeeee;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #cccccc;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #aaaaaa;
+}
+
+/* Tooltips */
+.tooltip {
+    -fx-background-color: #333333;
+    -fx-text-fill: white;
+    -fx-padding: 5;
+    -fx-border-radius: 5px;
+    -fx-font-size: 12px;
+}

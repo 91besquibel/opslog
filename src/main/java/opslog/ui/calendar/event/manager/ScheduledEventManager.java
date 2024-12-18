@@ -1,24 +1,29 @@
-package opslog.ui.calendar2.event.manager;
+package opslog.ui.calendar.event.manager;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import opslog.object.event.ScheduledTask;
+import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
 import opslog.object.Event;
-import opslog.object.event.ScheduledEvent;
+import opslog.object.event.Scheduled;
+
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public class ScheduledEventManager {
 
 	// Each used fo the different view options in the scheduledEvent to store the currently viewed items
-	private static final ObservableList<Event> monthEvents = FXCollections.observableArrayList();
-	private static final ObservableList<Event> weekEvents = FXCollections.observableArrayList();
-	private static final ObservableList<Event> dailyEvents = FXCollections.observableArrayList();
+	private static final ObservableList<Scheduled> processingList = FXCollections.observableArrayList();
 	
-	public static ScheduledEvent newItem(String [] row){
-		ScheduledEvent scheduledEvent = new ScheduledEvent();
+	public static Scheduled newItem(String [] row){
+		Scheduled scheduledEvent = new Scheduled();
 		scheduledEvent.setID(row[0]);
 		scheduledEvent.startProperty().set(
 			LocalDateTime.of(
@@ -43,9 +48,9 @@ public class ScheduledEventManager {
 		return scheduledEvent;
 	}
 
-	public static ScheduledEvent getItem(String id){
-		for(Event event : monthEvents){
-			if(event instanceof ScheduledEvent scheduledEvent){
+	public static Scheduled getItem(String id){
+		for(Event event : processingList){
+			if(event instanceof Scheduled scheduledEvent){
 				if(scheduledEvent.getID().contains(id)){
 					return scheduledEvent;
 				}
@@ -54,15 +59,10 @@ public class ScheduledEventManager {
 		return null;
 	}
 
-	public static ObservableList<Event> getMonthEvents() {
-		return monthEvents;
+	// use EventDistribution.currentMonth to determine if a new item should be displayed
+	public static ObservableList<Scheduled> getProcessingList() {
+		return processingList;
 	}
 
-	public static ObservableList<Event> getWeekEvents() {
-		return weekEvents;
-	}
 
-	public static ObservableList<Event> getDailyEvents() {
-		return dailyEvents;
-	}
 }

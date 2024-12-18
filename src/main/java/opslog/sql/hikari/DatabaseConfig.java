@@ -42,15 +42,15 @@ public class DatabaseConfig {
     public static final String LOG_COLUMN =
             "id, date, time, typeID, tagIDs, initials, description";
 
-    public static final String CALENDAR_TABLE =
-            "calendar_table";
-    public static final String CALENDAR_COLUMNS =
-            "id, title, start_date, stop_date, start_time, stop_time, typeID, tagIDs, initials, description";
+    public static final String SCHEDULED_EVENT_TABLE =
+            "scheduled_event_table";
+    public static final String SCHEDULED_EVENT_COLUMNS =
+            "id, start_date, stop_date, start_time, stop_time, full_day, recurrance_rule, title, location, typeID, tagIDs, initials, description";
 
-    public static final String SCHEDULED_CHECKLIST_TABLE =
-            "scheduled_checklist_table";
-    public static final String SCHEDULED_CHECKLIST_COLUMNS =
-            "id, title, start_date, stop_date, taskIDs, offsets, durations, status_list, percentage, typeID, tagIDs, initials, description";
+    public static final String SCHEDULED_TASK_TABLE =
+            "scheduled_task_table";
+    public static final String SCHEDULED_TASK_COLUMNS =
+            "id, fid, start_date, stop_date, start_time, stop_time, full_day, recurrance_rule, completion_status, title, location, typeID, tagIDs, initials, description";
 
     public static final String START_DATE_COLUMN_TITLE = "start_date";
     public static final String STOP_DATE_COLUMN_TITLE = "stop_date";

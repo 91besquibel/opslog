@@ -1,8 +1,6 @@
 package opslog.ui.checklist.controllers;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -14,25 +12,24 @@ import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import opslog.object.event.ScheduledTask;
 import opslog.ui.checklist.ChecklistUI;
-import opslog.object.event.ScheduledChecklist;
 import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.checklist.controls.StatusTreeView;
 import opslog.ui.checklist.layout.StatusLayout;
-import opslog.ui.checklist.managers.ScheduledChecklistManager;
+import opslog.ui.checklist.managers.ScheduledTaskManager;
 import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomLabel;
 import opslog.util.Directory;
 import opslog.util.Settings;
 
 public class StatusController {
 
     // map to track display for hbox removal
-    private static final ObservableMap<ScheduledChecklist,VBox> map = FXCollections.observableHashMap();
-    private static final ObservableMap<CheckBoxTreeItem<Task>,ChangeListener<Boolean>> listenerMap = FXCollections.observableHashMap();
+    private static final ObservableMap<ObservableList<ScheduledTask>,VBox> map = FXCollections.observableHashMap();
+    private static final ObservableMap<CheckBoxTreeItem<ScheduledTask>,ChangeListener<Boolean>> listenerMap = FXCollections.observableHashMap();
 
     public static void initialize(){
         listeners();
@@ -42,15 +39,15 @@ public class StatusController {
     // listener for user selection to display checklist tree
     public static void listeners(){
         
-        StatusLayout.scheduledChecklistListView.getSelectionModel().getSelectedItems().addListener((
-            ListChangeListener<ScheduledChecklist>) change -> {
+        StatusLayout.scheduledTaskListView.getSelectionModel().getSelectedItems().addListener((
+            ListChangeListener<ObservableList<ScheduledTask>>) change -> {
             while (change.next()) {
                 System.out.println("StatusController: selection made");
                 if (change.wasAdded()) {
                     System.out.println("StatusController: selection made");
-                    for (ScheduledChecklist scheduledChecklist : change.getAddedSubList()) {
-                        System.out.println("StatusController: displaying " + scheduledChecklist.titleProperty().get());
-                        newChecklistDisplay(scheduledChecklist);
+                    for (ObservableList<ScheduledTask> scheduledTasks : change.getAddedSubList()) {
+                        System.out.println("StatusController: displaying " + scheduledTasks.get(0).titleProperty().get());
+                        newChecklistDisplay(scheduledTasks);
                     }
                 } 
                 
@@ -64,88 +61,42 @@ public class StatusController {
             }
         });
 
-        StatusLayout.checklistSelector.getSelectionModel().selectedItemProperty().addListener((obs,ov,nv) -> {
+        StatusLayout.checklistTemplateSelector.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
             if(nv != null){
                 int numTasks = nv.taskList().size();
-                List<Integer []> offsets = new ArrayList<>(numTasks);
-                List<Integer []> durations = new ArrayList<>(numTasks);
+                ObservableList<ScheduledTask> scheduledTasks = FXCollections.observableArrayList();
                 for(Task task : nv.taskList()){
                     //System.out.println("StatusController: creating offsets and durations for " + task.getTitle());
-                    offsets.add(new Integer[]{0,0});
-                    durations.add(new Integer[]{0,0});
+                    ScheduledTask scheduledTask = new ScheduledTask();
+                    scheduledTask.titleProperty().set(task.titleProperty().get());
+                    scheduledTask.typeProperty().set(task.typeProperty().get());
+                    scheduledTask.tagList().setAll(task.tagList());
+                    scheduledTask.initialsProperty().set(task.initialsProperty().get());
+                    scheduledTask.descriptionProperty().set(task.descriptionProperty().get());
+                    scheduledTasks.add(scheduledTask);
                 }
-                ScheduledChecklist temp = new ScheduledChecklist();
-                temp.getOffsets().setAll(offsets);
-                temp.getDurations().setAll(durations);
-                StatusLayout.scheduleTable.setItems(temp);
+
+                StatusLayout.scheduleTable.setItems(scheduledTasks);
             }
         });
     }
 
     // displays a user selected ScheduledChecklist on the checklist status display
-    private static VBox newChecklistDisplay( ScheduledChecklist scheduledChecklist ) {
-        // startDate
-        CustomLabel startDate = new CustomLabel(
-                String.valueOf(scheduledChecklist.startDateProperty().get()),
-                200,
-                Settings.SINGLE_LINE_HEIGHT
-        );
-        // stopDate
-        CustomLabel stopDate = new CustomLabel(
-                String.valueOf(
-                        scheduledChecklist.stopDateProperty().get()),
-                200,
-                Settings.SINGLE_LINE_HEIGHT
-        );
+    private static VBox newChecklistDisplay(ObservableList<ScheduledTask> scheduledTasks) {
 
-        // percentage
-        CustomLabel percentage = new CustomLabel(
-                scheduledChecklist.percentageProperty().get(),
-                100,
-                Settings.SINGLE_LINE_HEIGHT
-        );
-        
-        // bind the percentage text for checklist updates
-        percentage.textProperty().bindBidirectional(
-                scheduledChecklist.percentageProperty()
-        );
-
-        
         // create the treeview to hold the tasks
         StatusTreeView statusTreeView = new StatusTreeView();
-        statusTreeView.setItems(
-                scheduledChecklist.getTaskList(),
-                scheduledChecklist.getStatusList()
-        );
+        statusTreeView.setItems(scheduledTasks);
 
         // add a listener for to each treeitem for checkboxing
-        for(CheckBoxTreeItem<Task> treeItem : statusTreeView.getTreeItems()){
+        for(CheckBoxTreeItem<ScheduledTask> treeItem : statusTreeView.getTreeItems()){
             // create a listener
-            ChangeListener<Boolean> selectedChangeListener = createListener(treeItem,scheduledChecklist);
+            ChangeListener<Boolean> selectedChangeListener = createListener(treeItem, scheduledTasks);
             // apply premadeListener
             treeItem.selectedProperty().addListener(selectedChangeListener);
             // map the references for later removal
             listenerMap.put(treeItem,selectedChangeListener);
         }
-        
-        
-        scheduledChecklist.getStatusList().addListener((
-            ListChangeListener<Boolean>) change -> {
-                while (change.next()) {
-                    System.out.println("StatusController: List updated resetting status of tree items");
-                    int i = 0;
-                    ObservableList<? extends Boolean> statusList = change.getList();
-                    for(CheckBoxTreeItem<Task> treeItem : statusTreeView.getTreeItems()){
-                        //only change the status if it needs to be changed
-                        if(treeItem.selectedProperty().get() != statusList.get(i)){
-                            System.out.println("StatusController: List updated resetting status of tree items");
-                            treeItem.setSelected(statusList.get(i));
-                        }
-                        i++;
-                    }
-                }
-            }
-        );
 
         CustomButton remove = new CustomButton(
                 Directory.TRASH_WHITE,
@@ -153,7 +104,7 @@ public class StatusController {
                 "Remove"
         );
 
-        HBox bar = new HBox(startDate, stopDate, percentage, remove);
+        HBox bar = new HBox(remove);
         bar.prefWidthProperty().bind(StatusLayout.scheduledChecklistViewer.widthProperty());
         bar.prefHeight(Settings.SINGLE_LINE_HEIGHT);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -166,15 +117,13 @@ public class StatusController {
         display.setSpacing(Settings.SPACING);
         
         StatusLayout.scheduledChecklistViewer.getChildren().add(display);
-        map.put(scheduledChecklist,display);
+        map.put(scheduledTasks ,display);
 
         // removeButton delete parent node and all listeners and bindings
 
         remove.setOnAction(e -> {
-            // clean up listeners
-            percentage.textProperty().unbind();
             // clear each listener
-            for(CheckBoxTreeItem<Task> treeItem : statusTreeView.getTreeItems()){
+            for(CheckBoxTreeItem<ScheduledTask> treeItem : statusTreeView.getTreeItems()){
                 // get the listener using map
                 ChangeListener<Boolean> selectedChangeListener = listenerMap.get(treeItem);
                 // remove each listener
@@ -187,46 +136,40 @@ public class StatusController {
             display.getChildren().clear();
             // remove the display refrence from its parent node
             StatusLayout.scheduledChecklistViewer.getChildren().remove(display);
-            // remove scheduledChecklist and vbox from map
-            map.remove(scheduledChecklist);
+            // remove scheduledTask and vbox from map
+            map.remove(scheduledTasks);
         });
         return display;
     }
 
     // creates the listeners for the selected ScheduledChecklist
-    private static ChangeListener<Boolean> createListener(CheckBoxTreeItem<Task> treeItem, ScheduledChecklist scheduledChecklist){
-        // Changelistener to update the database whenever the user changes the status.
-        // this allows for realtime updates to the other user on the database.
-        ChangeListener<Boolean> selectedChangeListener = (obs,ov,nv) -> {
+    private static ChangeListener<Boolean> createListener(CheckBoxTreeItem<ScheduledTask> treeItem, ObservableList<ScheduledTask> scheduledTasks){
+        return (obs, ov, nv) -> {
             // if the value has changed to a new state
             if(ov != nv){
                 // get the task
-                Task task = treeItem.getValue();
-    
+                ScheduledTask task = treeItem.getValue();
+
                 System.out.println(
                     "StatusController: ScheduledChecklist task " +
                     task.titleProperty().get() +
                     " status updated to " +
                     nv
                 );
-                
-                // get its index in the list
-                int index = scheduledChecklist.
-                        getTaskList().
-                        indexOf(task);
-                
+
                 // using the index change the status in the item
-                scheduledChecklist.getStatusList().set(index,nv);
-                
+                int i = scheduledTasks.indexOf(task);
+                scheduledTasks.get(i).completionProperty().set(nv);
+
                 // update database with new scheduledChecklist
                 try{
                     DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(
                             ConnectionManager.getInstance()
                     );
                     databaseQueryBuilder.update(
-                            DatabaseConfig.SCHEDULED_CHECKLIST_TABLE,
-                            DatabaseConfig.SCHEDULED_CHECKLIST_COLUMNS,
-                            scheduledChecklist.toArray()
+                            DatabaseConfig.SCHEDULED_TASK_TABLE,
+                            DatabaseConfig.SCHEDULED_TASK_COLUMNS,
+                            task.toArray()
                     );
                 }catch(SQLException e){
                     System.out.println("StatusController: Failed to update the database\n");
@@ -234,7 +177,6 @@ public class StatusController {
                 }
             }
         };
-        return selectedChangeListener;
     }
 
     private static void buttons(){
@@ -243,37 +185,25 @@ public class StatusController {
             ChecklistUI.statusRoot.setVisible(false);
         });
 
-        StatusLayout.addSchedule.setOnAction(e ->{
-            ScheduledChecklist temp = new ScheduledChecklist();
-            temp.titleProperty().set(StatusLayout.checklistSelector.getValue().titleProperty().get());//1
-            temp.startDateProperty().set(StatusLayout.checklistStartDate.getValue());//2
-            temp.stopDateProperty().set(StatusLayout.checklistStopDate.getValue());//3
-            temp.getTaskList().setAll(StatusLayout.checklistSelector.getValue().taskList());//4
-            temp.getOffsets().setAll(StatusLayout.scheduleTable.getOffsets());//5
-            temp.getDurations().setAll(StatusLayout.scheduleTable.getDurations());//6
-            List<Boolean> statusList = new ArrayList<>(temp.getTaskList().size());
-            for(Task task: temp.getTaskList()){
-                statusList.add(false);
-            }
-            temp.getStatusList().setAll(statusList);//7
-            temp.percentageProperty().set("0");//8
-            temp.typeProperty().set(StatusLayout.checklistSelector.getValue().typeProperty().get());//9
-            temp.tagList().setAll(StatusLayout.checklistSelector.getValue().tagList());//10
-            temp.initialsProperty().set(StatusLayout.checklistSelector.getValue().initialsProperty().get());//11
-            temp.descriptionProperty().set(StatusLayout.checklistSelector.getValue().descriptionProperty().get());//12
-
-            if(temp.hasValue()){
+        StatusLayout.addSchedule.setOnAction(e -> {
+            ObservableList<ScheduledTask> scheduledTasks = StatusLayout.scheduleTable.getItems();
+            boolean fieldsFilled = ScheduledTaskManager.fieldsFilled(scheduledTasks);
+            if (fieldsFilled) {
+                String uuid = ScheduledTaskManager.generateUUID();
                 try {
-                    DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-                    String id = databaseQueryBuilder.insert(
-                            DatabaseConfig.SCHEDULED_CHECKLIST_TABLE,
-                            DatabaseConfig.SCHEDULED_CHECKLIST_COLUMNS,
-                            temp.toArray()
-                    );
-                    if(id != null){
-                        temp.setID(id);
-                        ScheduledChecklistManager.getList().add(temp);
+                    for (ScheduledTask scheduledTask : scheduledTasks) {
+                        scheduledTask.taskAssociationID().set(uuid);
+                        DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+                        String id = databaseQueryBuilder.insert(
+                                DatabaseConfig.SCHEDULED_TASK_TABLE,
+                                DatabaseConfig.SCHEDULED_TASK_COLUMNS,
+                                scheduledTask.toArray()
+                        );
+                        if (id != null) {
+                            scheduledTask.setID(id);
+                        }
                     }
+                    ScheduledTaskManager.addTaskList(uuid, scheduledTasks);
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -281,27 +211,22 @@ public class StatusController {
         });
 
         StatusLayout.removeSchedule.setOnAction(e ->{
-            String id = StatusLayout.scheduledChecklistSelector.getSelectionModel().getSelectedItem().getID();
-            removeSchedule(id);
+            removeScheduledTaskList(StatusLayout.scheduleTable.getItems().get(0).taskAssociationID().get());
         });
     }
 
-    public static void removeSchedule(String id){
-        if(id != null){
+    public static void removeScheduledTaskList(String fid){
+        if(fid != null){
             try {
                 DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-                databaseQueryBuilder.delete(
-                        DatabaseConfig.SCHEDULED_CHECKLIST_TABLE,
-                        id
+                databaseQueryBuilder.deleteList(
+                        DatabaseConfig.SCHEDULED_TASK_TABLE,
+                        fid
                 );
-                ScheduledChecklist scheduledChecklist = ScheduledChecklistManager.getItem(id);
-                if (scheduledChecklist != null){
-                    ScheduledChecklistManager.getList().remove(scheduledChecklist);
-                }
+                ScheduledTaskManager.removeTaskList(fid);
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         }
     }
-
 }

@@ -1,4 +1,4 @@
-package opslog.ui;
+package opslog.ui.window;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -20,7 +20,6 @@ import opslog.ui.controls.Buttons;
 import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.Styles;
 import opslog.util.Directory;
-import opslog.util.ResizeListener;
 import opslog.util.Settings;
 import opslog.ui.search.controls.SearchBar;
 

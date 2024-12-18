@@ -1,5 +1,8 @@
 package opslog.sql.pgsql;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import opslog.ui.checklist.managers.ScheduledTaskManager;
 import org.postgresql.PGNotification;
 import java.sql.SQLException;
 import java.util.List;
@@ -11,9 +14,8 @@ import opslog.object.Type;
 import opslog.object.event.*;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.ui.calendar2.event.manager.ScheduledEventManager;
+import opslog.ui.calendar.event.manager.ScheduledEventManager;
 import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.checklist.managers.ScheduledChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;
 import opslog.ui.log.managers.LogManager;
 import opslog.ui.log.managers.PinboardManager;
@@ -24,11 +26,18 @@ import opslog.ui.settings.managers.TypeManager;
 
 public class Notification {
 
-    public static void process(PGNotification notification){
+    private final PGNotification notification;
+
+    public Notification(PGNotification notification){
+        this.notification = notification;
+    }
+
+    public void process(){
         // NOTIFY log_changes, 'UPDATE on log_table id: 123e4567-e89b-12d3-a456-426614174000';
         String param = notification.getParameter();
         String [] parts = param.split(" ");
         System.out.println("Notification: processing notification: " + param);
+
         if(parts.length >= 4){
             // UPDATE on log_table id: 123e4567-e89b-12d3-a456-426614174000
             String operation = parts[0]; // "UPDATE"
@@ -47,7 +56,7 @@ public class Notification {
         }
     }
 
-    private static void tableSwitch(String tableName, String id, String operation, List<String[]> result){
+    private  void tableSwitch(String tableName, String id, String operation, List<String[]> result){
         switch(tableName){
             case "log_table":
                 processLog(id,operation,result);
@@ -78,7 +87,7 @@ public class Notification {
                 break;
 
             case "schedule_checklist_table":
-                processScheduleChecklist(id,operation,result);
+                processScheduledTask(id,operation,result);
                 break;
 
             case "profile_table":
@@ -91,23 +100,23 @@ public class Notification {
         }
     }
 
-    private static void processScheduledEvent(String id, String operation, List<String[]> result) {
+    private void processScheduledEvent(String id, String operation, List<String[]> result) {
         Platform.runLater(() -> {
             for(String [] row : result) {
-                ScheduledEvent scheduledEvent = ScheduledEventManager.newItem(row);
+                Scheduled scheduledEvent = ScheduledEventManager.newItem(row);
                 if (operation.contains("INSERT")) {
-                    ScheduledEventManager.getMonthEvents().add(scheduledEvent);
+                    ScheduledEventManager.getProcessingList().add(scheduledEvent);
                     System.out.println("Notification: processing complete");
                 } else if (operation.contains("UPDATE")) {
-                    if (ScheduledEventManager.getMonthEvents().contains(scheduledEvent)) {
-                        int index = ScheduledEventManager.getMonthEvents().indexOf(scheduledEvent);
-                        ScheduledEventManager.getMonthEvents().set(index, scheduledEvent);
+                    if (ScheduledEventManager.getProcessingList().contains(scheduledEvent)) {
+                        int index = ScheduledEventManager.getProcessingList().indexOf(scheduledEvent);
+                        ScheduledEventManager.getProcessingList().set(index, scheduledEvent);
                         System.out.println("Notification: processing complete");
                     }
                 } else if (operation.contains("DELETE")) {
-                    ScheduledEvent originalScheduledEvent = ScheduledEventManager.getItem(id);
+                    Scheduled originalScheduledEvent = ScheduledEventManager.getItem(id);
                     if (originalScheduledEvent != null) {
-                        ScheduledEventManager.getMonthEvents().remove(originalScheduledEvent);
+                        ScheduledEventManager.getProcessingList().remove(originalScheduledEvent);
                         System.out.println("Notification: processing complete");
                     };
                 }
@@ -115,10 +124,10 @@ public class Notification {
         });
     }
 
-    private static void processProfile(String id, String operation, List<String[]> result) {
+    private  void processProfile(String id, String operation, List<String[]> result) {
         for (String[] row : result) {
-            Profile profile = ProfileManager.newItem(row);
             Platform.runLater(() -> {
+                Profile profile = ProfileManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Profile originalProfile = ProfileManager.getItem(id);
                     if (originalProfile == null) {
@@ -140,10 +149,10 @@ public class Notification {
         }
     }
 
-    private static void processPin(String id, String operation, List<String[]> result) {
-        for(String [] row : result) {
-            Log log = PinboardManager.newItem(row);
-            Platform.runLater(() -> {
+    private  void processPin(String id, String operation, List<String[]> result) {
+        Platform.runLater(() -> {
+            for(String [] row : result) {
+                Log log = PinboardManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Log originalLog = PinboardManager.getItem(id);
                     if (originalLog == null) {
@@ -161,14 +170,14 @@ public class Notification {
                         PinboardManager.getList().remove(originalLog);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
-    private static void processType(String id, String operation, List<String[]> result) {
+    private  void processType(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Type type = TypeManager.newItem(row);
             Platform.runLater(() -> {
+                Type type = TypeManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Type originalType = TypeManager.getItem(id);
                     if (originalType == null) {
@@ -190,10 +199,10 @@ public class Notification {
         }
     }
 
-    private static void processTag(String id, String operation, List<String[]> result) {
+    private  void processTag(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Tag tag = TagManager.newItem(row);
             Platform.runLater(() -> {
+                Tag tag = TagManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Tag originalTag = TagManager.getItem(id);
                     if (originalTag == null) {
@@ -215,10 +224,11 @@ public class Notification {
         }
     }
 
-    private static void processLog(String id, String operation, List<String[]> result) {
+    private  void processLog(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Log log = LogManager.newItem(row);
+
             Platform.runLater(() -> {
+                Log log = LogManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Log originalLog = LogManager.getItem(id);
                     if (originalLog == null) {
@@ -243,10 +253,10 @@ public class Notification {
         }
     }
 
-    private static void processFormat(String id, String operation, List<String[]> result) {
+    private  void processFormat(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Format format = FormatManager.newItem(row);
             Platform.runLater(() -> {
+                Format format = FormatManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Format orginalFormat = FormatManager.getItem(id);
                     if (orginalFormat == null) {
@@ -268,10 +278,11 @@ public class Notification {
         }
     }
 
-    private static void processTask( String id, String operation, List<String[]> result) {
+    private  void processTask( String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Task task = TaskManager.newItem(row);
+
             Platform.runLater(() -> {
+                Task task = TaskManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Task orginalTask = TaskManager.getItem(id);
                     if (orginalTask == null) {
@@ -293,10 +304,10 @@ public class Notification {
         }
     }
 
-    private static void processChecklist( String id, String operation, List<String[]> result) {
+    private  void processChecklist( String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-            Checklist checklist = ChecklistManager.newItem(row);
             Platform.runLater(() -> {
+                Checklist checklist = ChecklistManager.newItem(row);
                 if (operation.contains("INSERT")) {
                     Checklist orignalChecklist = ChecklistManager.getItem(id);
                     if (orignalChecklist == null) {
@@ -318,47 +329,26 @@ public class Notification {
         }
     }
 
-    private static void processScheduleChecklist(String id, String operation, List<String[]> result) {
-        for(String [] row : result) {
-            ScheduledChecklist scheduledChecklist = ScheduledChecklistManager.newItem(row);
+    private void processScheduledTask(String id, String operation, List<String[]> result) {
             Platform.runLater(() -> {
-                if (operation.contains("INSERT")) {
-                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (originalScheduledChecklist == null) {
-                        ScheduledChecklistManager.getList().add(scheduledChecklist);
-                    }
-                } else if (operation.contains("UPDATE")) {
-                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (originalScheduledChecklist != null) {
-                        // scheduledchecklists are only updated when the status list is altered
-                        // to prevent listener disruption set the new boolean status individually
-                        for(int i = 0; i< scheduledChecklist.getStatusList().size();i++){
-                            boolean newBool = scheduledChecklist.getStatusList().get(i);
-                            boolean oldBool = originalScheduledChecklist.getStatusList().get(i);
-                            if(oldBool!=newBool){
-                                System.out.println(
-                                    "Notification: ScheduleChecklist statuslist changed from " +
-                                    oldBool + 
-                                    "to" + 
-                                    newBool + 
-                                    "\n" 
-                                );
-                                originalScheduledChecklist.getStatusList().set(i, newBool);
-                            } else{
-                                System.out.println(
-                                    "Notification: ScheduleChecklist statuslist no Change" 
-                                );
-                            }
+                for(String [] row : result) {
+                    ScheduledTask scheduledTask = ScheduledTaskManager.newItem(row);
+                    if (operation.contains("INSERT")) {
+                        String fid = scheduledTask.taskAssociationID().get();
+                        if(ScheduledTaskManager.getTaskList(fid) != null){
+                            ScheduledTaskManager.addItem(fid,scheduledTask);
+                        }else {
+                            ObservableList<ScheduledTask> taskList = FXCollections.observableArrayList();
+                            taskList.add(scheduledTask);
+                            ScheduledTaskManager.addTaskList(scheduledTask.taskAssociationID().get(),taskList);
                         }
-                        System.out.println("\n");
-                    }
-                } else if (operation.contains("DELETE")) {
-                    ScheduledChecklist originalScheduledChecklist = ScheduledChecklistManager.getItem(id);
-                    if (originalScheduledChecklist != null) {
-                        ScheduledChecklistManager.getList().remove(originalScheduledChecklist);
+                    } else if (operation.contains("UPDATE")) {
+                        ScheduledTaskManager.updateItem(scheduledTask);
+                    } else if (operation.contains("DELETE")) {
+                        ScheduledTaskManager.removeTaskList(scheduledTask.taskAssociationID().get());
                     }
                 }
             });
-        }
+
     }
 }

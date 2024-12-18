@@ -9,14 +9,15 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import opslog.ui.calendar.CalendarLayout;
+import opslog.ui.controls.ContextMenus;
 import opslog.ui.log.LogLayout;
-import opslog.ui.calendar2.CalendarLayout2;
 import opslog.ui.settings.SettingsUI;
 import opslog.ui.startup.StartController;
 import opslog.ui.startup.StartUI;
-import opslog.ui.*;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.ui.controls.Buttons;
+import opslog.ui.window.WindowPane;
 import opslog.util.*;
 
 //import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -45,7 +46,7 @@ public class App extends Application {
             DateTime.timeListPopulate();
 
             logLayout = new LogLayout();
-            CalendarLayout2.initialize();
+            CalendarLayout.initialize();
             
             settingsUI = SettingsUI.getInstance();
             settingsUI.initialize();
@@ -79,11 +80,11 @@ public class App extends Application {
 
     public static void goToCalendar(ActionEvent event) {
         appWindow.viewAreaProperty().get().getChildren().clear();
-        appWindow.viewAreaProperty().get().getChildren().add(CalendarLayout2.getView());
-        AnchorPane.setLeftAnchor(CalendarLayout2.getView(), 0.0);
-        AnchorPane.setRightAnchor(CalendarLayout2.getView(), 0.0);
-        AnchorPane.setTopAnchor(CalendarLayout2.getView(), 0.0);
-        AnchorPane.setBottomAnchor(CalendarLayout2.getView(), 0.0);
+        appWindow.viewAreaProperty().get().getChildren().add(CalendarLayout.getView());
+        AnchorPane.setLeftAnchor(CalendarLayout.getView(), 0.0);
+        AnchorPane.setRightAnchor(CalendarLayout.getView(), 0.0);
+        AnchorPane.setTopAnchor(CalendarLayout.getView(), 0.0);
+        AnchorPane.setBottomAnchor(CalendarLayout.getView(), 0.0);
     }
 
     public static void goToChecklist(ActionEvent event) {

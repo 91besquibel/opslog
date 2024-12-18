@@ -9,7 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.PopupUI;
-import opslog.ui.WindowPane;
+import opslog.ui.window.WindowPane;
 import opslog.ui.controls.CustomComboBox;
 import opslog.ui.controls.CustomTextField;
 import opslog.ui.controls.Buttons;

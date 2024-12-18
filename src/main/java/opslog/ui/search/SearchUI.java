@@ -13,8 +13,8 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import opslog.object.event.Log;
-import opslog.object.event.ScheduledEvent;
-import opslog.ui.WindowPane;
+import opslog.object.event.Scheduled;
+import opslog.ui.window.WindowPane;
 import opslog.ui.controls.Buttons;
 import opslog.ui.controls.Styles;
 import opslog.ui.log.controls.LogTable;
@@ -41,11 +41,11 @@ public class SearchUI <T>{
 
     private void root() {
         if(!list.isEmpty()) {
-            if (list.get(0) instanceof ScheduledEvent) {
-                ObservableList<ScheduledEvent> calList = FXCollections.observableArrayList();
+            if (list.get(0) instanceof Scheduled) {
+                ObservableList<Scheduled> calList = FXCollections.observableArrayList();
                 calList.setAll(list.stream()
-                        .filter(item -> item instanceof ScheduledEvent)
-                        .map(item -> (ScheduledEvent) item)
+                        .filter(item -> item instanceof Scheduled)
+                        .map(item -> (Scheduled) item)
                         .collect(Collectors.toList())
                 );
                 CalendarTable calendarTable = new CalendarTable();
@@ -96,9 +96,9 @@ public class SearchUI <T>{
             FileSaver.saveFile(stage,data);
         }
 
-        if(list.get(0) instanceof ScheduledEvent) {
+        if(list.get(0) instanceof Scheduled) {
             for (T t : list) {
-                ScheduledEvent calendar = (ScheduledEvent) t;
+                Scheduled calendar = (Scheduled) t;
                 String[] row = calendar.toArray();
                 data.add(row);
             }

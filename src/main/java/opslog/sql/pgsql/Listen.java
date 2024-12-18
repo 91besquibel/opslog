@@ -54,8 +54,11 @@ public class Listen implements Runnable {
                 while (!Thread.currentThread().isInterrupted()) {
                     PGNotification[] notifications = pgConnection.getNotifications();
                     if (notifications != null) {
-                        for (PGNotification notification : notifications) {
-                            Notification.process(notification);
+                        for (PGNotification pgNotification : notifications) {
+                            new Thread(() -> {
+                                Notification notification = new Notification(pgNotification);
+                                notification.process();
+                            }).start();
                         }
                     }
                     // Avoid busy-waiting

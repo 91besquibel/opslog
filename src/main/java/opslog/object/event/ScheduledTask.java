@@ -1,38 +1,62 @@
 package opslog.object.event;
 
-import java.time.LocalDateTime;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
+import opslog.interfaces.SQL;
+import opslog.util.DateTime;
 
-public class ScheduledTask extends Task{
+public class ScheduledTask extends Scheduled implements SQL {
 
-	private final ObjectProperty<ScheduledChecklist> scheduledChecklist = new SimpleObjectProperty<>();
-	private final ObjectProperty<LocalDateTime> start = new SimpleObjectProperty<>();
-	private final ObjectProperty<LocalDateTime> stop = new SimpleObjectProperty<>();
-	
+	StringProperty taskAssociationID = new SimpleStringProperty();
+	BooleanProperty completionProperty = new SimpleBooleanProperty();
+
 	public ScheduledTask(){
-		this.scheduledChecklist.set(null);
-		this.start.set(null);
-		this.stop.set(null);
+		super();
+		this.taskAssociationID.set(null);
+		this.completionProperty.set(false);
 	}
 
-	public ObjectProperty<ScheduledChecklist> scheduledChecklistProperty(){
-		return scheduledChecklist;
-	}
-	
-	public ObjectProperty<LocalDateTime> startProperty(){
-		return start;
-	}
-	
-	public ObjectProperty<LocalDateTime> stopProperty(){
-		return stop;
+	public StringProperty taskAssociationID(){
+		return taskAssociationID;
 	}
 
-	public void setTask(Task task){
-		titleProperty().set(task.titleProperty().get());
-		typeProperty().set(task.typeProperty().get());
-		tagList().setAll(task.tagList());
-		initialsProperty().set(task.initialsProperty().get());
-		descriptionProperty().set(task.descriptionProperty().get());
+	public BooleanProperty completionProperty(){
+		return completionProperty;
+	}
+
+	@Override
+	public String getID() {
+		return super.getID();
+	}
+
+	@Override
+	public void setID(String id) {
+		super.setID(id);
+	}
+
+	@Override
+	public String toString() {
+		return super.toString();
+	}
+
+	@Override
+	public String[] toArray() {
+		String []  superArray = super.toArray();
+		return new String []{
+				getID(),
+				taskAssociationID.get(),
+				startProperty().get().toLocalDate().format(DateTime.DATE_FORMAT),
+				stopProperty().get().toLocalDate().format(DateTime.DATE_FORMAT),
+				startProperty().get().toLocalTime().format(DateTime.TIME_FORMAT),
+				stopProperty().get().toLocalTime().format(DateTime.TIME_FORMAT),
+				String.valueOf(fullDayProperty().get()),
+				recurrenceRuleProperty().get(),
+				String.valueOf(completionProperty.get()),
+				titleProperty().get(),
+				locationProperty().get(),
+				superArray[0], // type
+				superArray[1], // tags
+				superArray[2], // initials
+				superArray[3]  // description
+		};
 	}
 }

@@ -191,6 +191,20 @@ public class DatabaseQueryBuilder {
         }
         System.out.println("DatabaseQueryBuilder: Query complete \n" );
     }
+    public void deleteList(String tableName, String fid) throws SQLException {
+        UUID id = UUID.fromString(fid);
+
+        String sql = String.format("DELETE FROM %s WHERE fid = ?", tableName);
+        System.out.println("DatabaseQueryBuilder: " + sql);
+
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setObject(1, id);
+            statement.executeUpdate();
+        }
+        System.out.println("DatabaseQueryBuilder: Query complete \n" );
+    }
 
     /**
      * Loads an entire table.

@@ -7,7 +7,7 @@ import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.pgsql.Listen;
 import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.checklist.managers.ScheduledChecklistManager;
+import opslog.ui.checklist.managers.ScheduledTaskManager;
 import opslog.ui.checklist.managers.TaskManager;
 import opslog.ui.log.managers.LogManager;
 import opslog.ui.log.managers.PinboardManager;
@@ -15,7 +15,6 @@ import opslog.ui.settings.managers.FormatManager;
 import opslog.ui.settings.managers.ProfileManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
-import opslog.ui.calendar2.event.manager.ScheduledEventManager;
 
 public class StartController {
 
@@ -29,13 +28,10 @@ public class StartController {
 		TypeManager.loadTable();
 		TaskManager.loadTable();
 		ChecklistManager.loadTable();
-		PinboardManager.loadTable();
-		ScheduledChecklistManager.loadTable();
 
-		// load  end-user information tables
-		// this will load the correct
-		// calendar and scheduled checklist data
-		//MonthViewControl.initialize();
+		//EventDistribution.loadInitial();
+		PinboardManager.loadTable();
+		ScheduledTaskManager.loadTable();
 		LogManager.loadTable(LocalDate.now());
 	}
 

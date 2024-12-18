@@ -1,4 +1,4 @@
-package opslog.util;
+package opslog.ui.window;
 
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;

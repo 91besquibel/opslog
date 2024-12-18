@@ -1,10 +1,9 @@
-package opslog.util;
+package opslog.ui.controls;
 
 import javafx.scene.control.*;
-import opslog.ui.controls.Styles;
 import opslog.ui.controls.actions.Icon;
-import opslog.ui.controls.CustomMenuItem;
 import opslog.App;
+import opslog.util.Directory;
 
 public class ContextMenus{
 	
