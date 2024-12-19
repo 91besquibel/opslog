@@ -64,31 +64,42 @@ public class Settings {
         public static final int WIDTH_LARGE = 200;
         public static final int WIDTH_XLARGE = 400;
         public static final int SPACING = 5;
-        
+        public static final int BORDER_WIDTH_VALUE = 2;
+        public static final int CORNER_RADII_VALUE = 4;
+        public static final int CORNER_RADII_BG_VALUE = 6;
         // Button Size
         public static DoubleProperty buttonSize = new SimpleDoubleProperty(20.0);
-        public static BorderWidths BORDER_WIDTH = new BorderWidths(2.0); // border width
+        public static BorderWidths BORDER_WIDTH = new BorderWidths(BORDER_WIDTH_VALUE); // border width
         public static BorderWidths BORDER_WEEKVIEW =
                 new BorderWidths(0.0, 2.0, 0.0, 0.0);
-        public static CornerRadii CORNER_RADII_BG = new CornerRadii(6.0); 
-        public static CornerRadii CORNER_RADII = new CornerRadii(4.0); // corner radius
+        public static CornerRadii CORNER_RADII_BG = new CornerRadii(CORNER_RADII_BG_VALUE);
+        public static CornerRadii CORNER_RADII = new CornerRadii(CORNER_RADII_VALUE); // corner radius
         public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
-        
+
         // Color
+        public static ObjectProperty<Color> textColor =
+                new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
+        public static ObjectProperty<Color> promptTextColor =
+                new SimpleObjectProperty<Color>(darkenColor(textColor.get(), 0.15));
+        
         public static ObjectProperty<Color> rootColor =
-            new SimpleObjectProperty<>(Color.web("#040F0F"));
+                new SimpleObjectProperty<>(Color.web("#040F0F"));
         public static ObjectProperty<Color> primaryColor =
-            new SimpleObjectProperty<>(Color.web("#0F2D40"));
+                new SimpleObjectProperty<>(Color.web("#0F2D40"));
         public static ObjectProperty<Color> secondaryColor =
-            new SimpleObjectProperty<>(Color.web("#445C6A"));
+                new SimpleObjectProperty<>(Color.web("#445C6A"));
+        
         public static ObjectProperty<Color> transparent =
-            new SimpleObjectProperty<>(Color.TRANSPARENT);
+                new SimpleObjectProperty<>(Color.TRANSPARENT);
+        
         public static ObjectProperty<Color> focusColor =
-            new SimpleObjectProperty<>(Color.DARKORANGE);
+                new SimpleObjectProperty<>(Color.DARKORANGE);
+        
         public static ObjectProperty<Color> selectedColor =
-            new SimpleObjectProperty<>(darkenColor(secondaryColor.get(), 0.15));
+                new SimpleObjectProperty<>(darkenColor(secondaryColor.get(), 0.15));
+        
         public static ObjectProperty<Color> dateSelectColor =
-            new SimpleObjectProperty<>(secondaryColor.get().interpolate(focusColor.get(), 0.5));
+                new SimpleObjectProperty<>(secondaryColor.get().interpolate(focusColor.get(), 0.5));
         
         
         //Window Settings
@@ -239,27 +250,31 @@ public class Settings {
             new SimpleObjectProperty<>(
                     new Border(
                             new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CORNER_RADII, BORDER_WIDTH)));
-        
+
         // Text
-        public static ObjectProperty<Color> textColor =
-            new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
         public static ObjectProperty<Integer> textSize =
-            new SimpleObjectProperty<Integer>(14);
+                new SimpleObjectProperty<Integer>(18);
         public static ObjectProperty<String> textFont =
-            new SimpleObjectProperty<String>("Arial");
+                new SimpleObjectProperty<String>("Arial");
         public static ObjectProperty<Integer> textSizeSmall =
-            new SimpleObjectProperty<Integer>(textSize.get() - 2);
+                new SimpleObjectProperty<Integer>(textSize.get() - 2);
         public static ObjectProperty<Font> fontCalendarSmall =
-            new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeSmall.get()));
+                new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeSmall.get()));
+        public static ObjectProperty<Integer> textSizeExtraSmall =
+                new SimpleObjectProperty<Integer>(textSize.get() - 4);
+        public static ObjectProperty<Font> fontCalendarExtraSmall =
+                new SimpleObjectProperty<>(Font.font(textFont.get(), textSizeExtraSmall.get()));
+        public static ObjectProperty<Font> fontCalendarExtraSmallBold =
+                new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeExtraSmall.get()));
         public static ObjectProperty<Integer> textSizeBig =
-            new SimpleObjectProperty<Integer>(textSize.get() + 4);
+                new SimpleObjectProperty<Integer>(textSize.get() + 4);
         public static ObjectProperty<Font> fontCalendarBig =
-            new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeBig.get()));
+                new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSizeBig.get()));
         public static ObjectProperty<Font> fontProperty =
-            new SimpleObjectProperty<>(Font.font(textFont.get(), textSize.get()));
+                new SimpleObjectProperty<>(Font.font(textFont.get(), textSize.get()));
         public static ObjectProperty<Font> fontPropertyBold =
-            new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSize.get()));
-        
+                new SimpleObjectProperty<>(Font.font(textFont.get(), FontWeight.BOLD, textSize.get()));
+
         // Listener
         static {
         focusColor.addListener((obs, oldColor, newColor) -> {

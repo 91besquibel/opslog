@@ -1,7 +1,6 @@
 package opslog.object;
 
 import java.util.Arrays;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -14,12 +13,6 @@ public class Format implements SQL {
     private final StringProperty title = new SimpleStringProperty();
     private final StringProperty format = new SimpleStringProperty();
 
-    public Format(String ID, String title, String format) {
-        this.ID.set(ID);
-        this.title.set(title);
-        this.format.set(format);
-    }
-
     public Format() {
         this.ID.set(null);
         this.title.set(null);
@@ -29,51 +22,30 @@ public class Format implements SQL {
     public String getID() {
         return ID.get();
     }
-    
 
     public void setID(String newID) {
         ID.set(newID);
     }
 
-    public String getTitle() {
-        return title.get();
-    }
-
-    public void setTitle(String newTitle) {
-        title.set(newTitle);
-    }
-
-    public String getFormat() {
-        return format.get();
-    }
-
-    public void setFormat(String newFormat) {
-        format.set(newFormat);
-    }
-
-    public StringProperty getTitleProperty() {
+    public StringProperty titleProperty() {
         return title;
     }
 
-    public StringProperty getFormatProperty() {
+    public StringProperty formatProperty() {
         return format;
-    }
-
-    public boolean hasID(String newID) {
-        return getID().contains(newID);
     }
     
     public boolean hasValue() {
         return
-                title.get() != null && !title.get().trim().isEmpty() &&
-                        format.get() != null && !format.get().trim().isEmpty();
+            title.get() != null && !title.get().trim().isEmpty() &&
+            format.get() != null && !format.get().trim().isEmpty();
     }
 
     public String[] toArray() {
         return new String[]{
             getID(),
-            getTitle(),
-            getFormat()
+            title.get(),
+            format.get()
         };
     }
 
@@ -86,7 +58,7 @@ public class Format implements SQL {
     
     @Override
     public String toString() {
-        return getTitle();
+        return title.get();
     }
 
     @Override
@@ -95,8 +67,8 @@ public class Format implements SQL {
         if (other == null || getClass() != other.getClass()) return false;
         Format otherFormat = (Format) other;
         return
-                title.get().equals(otherFormat.getTitle()) &&
-                        format.get().equals(otherFormat.getFormat());
+                title.get().equals(otherFormat.titleProperty().get()) &&
+                format.get().equals(otherFormat.formatProperty().get());
     }
 
     @Override

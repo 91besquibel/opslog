@@ -1,8 +1,6 @@
 package opslog.ui.controls;
 
 import javafx.scene.control.MenuBar;
-import javafx.scene.image.Image;
-import javafx.scene.text.Text;
 import opslog.util.Settings;
 
 public class CustomMenuBar extends MenuBar {
