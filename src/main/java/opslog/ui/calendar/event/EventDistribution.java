@@ -22,6 +22,8 @@ import opslog.sql.hikari.ConnectionManager;
 import com.calendarfx.model.Entry;
 import com.calendarfx.model.LoadEvent;
 import opslog.ui.checklist.managers.ScheduledTaskManager;
+import opslog.ui.calendar.event.type.ScheduledEvent;
+import opslog.ui.calendar.event.entry.ScheduledEntry;
 
 
 public class EventDistribution {
@@ -49,86 +51,133 @@ public class EventDistribution {
 	}
 
 	public static void startEventCalendarEventHandlers() {
-		// Register an event handler for ENTRY_CALENDAR_CHANGED events
+		// Scheduled object Entry changes inside the Event_Calendar
 		CalendarLayout.EVENT_CALENDAR.addEventHandler(event -> {
-			if(event.isEntryAdded()){
-				Interval interval = event.getEntry().getInterval();
-				LocalDateTime newStart = interval.getStartDateTime();
-				LocalDateTime newStop = interval.getEndDateTime();
-				if(event.getEntry().getUserObject() == null){
-					Scheduled scheduledEvent = new Scheduled();
-					//start_date DATE,
-					LocalDate startDate = interval.getStartDate();
-					//stop_date DATE,
-					LocalDate stopDate = interval.getEndDate();
-					//start_time TIME,
-					LocalTime startTime = interval.getStartTime();
-					//stop_time TIME,
-					LocalTime stopTime = interval.getEndTime();
-					//full_day TEXT,
-					boolean fullDay = event.getEntry().isFullDay();
-					//recurrance_rule TEXT,
-					String recurranceRule = event.getEntry().getRecurrenceRule();
-					//title TEXT,
-					String title = event.getEntry().getTitle();
-					//location TEXT,
-					String location  = event.getEntry().getLocation();
-					//typeID TEXT,
-					//event.getEntry()
-					//tagIDs TEXT,
-					//event.getEntry()
-					//initials TEXT,
-					//event.getEntry()
-					//description TEXT
-					//event.getEntry()
+			// Handle any event type
+			if (event.getEventType().equals(CalendarEvent.ANY)) {
+				System.out.println("EventDistribution: ANY " + event.getEventType().getName());
+			}
 
+			// Handle entry changed event type
+			if (event.getEventType().equals(CalendarEvent.ENTRY_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_CHANGED " + event.getEventType().getName());
+			}
+
+			// Handle entry added
+			if (event.isEntryAdded()) {
+				System.out.println("EventDistribution: Entry Added");
+			}
+
+			// Handle entry removed
+			if (event.isEntryRemoved()) {
+				System.out.println("EventDistribution: EntryRemoved");
+				if (event.getEntry().getUserObject() != null) {
+					if (event.getEntry().getUserObject() instanceof Scheduled scheduled) {
+						if (scheduled.getID() != null) {
+							try {
+								DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+								databaseQueryBuilder.delete(
+									DatabaseConfig.SCHEDULED_EVENT_TABLE,
+									scheduled.getID()
+								);
+							} catch (SQLException e) {
+								throw new RuntimeException(e);
+							}
+						}
+					}
 				}
 			}
 
-			if(event.isEntryRemoved()){}
+			// Handle custom event types
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_COMPLETION_STATUS_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_COMPLETION_STATUS_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					Scheduled scheduled = scheduledEntry.getScheduled();
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+				}
+			}
 
-			if(event.getEventType().equals(CalendarEvent.ENTRY_INTERVAL_CHANGED)){
-				if( event.getEntry().getUserObject() instanceof Scheduled scheduledEvent){
-					Interval interval = event.getEntry().getInterval();
-					LocalDateTime newStart = interval.getStartDateTime();
-					LocalDateTime newStop = interval.getEndDateTime();
-					if(!scheduledEvent.startProperty().get().isEqual(newStart) || !scheduledEvent.stopProperty().get().isEqual(newStop)){
-						scheduledEvent.startProperty().set(newStart);
-						scheduledEvent.stopProperty().set(newStop);
-						try {
-							DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-							databaseQueryBuilder.update(
-									DatabaseConfig.SCHEDULED_EVENT_TABLE,
-									DatabaseConfig.SCHEDULED_EVENT_COLUMNS,
-									scheduledEvent.toArray()
-							);
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_TYPE_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_TYPE_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				Scheduled scheduled = scheduledEntry.getScheduled();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}
+			}
 
-						} catch (SQLException e) {
-							throw new RuntimeException(e);
-						}
-					}
-                }
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_TAGLIST_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_TAGLIST_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					Scheduled scheduled = scheduledEntry.getScheduled();
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+				}
+			}
+
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_INITIALS_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_INITIALS_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					Scheduled scheduled = scheduledEntry.getScheduled();
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+				}
+			}
+
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_DESCRIPTION_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_DESCRIPTION_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					Scheduled scheduled = scheduledEntry.getScheduled();
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+				}
+			}
+
+			if (event.getEventType().equals(ScheduledEvent.ENTRY_ALL_CHANGED)) {
+				System.out.println("EventDistribution: ENTRY_ALL_CHANGED " + event.getEventType().getName());
+				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+				Scheduled scheduled = scheduledEntry.getScheduled();
+				if(scheduledEntry.allPropertiesHaveValues()){
+					
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}else{
+					System.out.println("EventDistribution: returned " + scheduledEntry.allPropertiesHaveValues());
+					System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
+				}
 			}
 		});
+
 	}
 
 	private static void processEvent(LoadEvent loadEvent) {
 		if (loadEvent == null) return;
 		String sourceName = loadEvent.getSourceName();
 		LocalDate startDate = loadEvent.getStartDate();
-		System.out.println("EventDistribution: " + sourceName + " requesting events from " + startDate);
+		//System.out.println("EventDistribution: " + sourceName + " requesting events from " + startDate);
 		int incomingMonth = startDate.getMonthValue();
 		// If the month has changed, update the view range and query
 		if (currentMonth != incomingMonth) {
 			// Case: The new startDate is in a different month, so we need to query for the new month
-			System.out.println("EventDistribution: Start date is outside of the current month, recalculating for new month.");
+			//System.out.println("EventDistribution: Start date is outside of the current month, recalculating for new month.");
 			eventTray.clear();
 			LocalDate firstDayOfMonth = startDate.withDayOfMonth(1);
 			LocalDate lastDayOfMonth = startDate.withDayOfMonth(startDate.lengthOfMonth());
 			currentMonth = startDate.getMonthValue();
 			handleQueryUsingExecutor(firstDayOfMonth, lastDayOfMonth);
 		} else {
-			System.out.println("EventDistribution: Request denied as the start date is within the current view range.");
+			//System.out.println("EventDistribution: Request denied as the start date is within the current view range.");
 		}
 	}
 
@@ -241,7 +290,8 @@ public class EventDistribution {
 				if(change.wasAdded()){
 					for(Event event: change.getAddedSubList()){
 						if(event instanceof Scheduled scheduled){
-							if(inRange(scheduled.startProperty().get(),scheduled.stopProperty().get())){
+							EventDistributionUtil util = new EventDistributionUtil();
+							if(util.inRange(currentMonth, scheduled.startProperty().get(),scheduled.stopProperty().get())){
 								eventTray.add(scheduled);
 							}
 						}
@@ -261,8 +311,5 @@ public class EventDistribution {
 			}
 		});
 	}
-
-	public static boolean inRange(LocalDateTime start, LocalDateTime stop){
-        return currentMonth == start.getMonthValue() && currentMonth == stop.getMonthValue();
-    }
+	
 }

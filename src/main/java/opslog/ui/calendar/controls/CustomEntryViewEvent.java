@@ -23,7 +23,6 @@ import com.calendarfx.view.Messages;
 import com.calendarfx.view.RecurrenceView;
 import com.calendarfx.view.TimeField;
 import com.calendarfx.view.popover.EntryHeaderView;
-import com.calendarfx.view.popover.EntryMapView;
 import com.calendarfx.view.popover.EntryPopOverPane;
 import com.calendarfx.view.popover.RecurrencePopup;
 import impl.com.calendarfx.view.util.Util;
@@ -35,22 +34,25 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import opslog.object.Format;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Scheduled;
 import opslog.object.event.ScheduledTask;
-import opslog.ui.calendar.CalendarLayout;
+import opslog.ui.calendar.event.entry.ScheduledEntry;
+import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomComboBox;
 import opslog.ui.controls.CustomTextArea;
 import opslog.ui.controls.CustomTextField;
 import opslog.ui.settings.managers.FormatManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
+import opslog.util.Directory;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
+import java.util.Arrays;
+
 
 public class CustomEntryViewEvent extends EntryPopOverPane {
 
@@ -60,27 +62,25 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
     private final TimeField endTimeField = new TimeField();
     private final DatePicker startDatePicker = new DatePicker();
     private final DatePicker endDatePicker = new DatePicker();
-    private final CustomComboBox<Type> typePicker = new CustomComboBox<>("Type", Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
+    private final CustomComboBox<Type> typePicker = new CustomComboBox<>("Type", 300,Settings.SINGLE_LINE_HEIGHT);
     private final CheckComboBox<Tag> tagPicker = new CheckComboBox<>(TagManager.getList());
-    private final CustomTextField initialsField = new CustomTextField("Initials",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-    private final CustomComboBox<Format> formatPicker = new CustomComboBox<>("Format",Settings.WIDTH_SMALL,Settings.SINGLE_LINE_HEIGHT);
-    private final CustomTextArea descriptionArea = new CustomTextArea(Settings.WIDTH_LARGE,Settings.HEIGHT_SMALL);
+    private final CustomTextField initialsField = new CustomTextField("Initials",300,Settings.SINGLE_LINE_HEIGHT);
+    private final CustomComboBox<Format> formatPicker = new CustomComboBox<>("Format",300,Settings.SINGLE_LINE_HEIGHT);
+    private final CustomTextArea descriptionArea = new CustomTextArea(300,Settings.HEIGHT_SMALL);
     private final CheckBox completionCheckBox = new CheckBox();
-    private Entry<?> entry = new Entry<>();
+    private ScheduledEntry entry;
 
     private boolean updatingFields;
 
     private final InvalidationListener entryIntervalListener = it -> {
         updatingFields = true;
         try {
+            System.out.println("EntryView: updating interval fields");
             Entry<?> entry = getEntry();
             startTimeField.setValue(entry.getStartTime());
             endTimeField.setValue(entry.getEndTime());
             startDatePicker.setValue(entry.getStartDate());
             endDatePicker.setValue(entry.getEndDate());
-            if(entry.getUserObject() != null){
-                setUserObjectValues(entry.getUserObject());
-            }
         } finally {
             updatingFields = false;
         }
@@ -96,13 +96,14 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
 
     private final WeakInvalidationListener weakUpdateSummaryLabelListener = new WeakInvalidationListener(updateSummaryLabelListener);
 
-    public CustomEntryViewEvent(Entry<?> entry, DateControl dateControl) {
+    public CustomEntryViewEvent(ScheduledEntry entry, DateControl dateControl) {
         super();
         this.entry = entry;
 
         getStyleClass().add("entry-details-view");
         backgroundProperty().bind(Settings.primaryBackground);
         borderProperty().bind(Settings.secondaryBorder);
+        maxWidth(300);
 
         Label fullDayLabel = new Label(Messages.getString("EntryDetailsView.FULL_DAY"));
         fullDayLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
@@ -166,42 +167,51 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         recurrenceButton.getItems().setAll(none, everyDay, everyWeek, everyMonth, everyYear, new SeparatorMenuItem(), custom);
         recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
+        
+        VBox vbox = new VBox();
         EntryHeaderView headerView = new EntryHeaderView(entry, dateControl.getCalendars());
+        HBox topBox =new HBox(
+            5,
+            fullDayLabel,
+            fullDay,
+            recurrentLabel,
+            recurrenceButton
+        );
+        topBox.setAlignment(Pos.CENTER_LEFT);
 
+        
         //type & tag
         typePicker.setItems(TypeManager.getList());
-        HBox typeTagBox = new HBox(5,typePicker,tagPicker);
-        HBox.setHgrow(typePicker, Priority.ALWAYS);
-        HBox.setHgrow(tagPicker,Priority.ALWAYS);
-
+        typePicker.setValue(entry.getType());
+        
+        tagPicker.backgroundProperty().bind(Settings.secondaryBackground);
+        tagPicker.setPrefHeight(Settings.SINGLE_LINE_HEIGHT);
+        tagPicker.setMinWidth(300);
+        
         //initials & format
+        initialsField.setText(entry.getInitials());
+        descriptionArea.setText(entry.getDescription());
         formatPicker.setItems(FormatManager.getList());
-        HBox initialsFormatBox = new HBox(5,initialsField,formatPicker);
-        HBox.setHgrow(initialsField, Priority.ALWAYS);
-        HBox.setHgrow(formatPicker,Priority.ALWAYS);
 
         //completion status
         Label completionLabel = new Label("Complete:");
         completionLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
         completionLabel.textFillProperty().bind(Settings.textColor);
+        CustomButton saveButton = new CustomButton(Directory.ADD_WHITE, Directory.ADD_CALENDAR_GREY, "Save");
         HBox bottomBox =new HBox(
-                5,
-                fullDayLabel,
-                fullDay,
-                recurrentLabel,
-                recurrenceButton,
-                completionLabel,
-                completionCheckBox
+            saveButton
         );
-        bottomBox.setAlignment(Pos.CENTER_LEFT);
-        initializeUserObject();
+        bottomBox.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox vbox = new VBox();
+        
         vbox.getChildren().add(headerView);
+        vbox.getChildren().add(topBox);
         vbox.getChildren().add(startDateBox);
         vbox.getChildren().add(stopDateBox);
-        vbox.getChildren().add(typeTagBox);
-        vbox.getChildren().add(initialsFormatBox);
+        vbox.getChildren().add(typePicker);
+        vbox.getChildren().add(tagPicker);
+        vbox.getChildren().add(initialsField);
+        vbox.getChildren().add(formatPicker);
         vbox.getChildren().add(descriptionArea);
         vbox.getChildren().add(bottomBox);
         vbox.setSpacing(Settings.SPACING);
@@ -211,7 +221,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         startTimeField.visibleProperty().bind(Bindings.not(entry.fullDayProperty()));
         endTimeField.visibleProperty().bind(Bindings.not(entry.fullDayProperty()));
 
-        // start date and time
         startDatePicker.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (!updatingFields) {
                 // Work-Around for DatePicker bug introduced with 18+9 ("commit on focus lost").
@@ -225,8 +234,7 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
                 entry.changeStartTime(newValue, true);
             }
         });
-
-        // end date and time
+        
         endDatePicker.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (!updatingFields) {
                 // Work-Around for DatePicker bug introduced with 18+9 ("commit on focus lost").
@@ -241,14 +249,50 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
             }
         });
 
+        typePicker.valueProperty().addListener((obs,ov,nv)->{
+           entry.typeProperty().set(nv);
+        });
+
+        tagPicker.getCheckModel().getCheckedItems().addListener(
+            (ListChangeListener<? super Tag>) change -> {
+                entry.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
+            }
+        );
+
+        initialsField.textProperty().addListener((obs,ov,nv) -> {
+            entry.initialsProperty().set(nv);
+        });
+
+        descriptionArea.textProperty().addListener((obs,ov,nv) -> {
+            entry.descriptionProperty().set(nv);
+        });
+
         fullDay.setOnAction(evt -> entry.setFullDay(fullDay.isSelected()));
 
         entry.recurrenceRuleProperty().addListener(weakRecurrenceRuleListener);
+
+        
+        entry.userObjectProperty().addListener((obs, ov, nv) -> {
+            if(nv != null){
+              setUserObjectValues(nv);
+            }
+        });
+
+        if(entry.getUserObject() != null){
+            setUserObjectValues(entry.getUserObject());
+        }
+
+        formatPicker.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
+            descriptionArea.clear();
+            descriptionArea.setText(nv.formatProperty().get());
+        });
 
         updateRecurrenceRuleButton(entry);
         updateSummaryLabel(entry);
 
         entry.recurrenceRuleProperty().addListener(weakUpdateSummaryLabelListener);
+
+        saveButton.setOnAction(e -> {handleSave();});
     }
 
     public final Entry<?> getEntry() {
@@ -315,71 +359,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         }
     }
 
-    private void initializeUserObject(){
-        completionCheckBox.selectedProperty().addListener((obs,ov,nv) -> {
-            if(!updatingFields){
-                if(entry.getUserObject() instanceof ScheduledTask scheduledTask){
-                    System.out.println("Updating initials");
-                    scheduledTask.completionProperty().set(nv);
-                }
-            }
-        });
-
-        typePicker.valueProperty().addListener((obs,ov,nv)->{
-            if(!updatingFields){
-                if(entry.getUserObject() instanceof Scheduled scheduled){
-                    System.out.println("Updating initials");
-                    scheduled.typeProperty().set(nv);
-                }
-            }
-        });
-
-        tagPicker.getCheckModel().getCheckedItems().addListener(
-            (ListChangeListener<? super Tag>) change -> {
-                if(!updatingFields){
-                    if(entry.getUserObject() instanceof Scheduled scheduled){
-                        System.out.println("Updating initials");
-                        scheduled.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
-                    }
-                }
-            }
-        );
-
-        formatPicker.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-            descriptionArea.clear();
-            descriptionArea.setText(nv.formatProperty().get());
-        });
-
-        initialsField.textProperty().addListener((obs,ov,nv) -> {
-            if(!updatingFields){
-                if(entry.getUserObject() instanceof Scheduled scheduled){
-                    System.out.println("Updating initials");
-                    scheduled.initialsProperty().set(nv);
-                }
-            }
-        });
-
-        descriptionArea.textProperty().addListener((obs,ov,nv) -> {
-             if(!updatingFields){
-                 if(entry.getUserObject() instanceof Scheduled scheduled){
-                     System.out.println("Updating description");
-                     scheduled.descriptionProperty().set(nv);
-                 }
-             }
-        });
-
-        //listener
-        entry.userObjectProperty().addListener((obs, ov, nv) -> {
-              if(nv != null){
-                  setUserObjectValues(nv);
-              }
-        });
-        //initial
-        if(entry.getUserObject() != null){
-            setUserObjectValues(entry.getUserObject());
-        }
-    }
-
     private void setUserObjectValues(Object object){
         if(object instanceof ScheduledTask scheduledTask){
             // task completion
@@ -404,5 +383,23 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
             initialsField.setText(scheduled.initialsProperty().get());
             descriptionArea.setText(scheduled.descriptionProperty().get());
         }
+    }
+
+    private void handleSave() { 
+        System.out.println("Popover completed for entry: " + entry.getTitle()); 
+        // Add custom completion logic here
+        Scheduled scheduled = entry.getUserObject();
+        scheduled.startProperty().set(entry.intervalProperty().get().getStartDateTime());
+        scheduled.stopProperty().set(entry.intervalProperty().get().getEndDateTime());
+        scheduled.fullDayProperty().set(entry.fullDayProperty().get());
+        scheduled.recurrenceRuleProperty().set(entry.recurrenceRuleProperty().get());
+        scheduled.titleProperty().set(entry.titleProperty().get());
+        scheduled.locationProperty().set(entry.locationProperty().get());
+        
+        scheduled.typeProperty().set(typePicker.getValue());
+        scheduled.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
+        scheduled.initialsProperty().set(initialsField.getText().trim());
+        scheduled.descriptionProperty().set(descriptionArea.getText().trim());
+        System.out.println("EntryView: " + Arrays.toString(scheduled.toArray()));
     }
 }
