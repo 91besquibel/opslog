@@ -9,12 +9,13 @@ public class CustomTextField extends TextField {
         setPromptText(prompt);
         setPrefWidth(width);
         setMaxWidth(width);
+        setMinHeight(height);
         setPrefHeight(height);
 
         fontProperty().bind(Settings.fontProperty);
         borderProperty().bind(Settings.secondaryBorder);
         backgroundProperty().bind(Settings.secondaryBackground);
-        //setEffect(Settings.INNERSHADOW);
+        
         setStyle(Styles.getTextStyle());
 
         focusedProperty().addListener((obs, wasFocused, isFocused) -> {
@@ -22,7 +23,7 @@ public class CustomTextField extends TextField {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 
@@ -31,7 +32,7 @@ public class CustomTextField extends TextField {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 
