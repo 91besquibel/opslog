@@ -18,9 +18,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class ScheduledEventManager {
-
-	// Each used fo the different view options in the scheduledEvent to store the currently viewed items
-	private static final ObservableList<Scheduled> processingList = FXCollections.observableArrayList();
 	
 	public static Scheduled newItem(String [] row){
 		Scheduled scheduledEvent = new Scheduled();
@@ -28,41 +25,33 @@ public class ScheduledEventManager {
 		scheduledEvent.startProperty().set(
 			LocalDateTime.of(
 				LocalDate.parse(row[1]),
-				LocalTime.parse(row[2])
+				LocalTime.parse(row[3])
 			)
 		);
 		scheduledEvent.stopProperty().set(
 			LocalDateTime.of(
-				LocalDate.parse(row[3]),
+				LocalDate.parse(row[2]),
 				LocalTime.parse(row[4])
 			)
 		);
 		scheduledEvent.fullDayProperty().set(Boolean.parseBoolean(row[5]));
-		scheduledEvent.recurrenceRuleProperty().set(row[6]);
+		if(row[6] == "none"){
+			scheduledEvent.recurrenceRuleProperty().set(null);
+		}else{
+			scheduledEvent.recurrenceRuleProperty().set(row[6]);
+		}
 		scheduledEvent.titleProperty().set(row[7]);
-		scheduledEvent.locationProperty().set(row[8]);		
+		if(row[8] == "none"){
+			scheduledEvent.locationProperty().set(null);
+		}else{
+			scheduledEvent.locationProperty().set(row[8]);
+		}
+		
 		scheduledEvent.typeProperty().set(TypeManager.getItem(row[9]));
 		scheduledEvent.tagList().setAll(TagManager.getItems(row[10]));
 		scheduledEvent.initialsProperty().set(row[11]);
 		scheduledEvent.descriptionProperty().set(row[12]);
 		return scheduledEvent;
 	}
-
-	public static Scheduled getItem(String id){
-		for(Event event : processingList){
-			if(event instanceof Scheduled scheduledEvent){
-				if(scheduledEvent.getID().contains(id)){
-					return scheduledEvent;
-				}
-			}
-		}
-		return null;
-	}
-
-	// use EventDistribution.currentMonth to determine if a new item should be displayed
-	public static ObservableList<Scheduled> getProcessingList() {
-		return processingList;
-	}
-
 
 }

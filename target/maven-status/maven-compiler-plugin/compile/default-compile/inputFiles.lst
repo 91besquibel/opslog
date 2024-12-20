@@ -54,6 +54,7 @@
 /home/runner/opslog/src/main/java/opslog/ui/calendar/controls/CustomEntryViewEvent.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomVBox.java
 /home/runner/opslog/src/main/java/opslog/ui/controls/CustomMenuBar.java
+/home/runner/opslog/src/main/java/opslog/util/Debounce.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/layout/EditorLayout.java
 /home/runner/opslog/src/main/java/opslog/util/Logging.java
 /home/runner/opslog/src/main/java/opslog/sql/pgsql/Listen.java

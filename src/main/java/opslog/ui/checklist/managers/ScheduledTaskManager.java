@@ -30,14 +30,15 @@ public class ScheduledTaskManager {
     public static void addTaskList(String uuid ,ObservableList<ScheduledTask> taskList) {
         taskSchedule.put(uuid, taskList);
         for(ScheduledTask scheduledTask : taskList){
-            ScheduledEventManager.getProcessingList().add(scheduledTask);
+            // create Entry<scheduledTask> here
+            
         }
     }
 
     public static void addItem(String fid,ScheduledTask scheduledTask){
         ObservableList<ScheduledTask> taskList = taskSchedule.get(fid);
         taskList.add(scheduledTask);
-        ScheduledEventManager.getProcessingList().add(scheduledTask);
+        
     }
 
     public static void removeTaskList(String fid){

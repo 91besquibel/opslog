@@ -13,6 +13,8 @@ import com.calendarfx.model.Entry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javafx.event.EventHandler;
+import com.calendarfx.model.CalendarEvent;
 
 public class EventDistributionUtil{
 
@@ -78,22 +80,6 @@ public class EventDistributionUtil{
 		}
 		return entry;
 	}
-
-	public void insertEntry(ScheduledEntry entry){
-		if(entry.allPropertiesHaveValues()){
-			Scheduled scheduled = entry.getScheduled();
-			System.out.println("EventDistribution: " + Arrays.toString(scheduled.toArray()));
-
-			try{
-				DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-				databaseQueryBuilder.insert(
-					DatabaseConfig.SCHEDULED_EVENT_TABLE,
-					DatabaseConfig.SCHEDULED_EVENT_COLUMNS,
-					scheduled.toArray()
-				);
-			}catch(SQLException e){
-				e.printStackTrace();
-			}
-		}
-	}
+	//void addEventHandler(javafx.event.EventHandler<com.calendarfx.model.CalendarEvent>)
+	
 }

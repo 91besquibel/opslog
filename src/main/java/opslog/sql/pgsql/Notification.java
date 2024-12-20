@@ -23,6 +23,7 @@ import opslog.ui.settings.managers.FormatManager;
 import opslog.ui.settings.managers.ProfileManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
+import opslog.ui.calendar.event.EventDistribution;
 
 public class Notification {
 
@@ -56,7 +57,7 @@ public class Notification {
         }
     }
 
-    private  void tableSwitch(String tableName, String id, String operation, List<String[]> result){
+    private void tableSwitch(String tableName, String id, String operation, List<String[]> result){
         switch(tableName){
             case "log_table":
                 processLog(id,operation,result);
@@ -103,22 +104,21 @@ public class Notification {
     private void processScheduledEvent(String id, String operation, List<String[]> result) {
         Platform.runLater(() -> {
             for(String [] row : result) {
-                Scheduled scheduledEvent = ScheduledEventManager.newItem(row);
+                
+                Scheduled scheduled = ScheduledEventManager.newItem(row);
+                
                 if (operation.contains("INSERT")) {
-                    ScheduledEventManager.getProcessingList().add(scheduledEvent);
-                    System.out.println("Notification: processing complete");
+                    
+                    EventDistribution.insertNotification(id,scheduled);
+                    
                 } else if (operation.contains("UPDATE")) {
-                    if (ScheduledEventManager.getProcessingList().contains(scheduledEvent)) {
-                        int index = ScheduledEventManager.getProcessingList().indexOf(scheduledEvent);
-                        ScheduledEventManager.getProcessingList().set(index, scheduledEvent);
-                        System.out.println("Notification: processing complete");
-                    }
+                    
+                    EventDistribution.updateNotification(id,scheduled);
+                    
                 } else if (operation.contains("DELETE")) {
-                    Scheduled originalScheduledEvent = ScheduledEventManager.getItem(id);
-                    if (originalScheduledEvent != null) {
-                        ScheduledEventManager.getProcessingList().remove(originalScheduledEvent);
-                        System.out.println("Notification: processing complete");
-                    };
+                    
+                    EventDistribution.deleteNotification(id);
+                    
                 }
             }
         });

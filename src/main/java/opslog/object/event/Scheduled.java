@@ -81,6 +81,14 @@ public class Scheduled extends Event implements SQL {
 	@Override
 	public String[] toArray() {
 		String[] superArray = super.toArray();
+		String recurrenceRule = recurrenceRuleProperty().get();
+		if (recurrenceRuleProperty().get() == null || recurrenceRuleProperty().get().isEmpty()){
+			recurrenceRule = "none";
+		}
+		String location = locationProperty().get();
+		if(locationProperty().get() == null || locationProperty().get().isEmpty()){
+			location = "none";
+		}
 		return new String[]{
 				getID(),
 				startProperty().get().toLocalDate().format(DateTime.DATE_FORMAT),
@@ -88,9 +96,9 @@ public class Scheduled extends Event implements SQL {
 				startProperty().get().toLocalTime().format(DateTime.TIME_FORMAT),
 				stopProperty().get().toLocalTime().format(DateTime.TIME_FORMAT),
 				String.valueOf(fullDayProperty().get()),
-				recurrenceRuleProperty().get(),
+				recurrenceRule,
 				titleProperty().get(),
-				locationProperty().get(),
+				location,
 				superArray[0], // type
 				superArray[1], // tags
 				superArray[2], // initials

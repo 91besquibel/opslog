@@ -52,10 +52,12 @@ import opslog.util.Directory;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
 import java.util.Arrays;
-
+import opslog.util.Debounce;
 
 public class CustomEntryViewEvent extends EntryPopOverPane {
-
+    
+    private static final Debounce debounce = new Debounce();
+    private static final long DEBOUNCE_DELAY = 300;
     private final Label summaryLabel;
     private final MenuButton recurrenceButton;
     private final TimeField startTimeField = new TimeField();
@@ -75,7 +77,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
     private final InvalidationListener entryIntervalListener = it -> {
         updatingFields = true;
         try {
-            System.out.println("EntryView: updating interval fields");
             Entry<?> entry = getEntry();
             startTimeField.setValue(entry.getStartTime());
             endTimeField.setValue(entry.getEndTime());
@@ -99,7 +100,7 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
     public CustomEntryViewEvent(ScheduledEntry entry, DateControl dateControl) {
         super();
         this.entry = entry;
-
+        
         getStyleClass().add("entry-details-view");
         backgroundProperty().bind(Settings.primaryBackground);
         borderProperty().bind(Settings.secondaryBorder);
@@ -164,12 +165,21 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         everyMonth.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=MONTHLY"));
         everyYear.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=YEARLY"));
         custom.setOnAction(evt -> showRecurrenceEditor(entry));
-        recurrenceButton.getItems().setAll(none, everyDay, everyWeek, everyMonth, everyYear, new SeparatorMenuItem(), custom);
+        recurrenceButton.getItems().setAll(
+            none, 
+            everyDay, 
+            everyWeek, 
+            everyMonth, 
+            everyYear, 
+            new SeparatorMenuItem(), 
+            custom
+        );
         recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
         
         VBox vbox = new VBox();
         EntryHeaderView headerView = new EntryHeaderView(entry, dateControl.getCalendars());
+        
         HBox topBox =new HBox(
             5,
             fullDayLabel,
@@ -197,13 +207,16 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         Label completionLabel = new Label("Complete:");
         completionLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
         completionLabel.textFillProperty().bind(Settings.textColor);
-        CustomButton saveButton = new CustomButton(Directory.ADD_WHITE, Directory.ADD_CALENDAR_GREY, "Save");
+        CustomButton saveButton = new CustomButton(
+            Directory.ADD_WHITE, 
+            Directory.ADD_CALENDAR_GREY, 
+            "Save"
+        );
         HBox bottomBox =new HBox(
             saveButton
         );
         bottomBox.setAlignment(Pos.CENTER_RIGHT);
 
-        
         vbox.getChildren().add(headerView);
         vbox.getChildren().add(topBox);
         vbox.getChildren().add(startDateBox);
@@ -256,6 +269,7 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         tagPicker.getCheckModel().getCheckedItems().addListener(
             (ListChangeListener<? super Tag>) change -> {
                 entry.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
+                
             }
         );
 
@@ -264,23 +278,12 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         });
 
         descriptionArea.textProperty().addListener((obs,ov,nv) -> {
-            entry.descriptionProperty().set(nv);
+             entry.descriptionProperty().set(nv);
         });
 
         fullDay.setOnAction(evt -> entry.setFullDay(fullDay.isSelected()));
 
         entry.recurrenceRuleProperty().addListener(weakRecurrenceRuleListener);
-
-        
-        entry.userObjectProperty().addListener((obs, ov, nv) -> {
-            if(nv != null){
-              setUserObjectValues(nv);
-            }
-        });
-
-        if(entry.getUserObject() != null){
-            setUserObjectValues(entry.getUserObject());
-        }
 
         formatPicker.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
             descriptionArea.clear();
@@ -291,8 +294,10 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         updateSummaryLabel(entry);
 
         entry.recurrenceRuleProperty().addListener(weakUpdateSummaryLabelListener);
+        initialsField.setText(entry.getInitials());
+        descriptionArea.setText(entry.getDescription());
+        typePicker.setValue(entry.getType());
 
-        saveButton.setOnAction(e -> {handleSave();});
     }
 
     public final Entry<?> getEntry() {
@@ -357,49 +362,5 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
                     break;
             }
         }
-    }
-
-    private void setUserObjectValues(Object object){
-        if(object instanceof ScheduledTask scheduledTask){
-            // task completion
-            completionCheckBox.setSelected(scheduledTask.completionProperty().get());
-            typePicker.setValue(scheduledTask.typeProperty().getValue());
-            for(Tag tag : scheduledTask.tagList()) {
-                if(tagPicker.getItems().contains(tag)){
-                    tagPicker.getCheckModel().check(tag);
-                }
-            }
-            initialsField.setText(scheduledTask.initialsProperty().get());
-            descriptionArea.setText(scheduledTask.descriptionProperty().get());
-        }
-
-        if(object instanceof Scheduled scheduled){
-            typePicker.setValue(scheduled.typeProperty().getValue());
-            for(Tag tag : scheduled.tagList()) {
-                if(tagPicker.getItems().contains(tag)){
-                    tagPicker.getCheckModel().check(tag);
-                }
-            }
-            initialsField.setText(scheduled.initialsProperty().get());
-            descriptionArea.setText(scheduled.descriptionProperty().get());
-        }
-    }
-
-    private void handleSave() { 
-        System.out.println("Popover completed for entry: " + entry.getTitle()); 
-        // Add custom completion logic here
-        Scheduled scheduled = entry.getUserObject();
-        scheduled.startProperty().set(entry.intervalProperty().get().getStartDateTime());
-        scheduled.stopProperty().set(entry.intervalProperty().get().getEndDateTime());
-        scheduled.fullDayProperty().set(entry.fullDayProperty().get());
-        scheduled.recurrenceRuleProperty().set(entry.recurrenceRuleProperty().get());
-        scheduled.titleProperty().set(entry.titleProperty().get());
-        scheduled.locationProperty().set(entry.locationProperty().get());
-        
-        scheduled.typeProperty().set(typePicker.getValue());
-        scheduled.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
-        scheduled.initialsProperty().set(initialsField.getText().trim());
-        scheduled.descriptionProperty().set(descriptionArea.getText().trim());
-        System.out.println("EntryView: " + Arrays.toString(scheduled.toArray()));
     }
 }

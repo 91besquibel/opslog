@@ -67,8 +67,8 @@ public class ScheduledEntry extends Entry<Scheduled> {
 	// Constructor
 	public ScheduledEntry(Calendar<Scheduled> calendar) {
 		super();
-		titleProperty().set("New Entry");
-		fullDayProperty().set(false);
+		setTitle("New Entry");
+		setFullDay(false);
 		setCalendar(calendar);
 		// Add a listener to the tags list to handle changes
 		tagList.addListener((ListChangeListener<Tag>) change -> {
@@ -82,14 +82,11 @@ public class ScheduledEntry extends Entry<Scheduled> {
 		});
 
 		// Add a listener to the userObjectProperty 
-		userObjectProperty().addListener((observable, oldValue, newValue) -> { 
-			if (newValue instanceof Scheduled) { 
-				Scheduled scheduled = (Scheduled) newValue; 
-				setType(scheduled.typeProperty().get()); 
-				tagList().setAll(scheduled.tagList()); 
-				setInitials(scheduled.initialsProperty().get()); 
-				setDescription(scheduled.descriptionProperty().get()); 
-			}
+		userObjectProperty().addListener((observable, oldValue, newValue) -> {  
+			setType(newValue.typeProperty().get()); 
+			tagList().setAll(newValue.tagList()); 
+			setInitials(newValue.initialsProperty().get()); 
+			setDescription(newValue.descriptionProperty().get());
 		});
 	}
 
@@ -140,8 +137,6 @@ public class ScheduledEntry extends Entry<Scheduled> {
 	// Method to check if all properties have values 
 	public boolean allPropertiesHaveValues() {
 		if (getInterval() == null || getStartTime() == null || getEndTime() == null) { return false;}
-		// if (isFullDay() == false) { return false; }
-		if (getRecurrenceRule() == null || getRecurrenceRule().isEmpty()) { return false; }
 		if (getTitle() == null || getTitle().isEmpty()) { return false;}
 		if (type.get() == null) { return false; }
 		if (tagList == null || tagList.isEmpty()) { return false; }

@@ -4,7 +4,7 @@ import javafx.beans.property.*;
 import opslog.interfaces.SQL;
 import opslog.util.DateTime;
 
-public class ScheduledTask extends Scheduled implements SQL {
+public class ScheduledTask extends Scheduled {
 
 	StringProperty taskAssociationID = new SimpleStringProperty();
 	BooleanProperty completionProperty = new SimpleBooleanProperty();

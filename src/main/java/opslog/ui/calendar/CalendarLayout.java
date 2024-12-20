@@ -47,7 +47,6 @@ public class CalendarLayout {
 		startUpdates();
 		EventDistribution.startViewEventHandlers();
 		EventDistribution.startEventCalendarEventHandlers();
-		EventDistribution.startDistribuitionCenters();
 
 		CALENDAR_VIEW.setEntryDetailsPopOverContentCallback(
 			event -> {
@@ -72,11 +71,12 @@ public class CalendarLayout {
 			}
 
 			ScheduledEntry entry = new ScheduledEntry(EVENT_CALENDAR);
+			entry.setUserObject(new Scheduled());
 			entry.changeStartDate(time.toLocalDate());
 			entry.changeStartTime(time.toLocalTime());
 			entry.changeEndDate(entry.getStartDate());
 			entry.changeEndTime(entry.getStartTime().plusHours(1));
-			entry.setUserObject(new Scheduled());
+			
 
 			if (control instanceof AllDayView) {
 				entry.setFullDay(true);
@@ -98,8 +98,8 @@ public class CalendarLayout {
 				public void run() {
 						while (true) {
 								Platform.runLater(() -> {
-										CALENDAR_VIEW.setToday(LocalDate.now());
-										CALENDAR_VIEW.setTime(LocalTime.now());
+										CALENDAR_VIEW.setToday(DateTime.getDate());
+										CALENDAR_VIEW.setTime(DateTime.getTime());
 								});
 
 								try {

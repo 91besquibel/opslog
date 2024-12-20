@@ -35,62 +35,67 @@ public class DatabaseQueryBuilder {
      * @throws SQLException if an error occurs
      */
     public String insert(String tableName, String tableColumns, String[] data) throws SQLException {
-        // edit the columns to have no id
-        String [] columnsArray  = tableColumns.split(",",2);
-        String columnsNoID = columnsArray[1];
-        // edit the data to have no id
-        String [] dataNoID = new String[data.length -1];
-        System.arraycopy(data, 1, dataNoID, 0, data.length - 1);
-        // display to verify cohesion
-        System.out.println(columnsNoID);
-        System.out.println(Arrays.toString(dataNoID));
-        // add placeholders for values from data
-        StringJoiner placeholders = new StringJoiner(", ", "(", ")");
-        for (int i = 0; i < dataNoID.length; i++) {
-            placeholders.add("?");
-        }
-        // create prepared statement
-        String sql = String.format("INSERT INTO %s (%s) VALUES %s RETURNING id", tableName, columnsNoID, placeholders);
-        System.out.println("DatabaseQueryBuilder: " + sql);
-        // connect to database with automatic closing
-        try (Connection connection = connectionProvider.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            // create filters for data types
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-            timeFormat.setLenient(false);
-            dateFormat.setLenient(false);
-            // Iterate through each item
+        if(data[0] == null || data[0].isEmpty() || data[0] == "null"){
+            // edit the columns to have no id
+            String [] columnsArray  = tableColumns.split(",",2);
+            String columnsNoID = columnsArray[1];
+            // edit the data to have no id
+            String [] dataNoID = new String[data.length -1];
+            System.arraycopy(data, 1, dataNoID, 0, data.length - 1);
+            // display to verify cohesion
+            System.out.println(columnsNoID);
+            System.out.println(Arrays.toString(dataNoID));
+            // add placeholders for values from data
+            StringJoiner placeholders = new StringJoiner(", ", "(", ")");
             for (int i = 0; i < dataNoID.length; i++) {
-                try {
-                    java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
-                    Date sqlDate = new Date(parsedDate.getTime());
-                    statement.setDate(i + 1, sqlDate);
-                    //System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
-                } catch (ParseException e) {
-                    try{
-                        java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
-                        java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
-                        statement.setTime(i + 1, sqlTime);
-                        //System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
-                    } catch (ParseException ex) {
-                        statement.setString(i + 1, dataNoID[i]);
-                        //System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
+                placeholders.add("?");
+            }
+            // create prepared statement
+            String sql = String.format("INSERT INTO %s (%s) VALUES %s RETURNING id", tableName, columnsNoID, placeholders);
+            System.out.println("DatabaseQueryBuilder: " + sql);
+            // connect to database with automatic closing
+            try (Connection connection = connectionProvider.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                // create filters for data types
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                timeFormat.setLenient(false);
+                dateFormat.setLenient(false);
+                // Iterate through each item
+                for (int i = 0; i < dataNoID.length; i++) {
+                    try {
+                        java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
+                        Date sqlDate = new Date(parsedDate.getTime());
+                        statement.setDate(i + 1, sqlDate);
+                        //System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
+                    } catch (ParseException e) {
+                        try{
+                            java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
+                            java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
+                            statement.setTime(i + 1, sqlTime);
+                            //System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
+                        } catch (ParseException ex) {
+                            statement.setString(i + 1, dataNoID[i]);
+                            //System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
+                        }
                     }
                 }
-            }
 
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getString("id");
-                } else {
-                    throw new SQLException("Failed to retrieve generated UUID.");
+                System.out.println("DatabaseQueryBuilder: Query complete \n" );
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("id");
+                    } else {
+                        throw new SQLException("Failed to retrieve generated UUID.");
+                    }
                 }
-            }
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+        return data[0];
     }
 
     /**
