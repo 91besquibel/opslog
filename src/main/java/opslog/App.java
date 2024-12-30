@@ -20,12 +20,7 @@ import opslog.ui.controls.Buttons;
 import opslog.ui.window.WindowPane;
 import opslog.util.*;
 
-//import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
-// Look at swapping to the Builder interface and making a ScreenBuilder class
-// https://www.pragmaticcoding.ca/javafx/nofxml
-// https://www.stefankrause.net/wp/?p=14 memory management for java
 public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();

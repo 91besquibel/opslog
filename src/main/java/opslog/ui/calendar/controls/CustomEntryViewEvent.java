@@ -1,22 +1,9 @@
 package opslog.ui.calendar.controls;
 
-/*
- *  Copyright (C) 2017 Dirk Lemmermann Software & Consulting (dlsc.com)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *          http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+import java.util.Arrays;
+import org.controlsfx.control.CheckComboBox;
 
-
+import impl.com.calendarfx.view.util.Util;
 import com.calendarfx.model.Entry;
 import com.calendarfx.view.DateControl;
 import com.calendarfx.view.Messages;
@@ -25,7 +12,7 @@ import com.calendarfx.view.TimeField;
 import com.calendarfx.view.popover.EntryHeaderView;
 import com.calendarfx.view.popover.EntryPopOverPane;
 import com.calendarfx.view.popover.RecurrencePopup;
-import impl.com.calendarfx.view.util.Util;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -35,11 +22,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
 import opslog.object.Format;
 import opslog.object.Tag;
 import opslog.object.Type;
-import opslog.object.event.Scheduled;
-import opslog.object.event.ScheduledTask;
 import opslog.ui.calendar.event.entry.ScheduledEntry;
 import opslog.ui.controls.CustomButton;
 import opslog.ui.controls.CustomComboBox;
@@ -50,8 +36,6 @@ import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import org.controlsfx.control.CheckComboBox;
-import java.util.Arrays;
 import opslog.util.Debounce;
 
 public class CustomEntryViewEvent extends EntryPopOverPane {
@@ -188,12 +172,13 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
             recurrenceButton
         );
         topBox.setAlignment(Pos.CENTER_LEFT);
-
         
         //type & tag
         typePicker.setItems(TypeManager.getList());
         typePicker.setValue(entry.getType());
-        
+        for(Tag tag: entry.tagList()){
+            tagPicker.getCheckModel().check(tag);
+        }
         tagPicker.backgroundProperty().bind(Settings.secondaryBackground);
         tagPicker.setPrefHeight(Settings.SINGLE_LINE_HEIGHT);
         tagPicker.setMinWidth(300);
@@ -202,20 +187,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         initialsField.setText(entry.getInitials());
         descriptionArea.setText(entry.getDescription());
         formatPicker.setItems(FormatManager.getList());
-
-        //completion status
-        Label completionLabel = new Label("Complete:");
-        completionLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-        completionLabel.textFillProperty().bind(Settings.textColor);
-        CustomButton saveButton = new CustomButton(
-            Directory.ADD_WHITE, 
-            Directory.ADD_CALENDAR_GREY, 
-            "Save"
-        );
-        HBox bottomBox =new HBox(
-            saveButton
-        );
-        bottomBox.setAlignment(Pos.CENTER_RIGHT);
 
         vbox.getChildren().add(headerView);
         vbox.getChildren().add(topBox);
@@ -226,7 +197,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         vbox.getChildren().add(initialsField);
         vbox.getChildren().add(formatPicker);
         vbox.getChildren().add(descriptionArea);
-        vbox.getChildren().add(bottomBox);
         vbox.setSpacing(Settings.SPACING);
         vbox.setPadding(Settings.INSETS);
         getChildren().add(vbox);
@@ -263,13 +233,12 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         });
 
         typePicker.valueProperty().addListener((obs,ov,nv)->{
-           entry.typeProperty().set(nv);
+            entry.typeProperty().set(nv);
         });
 
         tagPicker.getCheckModel().getCheckedItems().addListener(
             (ListChangeListener<? super Tag>) change -> {
                 entry.tagList().setAll(tagPicker.getCheckModel().getCheckedItems());
-                
             }
         );
 
@@ -294,10 +263,6 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         updateSummaryLabel(entry);
 
         entry.recurrenceRuleProperty().addListener(weakUpdateSummaryLabelListener);
-        initialsField.setText(entry.getInitials());
-        descriptionArea.setText(entry.getDescription());
-        typePicker.setValue(entry.getType());
-
     }
 
     public final Entry<?> getEntry() {
@@ -363,4 +328,5 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
             }
         }
     }
+    
 }

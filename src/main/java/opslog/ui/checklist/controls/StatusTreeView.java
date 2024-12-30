@@ -3,8 +3,7 @@ package opslog.ui.checklist.controls;
 import javafx.scene.control.cell.CheckBoxTreeTableCell;
 import opslog.object.Tag;
 import opslog.object.Type;
-import opslog.object.event.ScheduledTask;
-import opslog.object.event.Task;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 import opslog.util.Settings;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
@@ -23,7 +22,6 @@ public class StatusTreeView extends TreeTableView<ScheduledTask>{
 	public final Set<CheckBoxTreeItem<ScheduledTask>> set = new LinkedHashSet<>();
 	
 	public StatusTreeView(){
-
 		getColumns().add(checkBoxColumn());
 		getColumns().add(titleColumn());
 		getColumns().add(typeColumn());

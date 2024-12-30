@@ -9,7 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Orientation;
 
 import opslog.object.event.Checklist;
-import opslog.object.event.ScheduledTask;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 import opslog.ui.checklist.controls.ScheduleTable;
 import opslog.util.Settings;
 import opslog.ui.checklist.ChecklistUI;

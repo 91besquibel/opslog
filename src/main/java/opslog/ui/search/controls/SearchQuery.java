@@ -10,12 +10,12 @@ import javafx.collections.ObservableList;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.Log;
-import opslog.object.event.Scheduled;
 import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.HikariConnectionProvider;
-import opslog.ui.calendar.event.manager.ScheduledEventManager;
 import opslog.ui.log.managers.LogManager;
 import opslog.ui.search.SearchUI;
+import opslog.ui.calendar.event.entry.ScheduledEntry;
+import opslog.ui.calendar.event.entry.ScheduledEntryManager;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -47,6 +47,7 @@ SELECT * FROM products WHERE name REGEXP 'apple$';
 
  */
 public class SearchQuery {
+    
     private final HikariConnectionProvider connectionProvider;
     private final List<String[]> results = new ArrayList<>();
     private final ObservableList<LocalDate> dateList = FXCollections.observableArrayList();
@@ -79,10 +80,10 @@ public class SearchQuery {
     public void calendarQuery(){
         searchQuery.append(DatabaseConfig.SCHEDULED_EVENT_TABLE);
         buildQuery();
-        List<Scheduled> list = new ArrayList<>();
+        List<ScheduledEntry> list = new ArrayList<>();
         for(String[] row : results){
-            Scheduled scheduledEvent = ScheduledEventManager.newItem(row);
-            list.add(scheduledEvent);
+            ScheduledEntry scheduledEntry = ScheduledEntryManager.newItem(row);
+            list.add(scheduledEntry);
         }
         display(list);
     }

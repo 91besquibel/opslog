@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.calendarfx.model.Interval;
+
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
@@ -21,14 +23,14 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import opslog.object.event.Scheduled;
+import opslog.ui.calendar.event.entry.ScheduledEntry;
 import opslog.util.FileSaver;
 import opslog.App;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.util.*;
 
-public class CalendarTable extends TableView<Scheduled>{
+public class CalendarTable extends TableView<ScheduledEntry>{
 
 	private final ContextMenu contextMenu = new ContextMenu();
 
@@ -38,14 +40,13 @@ public class CalendarTable extends TableView<Scheduled>{
 		initializeListeners();
 	}
 
-	public void setList(ObservableList<Scheduled> list){
+	public void setList(ObservableList<ScheduledEntry> list){
 		setItems(list);
 	}
 
 	public void initializeColumns(){
 		getColumns().add(titleColumn());
-		getColumns().add(startColumn());
-		getColumns().add(stopColumn());
+		getColumns().add(intervalColumn());
 		getColumns().add(typeColumn());
 		getColumns().add(tagColumn());
 		getColumns().add(initialsColumn());
@@ -70,9 +71,9 @@ public class CalendarTable extends TableView<Scheduled>{
 		MenuItem exportItem = new MenuItem("Export");
 		exportItem.setOnAction(e -> {
 			Stage stage = (Stage) getScene().getWindow(); 
-			ObservableList<Scheduled> selectedItems = getSelectionModel().getSelectedItems();
+			ObservableList<ScheduledEntry> selectedItems = getSelectionModel().getSelectedItems();
 			List<String[]> exportingItems = new ArrayList<>();
-			for(Scheduled item : selectedItems){
+			for(ScheduledEntry item : selectedItems){
 				exportingItems.add(item.toArray());
 			}
 			FileSaver.saveFile(stage, exportingItems);
@@ -100,8 +101,8 @@ public class CalendarTable extends TableView<Scheduled>{
 		});
 	}
 
-	private TableColumn<Scheduled, String> titleColumn(){
-		TableColumn<Scheduled, String> column = new TableColumn<>();
+	private TableColumn<ScheduledEntry, String> titleColumn(){
+		TableColumn<ScheduledEntry, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
 		column.setGraphic(createHeader("Title"));
 		column.setMinWidth(80);
@@ -109,32 +110,25 @@ public class CalendarTable extends TableView<Scheduled>{
 		return column;
 	}
 
-	private TableColumn<Scheduled, LocalDateTime> startColumn() {
-		TableColumn<Scheduled, LocalDateTime> column = new TableColumn<>();
-		column.setCellValueFactory(cellData -> cellData.getValue().startProperty());
-		column.setGraphic(createHeader("Start"));
+	private TableColumn<ScheduledEntry, Interval> intervalColumn() {
+		TableColumn<ScheduledEntry, Interval> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> cellData.getValue().intervalProperty());
+		column.setGraphic(createHeader("Interval"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
-	private TableColumn<Scheduled, LocalDateTime> stopColumn() {
-		TableColumn<Scheduled, LocalDateTime> column = new TableColumn<>();
-		column.setCellValueFactory(cellData -> cellData.getValue().stopProperty());
-		column.setGraphic(createHeader("Stop"));
-		column.setCellFactory(col -> createCell());
-		return column;
-	}
 	
-	private TableColumn<Scheduled, Type> typeColumn() {
-		TableColumn<Scheduled, Type> column = new TableColumn<>();
+	private TableColumn<ScheduledEntry, Type> typeColumn() {
+		TableColumn<ScheduledEntry, Type> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
 		column.setGraphic(createHeader("Type"));
 		column.setCellFactory(col -> createCell());
 		return column;
 	}
 
-	private TableColumn<Scheduled, ObservableList<Tag>> tagColumn() {
-		TableColumn<Scheduled, ObservableList<Tag>> column = new TableColumn<>();
+	private TableColumn<ScheduledEntry, ObservableList<Tag>> tagColumn() {
+		TableColumn<ScheduledEntry, ObservableList<Tag>> column = new TableColumn<>();
 		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().tagList()));
 		column.setGraphic(createHeader("Tags"));
 		column.setCellFactory(col -> new TableCell<>() {
@@ -169,8 +163,8 @@ public class CalendarTable extends TableView<Scheduled>{
 		return column;
 	}
 
-	private TableColumn<Scheduled, String> initialsColumn() {
-		TableColumn<Scheduled, String> column = new TableColumn<>();
+	private TableColumn<ScheduledEntry, String> initialsColumn() {
+		TableColumn<ScheduledEntry, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
 		column.setGraphic(createHeader("Initials"));
 		column.setMinWidth(80);
@@ -178,8 +172,8 @@ public class CalendarTable extends TableView<Scheduled>{
 		return column;
 	}
 
-	private TableColumn<Scheduled, String> descriptionColumn() {
-		TableColumn<Scheduled, String> column = new TableColumn<>();
+	private TableColumn<ScheduledEntry, String> descriptionColumn() {
+		TableColumn<ScheduledEntry, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
 		column.setGraphic(createHeader("Description"));
 		column.setCellFactory(col -> new TableCell<>() {
@@ -214,7 +208,7 @@ public class CalendarTable extends TableView<Scheduled>{
 
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
 			double totalWidth = newWidth.doubleValue();
-			for (TableColumn<Scheduled, ?> col : this.getColumns()) {
+			for (TableColumn<ScheduledEntry, ?> col : this.getColumns()) {
 				if (col != column) {
 					totalWidth -= col.getWidth();
 				}

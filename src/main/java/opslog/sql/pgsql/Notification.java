@@ -2,7 +2,8 @@ package opslog.sql.pgsql;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.ui.checklist.managers.ScheduledTaskManager;
+import opslog.ui.calendar.event.entry.ScheduledTaskManager;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 import org.postgresql.PGNotification;
 import java.sql.SQLException;
 import java.util.List;
@@ -14,7 +15,6 @@ import opslog.object.Type;
 import opslog.object.event.*;
 import opslog.sql.hikari.ConnectionManager;
 import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.ui.calendar.event.manager.ScheduledEventManager;
 import opslog.ui.checklist.managers.ChecklistManager;
 import opslog.ui.checklist.managers.TaskManager;
 import opslog.ui.log.managers.LogManager;
@@ -24,6 +24,10 @@ import opslog.ui.settings.managers.ProfileManager;
 import opslog.ui.settings.managers.TagManager;
 import opslog.ui.settings.managers.TypeManager;
 import opslog.ui.calendar.event.EventDistribution;
+import opslog.ui.calendar.event.EventDistributionUtil;
+import opslog.ui.calendar.event.entry.ScheduledEntry;
+import opslog.ui.calendar.event.entry.ScheduledEntryManager;
+
 
 public class Notification {
 
@@ -96,28 +100,29 @@ public class Notification {
                 break;
 
             case "scheduledEvent_table":
-                processScheduledEvent(id,operation,result);
+                processScheduledEntry(id,operation,result);
                 break;
         }
     }
 
-    private void processScheduledEvent(String id, String operation, List<String[]> result) {
+    private void processScheduledEntry(String id, String operation, List<String[]> result) {
         Platform.runLater(() -> {
+            
             for(String [] row : result) {
                 
-                Scheduled scheduled = ScheduledEventManager.newItem(row);
+                ScheduledEntry scheduledEntry = ScheduledEntryManager.newItem(row);
                 
                 if (operation.contains("INSERT")) {
                     
-                    EventDistribution.insertNotification(id,scheduled);
+                    ScheduledEntryManager.insertNotification(id,scheduledEntry);
                     
                 } else if (operation.contains("UPDATE")) {
                     
-                    EventDistribution.updateNotification(id,scheduled);
+                    ScheduledEntryManager.updateNotification(id,scheduledEntry);
                     
                 } else if (operation.contains("DELETE")) {
                     
-                    EventDistribution.deleteNotification(id);
+                    ScheduledEntryManager.deleteNotification(id);
                     
                 }
             }
@@ -330,25 +335,27 @@ public class Notification {
     }
 
     private void processScheduledTask(String id, String operation, List<String[]> result) {
-            Platform.runLater(() -> {
-                for(String [] row : result) {
-                    ScheduledTask scheduledTask = ScheduledTaskManager.newItem(row);
-                    if (operation.contains("INSERT")) {
-                        String fid = scheduledTask.taskAssociationID().get();
-                        if(ScheduledTaskManager.getTaskList(fid) != null){
-                            ScheduledTaskManager.addItem(fid,scheduledTask);
-                        }else {
-                            ObservableList<ScheduledTask> taskList = FXCollections.observableArrayList();
-                            taskList.add(scheduledTask);
-                            ScheduledTaskManager.addTaskList(scheduledTask.taskAssociationID().get(),taskList);
-                        }
-                    } else if (operation.contains("UPDATE")) {
-                        ScheduledTaskManager.updateItem(scheduledTask);
-                    } else if (operation.contains("DELETE")) {
-                        ScheduledTaskManager.removeTaskList(scheduledTask.taskAssociationID().get());
+        Platform.runLater(() -> {
+            for(String [] row : result) {
+                ScheduledTask scheduledTask = ScheduledTaskManager.newItem(row);
+                if (operation.contains("INSERT")) {
+                    String fid = scheduledTask.getTaskAssociationId();
+                    // if an fid associated list allready exists
+                    if(ScheduledTaskManager.getTaskList(fid) != null){
+                        //add the item to that list
+                        ScheduledTaskManager.addItem(fid,scheduledTask);
+                    }else {
+                        // if not create the new list 
+                        ObservableList<ScheduledTask> taskList = FXCollections.observableArrayList();
+                        taskList.add(scheduledTask);
+                        ScheduledTaskManager.addTaskList(scheduledTask.getTaskAssociationId(),taskList);
                     }
+                } else if (operation.contains("UPDATE")) {
+                    ScheduledTaskManager.updateItem(scheduledTask);
+                } else if (operation.contains("DELETE")) {
+                    ScheduledTaskManager.removeTaskList(scheduledTask.getTaskAssociationId());
                 }
-            });
-
+            }
+        });
     }
 }

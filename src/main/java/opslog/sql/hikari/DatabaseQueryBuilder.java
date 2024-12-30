@@ -35,67 +35,73 @@ public class DatabaseQueryBuilder {
      * @throws SQLException if an error occurs
      */
     public String insert(String tableName, String tableColumns, String[] data) throws SQLException {
-        if(data[0] == null || data[0].isEmpty() || data[0] == "null"){
-            // edit the columns to have no id
-            String [] columnsArray  = tableColumns.split(",",2);
-            String columnsNoID = columnsArray[1];
-            // edit the data to have no id
-            String [] dataNoID = new String[data.length -1];
-            System.arraycopy(data, 1, dataNoID, 0, data.length - 1);
-            // display to verify cohesion
-            System.out.println(columnsNoID);
-            System.out.println(Arrays.toString(dataNoID));
-            // add placeholders for values from data
-            StringJoiner placeholders = new StringJoiner(", ", "(", ")");
+        // edit the columns to have no id
+        String [] columnsArray  = tableColumns.split(",",2);
+        String columnsNoID = columnsArray[1];
+        // edit the data to have no id
+        String [] dataNoID = new String[data.length -1];
+        System.arraycopy(data, 1, dataNoID, 0, data.length - 1);
+        // display to verify cohesion
+        System.out.println(columnsNoID);
+        System.out.println(Arrays.toString(dataNoID));
+        // add placeholders for values from data
+        StringJoiner placeholders = new StringJoiner(", ", "(", ")");
+        for (int i = 0; i < dataNoID.length; i++) {
+            placeholders.add("?");
+        }
+        // create prepared statement
+        String sql = String.format("INSERT INTO %s (%s) VALUES %s RETURNING id", tableName, columnsNoID, placeholders);
+        System.out.println("DatabaseQueryBuilder: " + sql);
+        // connect to database with automatic closing
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // create filters for data types
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+            timeFormat.setLenient(false);
+            dateFormat.setLenient(false);
+            // Iterate through each item attempting to parse for
+            // dates and times if the the item is neither a date nor time
+            // it sets it as a string
             for (int i = 0; i < dataNoID.length; i++) {
-                placeholders.add("?");
-            }
-            // create prepared statement
-            String sql = String.format("INSERT INTO %s (%s) VALUES %s RETURNING id", tableName, columnsNoID, placeholders);
-            System.out.println("DatabaseQueryBuilder: " + sql);
-            // connect to database with automatic closing
-            try (Connection connection = connectionProvider.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql)) {
-                // create filters for data types
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-                timeFormat.setLenient(false);
-                dateFormat.setLenient(false);
-                // Iterate through each item
-                for (int i = 0; i < dataNoID.length; i++) {
-                    try {
-                        java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
-                        Date sqlDate = new Date(parsedDate.getTime());
-                        statement.setDate(i + 1, sqlDate);
-                        //System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
-                    } catch (ParseException e) {
+                try {
+                    java.util.Date parsedDate = dateFormat.parse(dataNoID[i]);
+                    Date sqlDate = new Date(parsedDate.getTime());
+                    statement.setDate(i + 1, sqlDate);
+                    System.out.println("DatabaseQueryBuilder: Setting date value: " + dataNoID[i] + " @ position " + (i + 1));
+                } catch (ParseException e) {
+                    try{
+                        java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
+                        java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
+                        statement.setTime(i + 1, sqlTime);
+                        System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
+                    } catch (ParseException ex) {
                         try{
-                            java.util.Date parsedTime = timeFormat.parse(dataNoID[i]);
-                            java.sql.Time sqlTime = new java.sql.Time(parsedTime.getTime());
-                            statement.setTime(i + 1, sqlTime);
-                            //System.out.println("DatabaseQueryBuilder: Setting time value: " + dataNoID[i] + " @ position " + (i + 1));
-                        } catch (ParseException ex) {
+                            System.out.println("DatabaseQueryBuilder: Setting UUID value: " + dataNoID[i] + " @ position " + (i + 1));
+                            UUID uuid = UUID.fromString(dataNoID[i]);
+                            statement.setObject(i + 1, uuid);
+                        } catch (IllegalArgumentException exc){
                             statement.setString(i + 1, dataNoID[i]);
-                            //System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
+                            System.out.println("DatabaseQueryBuilder: Setting text value: " + dataNoID[i] + " @ position " + (i + 1));
                         }
                     }
                 }
-
-                System.out.println("DatabaseQueryBuilder: Query complete \n" );
-
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return resultSet.getString("id");
-                    } else {
-                        throw new SQLException("Failed to retrieve generated UUID.");
-                    }
-                }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
+
+            System.out.println("DatabaseQueryBuilder: Query complete \n" );
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("id");
+                } else {
+                    throw new SQLException("Failed to retrieve generated UUID.");
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return data[0];
+        
     }
 
     /**
@@ -163,8 +169,14 @@ public class DatabaseQueryBuilder {
                         statement.setTime(i + 1, sqlTime);
                         //System.out.println("DatabaseQueryBuilder: Setting time value: " + rawData[i] + " @ position " + (i + 1));
                     } catch (ParseException ex) {
-                        statement.setString(i + 1, rawData[i]);
-                        //System.out.println("DatabaseQueryBuilder: Setting text value: " + rawData[i] + " @ position " + (i + 1));
+                        try{
+                            //System.out.println("DatabaseQueryBuilder: Setting UUID value: " + rawData[i] + " @ position " + (i + 1));
+                            UUID fid = UUID.fromString(rawData[i]);
+                            statement.setObject(i + 1, fid);
+                        } catch (IllegalArgumentException exc){
+                            statement.setString(i + 1, rawData[i]);
+                            //System.out.println("DatabaseQueryBuilder: Setting text value: " + rawData[i] + " @ position " + (i + 1));
+                        }
                     }
                 }
             }
@@ -328,6 +340,28 @@ public class DatabaseQueryBuilder {
         }
         System.out.println("DatabaseQueryBuilder: Query complete \n" );
         return results;
+    }
+
+    public Boolean exists(String tableName, String id) throws SQLException {
+        String query = String.format("SELECT EXISTS (SELECT 1 FROM %s WHERE id = ?)", tableName);
+        //System.out.println("DatabaseQueryBuilder: " + query);
+
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            UUID uuid = UUID.fromString(id);
+            statement.setObject(1, uuid);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                   // System.out.println("DatabaseQueryBuilder: " + resultSet.getBoolean(1));
+                    return resultSet.getBoolean(1);
+                }
+            }
+
+            //System.out.println("DatabaseQueryBuilder: Query complete");
+            return false;
+        }
     }
 
     public Boolean executeTest() throws SQLException {

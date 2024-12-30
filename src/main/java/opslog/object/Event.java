@@ -57,10 +57,10 @@ public abstract class Event {
 
     public String[] toArray() {
         return new String[]{
-                type.get().getID(),
-                tags.stream().map(Tag::getID).collect(Collectors.joining(" | ")),
-                initials.get(),
-                description.get()
+            type.get().getID(),
+            tags.stream().map(Tag::getID).collect(Collectors.joining(" | ")),
+            initials.get(),
+            description.get()
         };
     }
 
@@ -81,9 +81,9 @@ public abstract class Event {
         if (other == null || getClass() != other.getClass()) return false;
         Event otherEvent = (Event) other;
         return
-                type.get().equals(otherEvent.typeProperty().get()) &&
-                tags.equals(otherEvent.tagList()) &&
-                initials.get().equals(otherEvent.initialsProperty().get()) &&
-                description.get().equals(otherEvent.descriptionProperty().get());
+            type.get().equals(otherEvent.typeProperty().get()) &&
+            tags.equals(otherEvent.tagList()) &&
+            initials.get().equals(otherEvent.initialsProperty().get()) &&
+            description.get().equals(otherEvent.descriptionProperty().get());
     }
 }

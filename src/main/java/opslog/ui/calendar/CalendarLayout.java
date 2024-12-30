@@ -2,14 +2,11 @@ package opslog.ui.calendar;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
 import com.calendarfx.model.Calendar;
 import com.calendarfx.model.Calendar.Style;
 import com.calendarfx.model.CalendarSource;
-import com.calendarfx.model.Entry;
 import com.calendarfx.view.AllDayView;
 import com.calendarfx.view.CalendarView;
 import com.calendarfx.view.DateControl;
@@ -17,24 +14,26 @@ import com.calendarfx.view.VirtualGrid;
 
 import javafx.application.Platform;
 import opslog.ui.calendar.controls.CustomEntryViewEvent;
+import opslog.ui.calendar.controls.CustomTaskViewEvent;
 import opslog.ui.calendar.event.EventDistribution;
 import opslog.util.DateTime;
-import opslog.object.event.ScheduledTask;
-import opslog.object.event.Scheduled;
+import opslog.object.Event;
 import opslog.ui.calendar.event.entry.ScheduledEntry;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 
 public class CalendarLayout {
 
 	public static final CalendarView CALENDAR_VIEW = new CalendarView();
 	public static final CalendarSource MAIN = new CalendarSource("Main");
-	public static final Calendar<Scheduled> EVENT_CALENDAR = new Calendar<>("Event");
-	public static final Calendar<ScheduledTask> TASK_CALENDAR = new Calendar<>("TASK");
-
+	public static final Calendar<Event> EVENT_CALENDAR = new Calendar<>("Event");
+	public static final Calendar<Event> TASK_CALENDAR = new Calendar<>("TASK");
+	private static int currentMonth; 
+	
 	public static void initialize(){
 		CALENDAR_VIEW.setRequestedTime(DateTime.getTime());
 		CALENDAR_VIEW.setDate(DateTime.getDate());
-		
 		CALENDAR_VIEW.getCalendarSources().addAll(MAIN);
+		
 		MAIN.getCalendars().setAll(
 			EVENT_CALENDAR, TASK_CALENDAR
 		);
@@ -47,11 +46,16 @@ public class CalendarLayout {
 		startUpdates();
 		EventDistribution.startViewEventHandlers();
 		EventDistribution.startEventCalendarEventHandlers();
+		EventDistribution.startTaskCalendarEventHandlers();
 
 		CALENDAR_VIEW.setEntryDetailsPopOverContentCallback(
 			event -> {
-				ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
-				return new CustomEntryViewEvent(scheduledEntry,CALENDAR_VIEW);
+				if(event.getEntry() instanceof ScheduledTask scheduledTask){
+					return new CustomTaskViewEvent(scheduledTask,CALENDAR_VIEW);
+				} else {
+					ScheduledEntry scheduledEntry = (ScheduledEntry) event.getEntry();
+					return new CustomEntryViewEvent(scheduledEntry,CALENDAR_VIEW);
+				}
 			}
 		);
 		
@@ -70,18 +74,16 @@ public class CalendarLayout {
 				time = upperTime;
 			}
 
-			ScheduledEntry entry = new ScheduledEntry(EVENT_CALENDAR);
-			entry.setUserObject(new Scheduled());
+			ScheduledEntry entry = new ScheduledEntry();
+			entry.setCalendar(EVENT_CALENDAR);
 			entry.changeStartDate(time.toLocalDate());
 			entry.changeStartTime(time.toLocalTime());
 			entry.changeEndDate(entry.getStartDate());
 			entry.changeEndTime(entry.getStartTime().plusHours(1));
-			
 
 			if (control instanceof AllDayView) {
 				entry.setFullDay(true);
 			}
-			
 
 			return entry;
 		 });
@@ -117,29 +119,11 @@ public class CalendarLayout {
 		updateTimeThread.start();
 	}
 
-	private static void entryFactory(){
-	
-		/* CALENDAR_VIEW.setEntryFactory(); used if i had custom entry classses
-		 * Use setEntryDetailsCallback to decide if the entry details view should appear (returns a Boolean).
-		 * Use setEntryDetailsPopOverContentCallback to specify what the entry details view should display (returns a Node).
-		 * */
-
-		/* CALENDAR_VIEW.setEntryEditPolicy(); uses this to prevent edits to the scheduled tasks?
-		 * Customization of New Entries: You can use this method to specify the default properties of new entries, such as their title, color, or user-defined fields.
-		 * Custom Entry Types: If you're using a custom subclass of Entry, you can ensure that the calendar creates instances of your subclass instead of the default Entry class.
-
-		 calendar.setEntryEditPolicy((calendar, entry, operation) -> {
-		 	// Custom logic to determine if the entry can be edited 
-		 	if (entry.getUserObject() instanceof Scheduled scheduled) {
-				 // Example: Only allow editing for entries with a specific type
-				 if (scheduled.getType() == Type.ALLOWED) {
-		 		return EditOperation.EDIT;
-			 }
-		 } 
-		 return EditOperation.NONE;
-		 
-		 * */
-
+	public static int getMonth(){
+		return currentMonth;
 	}
 
+	public static void setMonth(int monthValue){
+		currentMonth = monthValue;
+	}
 }

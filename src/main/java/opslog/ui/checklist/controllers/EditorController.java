@@ -195,6 +195,7 @@ public class EditorController {
             if (dragboard.hasString()) {
                 String droppedItem = dragboard.getString();
                 if(TaskManager.getItem(droppedItem) != null){
+                    
                     Task task = TaskManager.getItem(droppedItem);
                     TreeItem<Task> treeItem = new TreeItem<>(task);
                     if(EditorLayout.taskTreeView.getRoot() == null){
@@ -203,7 +204,9 @@ public class EditorController {
                     }else{
                         EditorLayout.taskTreeView.getRoot().getChildren().add(treeItem);
                     }
+                    
                 } else if(ChecklistManager.getItem(droppedItem) != null){
+                    
                     EditorLayout.taskTreeView.setRoot(null);
                     Checklist checklist = ChecklistManager.getItem(droppedItem);
                     for(Task task : checklist.taskList()){
@@ -215,6 +218,7 @@ public class EditorController {
                             EditorLayout.taskTreeView.getRoot().getChildren().add(treeItem);
                         }
                     }
+                    
                 }
             }
             event.setDropCompleted(true);

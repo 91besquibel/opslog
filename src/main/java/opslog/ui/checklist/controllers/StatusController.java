@@ -12,7 +12,7 @@ import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import opslog.object.event.ScheduledTask;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 import opslog.ui.checklist.ChecklistUI;
 import opslog.object.event.Task;
 import opslog.sql.hikari.ConnectionManager;
@@ -20,7 +20,7 @@ import opslog.sql.hikari.DatabaseConfig;
 import opslog.sql.hikari.DatabaseQueryBuilder;
 import opslog.ui.checklist.controls.StatusTreeView;
 import opslog.ui.checklist.layout.StatusLayout;
-import opslog.ui.checklist.managers.ScheduledTaskManager;
+import opslog.ui.calendar.event.entry.ScheduledTaskManager;
 import opslog.ui.controls.CustomButton;
 import opslog.util.Directory;
 import opslog.util.Settings;
@@ -68,11 +68,16 @@ public class StatusController {
                 for(Task task : nv.taskList()){
                     //System.out.println("StatusController: creating offsets and durations for " + task.getTitle());
                     ScheduledTask scheduledTask = new ScheduledTask();
-                    scheduledTask.titleProperty().set(task.titleProperty().get());
-                    scheduledTask.typeProperty().set(task.typeProperty().get());
-                    scheduledTask.tagList().setAll(task.tagList());
-                    scheduledTask.initialsProperty().set(task.initialsProperty().get());
-                    scheduledTask.descriptionProperty().set(task.descriptionProperty().get());
+                    // the scheduledTable will set 2-5
+                    scheduledTask.setFullDay(false);//6
+                    scheduledTask.setRecurrenceRule(null);//7
+                    scheduledTask.setCompletion(false);//8
+                    scheduledTask.setTitle(task.titleProperty().get());//9
+                    scheduledTask.setLocation(null);//10
+                    scheduledTask.setType(task.typeProperty().get());//11
+                    scheduledTask.tagList().setAll(task.tagList());//12
+                    scheduledTask.setInitials(task.initialsProperty().get()); //13
+                    scheduledTask.setDescription(task.descriptionProperty().get());//14
                     scheduledTasks.add(scheduledTask);
                 }
 
@@ -189,10 +194,11 @@ public class StatusController {
             ObservableList<ScheduledTask> scheduledTasks = StatusLayout.scheduleTable.getItems();
             boolean fieldsFilled = ScheduledTaskManager.fieldsFilled(scheduledTasks);
             if (fieldsFilled) {
+                // create the fid to group tasks together
                 String uuid = ScheduledTaskManager.generateUUID();
                 try {
                     for (ScheduledTask scheduledTask : scheduledTasks) {
-                        scheduledTask.taskAssociationID().set(uuid);
+                        scheduledTask.setTaskAssociationId(uuid);
                         DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
                         String id = databaseQueryBuilder.insert(
                                 DatabaseConfig.SCHEDULED_TASK_TABLE,
@@ -200,7 +206,7 @@ public class StatusController {
                                 scheduledTask.toArray()
                         );
                         if (id != null) {
-                            scheduledTask.setID(id);
+                            scheduledTask.setId(id);
                         }
                     }
                     ScheduledTaskManager.addTaskList(uuid, scheduledTasks);
@@ -211,7 +217,7 @@ public class StatusController {
         });
 
         StatusLayout.removeSchedule.setOnAction(e ->{
-            removeScheduledTaskList(StatusLayout.scheduleTable.getItems().get(0).taskAssociationID().get());
+            removeScheduledTaskList(StatusLayout.scheduleTable.getItems().get(0).getTaskAssociationId());
         });
     }
 

@@ -1,17 +1,20 @@
 package opslog.ui.checklist.controls;
 
+import com.calendarfx.model.Interval;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import opslog.object.event.ScheduledTask;
+import opslog.ui.calendar.event.entry.ScheduledTask;
 import opslog.util.Settings;
+import opslog.util.DateTime;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class ScheduleTable extends TableView<ScheduledTask> {
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public ScheduleTable() {
         initializeColumns();
@@ -20,8 +23,10 @@ public class ScheduleTable extends TableView<ScheduledTask> {
     }
 
     public void initializeColumns() {
-        getColumns().add(startColumn());
-        getColumns().add(stopColumn());
+        getColumns().add(startDateColumn());
+        getColumns().add(startTimeColumn());
+        getColumns().add(stopDateColumn());
+        getColumns().add(stopTimeColumn());
 
         backgroundProperty().bind(Settings.primaryBackground);
         setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
@@ -34,27 +39,55 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         heightProperty().addListener((obs, oldHeight, newHeight) -> refresh());
     }
 
-    private TableColumn<ScheduledTask, LocalDateTime> startColumn() {
-        TableColumn<ScheduledTask, LocalDateTime> column = new TableColumn<>("Start");
-        column.setCellValueFactory(cellData -> cellData.getValue().startProperty());
-        column.setCellFactory(col -> createEditableCell());
+    private TableColumn<ScheduledTask, LocalDate> startDateColumn() {
+        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>("Start Date");
+        column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
+        column.setCellFactory(col -> createEditableDateCell());
         column.setOnEditCommit(event -> {
-            ScheduledTask task = event.getRowValue();
-            task.startProperty().set(event.getNewValue());
+            ScheduledTask scheduledTask = event.getRowValue();
+            Interval interval = scheduledTask.intervalProperty().get().withStartDate(event.getNewValue());
+            scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Start"));
+        column.setGraphic(createHeaderLabel("Start Date"));
         return column;
     }
 
-    private TableColumn<ScheduledTask, LocalDateTime> stopColumn() {
-        TableColumn<ScheduledTask, LocalDateTime> column = new TableColumn<>("Stop");
-        column.setCellValueFactory(cellData -> cellData.getValue().stopProperty());
-        column.setCellFactory(col -> createEditableCell());
+    private TableColumn<ScheduledTask, LocalTime> startTimeColumn() {
+        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>("Start Time");
+        column.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        column.setCellFactory(col -> createEditableTimeCell());
         column.setOnEditCommit(event -> {
-            ScheduledTask task = event.getRowValue();
-            task.stopProperty().set(event.getNewValue());
+            ScheduledTask scheduledTask = event.getRowValue();
+            Interval interval = scheduledTask.intervalProperty().get().withStartTime(event.getNewValue());
+            scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Stop"));
+        column.setGraphic(createHeaderLabel("Start Time"));
+        return column;
+    }
+
+    private TableColumn<ScheduledTask, LocalDate> stopDateColumn() {
+        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>("Stop Date");
+        column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
+        column.setCellFactory(col -> createEditableDateCell());
+        column.setOnEditCommit(event -> {
+            ScheduledTask scheduledTask = event.getRowValue();
+            Interval interval = scheduledTask.intervalProperty().get().withEndDate(event.getNewValue());
+            scheduledTask.setInterval(interval);
+        });
+        column.setGraphic(createHeaderLabel("Stop Date"));
+        return column;
+    }
+
+    private TableColumn<ScheduledTask, LocalTime> stopTimeColumn() {
+        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>("Stop Time");
+        column.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
+        column.setCellFactory(col -> createEditableTimeCell());
+        column.setOnEditCommit(event -> {
+            ScheduledTask scheduledTask = event.getRowValue();
+            Interval interval = scheduledTask.intervalProperty().get().withEndTime(event.getNewValue());
+            scheduledTask.setInterval(interval);
+        });
+        column.setGraphic(createHeaderLabel("Stop Time"));
         return column;
     }
 
@@ -67,32 +100,32 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         return hbox;
     }
 
-    private TableCell<ScheduledTask, LocalDateTime> createEditableCell() {
-        return new TableCell<ScheduledTask, LocalDateTime>() {
+    private TableCell<ScheduledTask, LocalDate> createEditableDateCell() {
+        return new TableCell<ScheduledTask, LocalDate>() {
             private final TextField textField = new TextField();
 
             {
-                textField.setOnAction(event -> commitEdit(parseLocalDateTime(textField.getText())));
+                textField.setOnAction(event -> commitEdit(parseLocalDate(textField.getText())));
                 textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                     if (!isNowFocused) {
-                        commitEdit(parseLocalDateTime(textField.getText()));
+                        commitEdit(parseLocalDate(textField.getText()));
                     }
                 });
             }
 
             @Override
-            protected void updateItem(LocalDateTime item, boolean empty) {
+            protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
                 } else {
                     if (isEditing()) {
-                        textField.setText(formatLocalDateTime(item));
+                        textField.setText(formatLocalDate(item));
                         setGraphic(textField);
                         setText(null);
                     } else {
-                        setText(formatLocalDateTime(item));
+                        setText(formatLocalDate(item));
                         setGraphic(null);
                     }
                 }
@@ -102,7 +135,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             public void startEdit() {
                 super.startEdit();
                 if (getItem() != null) {
-                    textField.setText(formatLocalDateTime(getItem()));
+                    textField.setText(formatLocalDate(getItem()));
                     setGraphic(textField);
                     setText(null);
                 }
@@ -111,17 +144,80 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
-                setText(formatLocalDateTime(getItem()));
+                setText(formatLocalDate(getItem()));
                 setGraphic(null);
             }
 
-            private String formatLocalDateTime(LocalDateTime dateTime) {
-                return dateTime != null ? DATE_TIME_FORMATTER.format(dateTime) : "";
+            private String formatLocalDate(LocalDate date) {
+                return date != null ? DateTime.DATE_FORMAT.format(date) : "";
             }
 
-            private LocalDateTime parseLocalDateTime(String text) {
+            private LocalDate parseLocalDate(String text) {
                 try {
-                    return LocalDateTime.parse(text, DATE_TIME_FORMATTER);
+                    return LocalDate.parse(text, DateTime.DATE_FORMAT);
+                } catch (Exception e) {
+                    // Handle invalid format gracefully
+                    return getItem();
+                }
+            }
+        };
+    }
+
+    private TableCell<ScheduledTask, LocalTime> createEditableTimeCell() {
+        return new TableCell<ScheduledTask, LocalTime>() {
+            private final TextField textField = new TextField();
+
+            {
+                textField.setOnAction(event -> commitEdit(parseLocalTime(textField.getText())));
+                textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                    if (!isNowFocused) {
+                        commitEdit(parseLocalTime(textField.getText()));
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(LocalTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (isEditing()) {
+                        textField.setText(formatLocalTime(item));
+                        setGraphic(textField);
+                        setText(null);
+                    } else {
+                        setText(formatLocalTime(item));
+                        setGraphic(null);
+                    }
+                }
+            }
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (getItem() != null) {
+                    textField.setText(formatLocalTime(getItem()));
+                    setGraphic(textField);
+                    setText(null);
+                }
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(formatLocalTime(getItem()));
+                setGraphic(null);
+            }
+
+            private String formatLocalTime(LocalTime time) {
+                return time != null ? DateTime.TIME_FORMAT.format(time) : "";
+            }
+
+            private LocalTime parseLocalTime(String text) {
+                try {
+                    return LocalTime.parse(text, DateTime.TIME_FORMAT);
                 } catch (Exception e) {
                     // Handle invalid format gracefully
                     return getItem();

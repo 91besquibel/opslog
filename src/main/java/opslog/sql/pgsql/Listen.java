@@ -66,7 +66,7 @@ public class Listen implements Runnable {
                 }
             } catch (SQLException e) {
                 logger.error("SQL Exception occurred: ", e);
-                System.out.println("Listen: Connection lost reconnection");
+                System.out.println("\nListen: Connection lost reconnecting\n");
                 reconnect(); // Attempt to reconnect on SQL exception
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // Restore interrupted status
@@ -86,7 +86,7 @@ public class Listen implements Runnable {
     private Connection establishConnection() throws SQLException {
         Connection connection = connectionProvider.getConnection(); // Obtain a connection from HikariCP
         try (Statement statement = connection.createStatement()) {
-            System.out.printf("Listen: LISTEN %s%n", threadName);
+            System.out.printf("\nListen: LISTEN %s%n \n", threadName);
             statement.execute(String.format("LISTEN %s", threadName));
         } catch (SQLException e) {
             System.out.println("Listen: Connection failed for: " + threadName);

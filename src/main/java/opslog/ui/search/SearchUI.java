@@ -13,7 +13,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import opslog.object.event.Log;
-import opslog.object.event.Scheduled;
+import opslog.ui.calendar.event.entry.*;
 import opslog.ui.window.WindowPane;
 import opslog.ui.controls.Buttons;
 import opslog.ui.controls.Styles;
@@ -41,11 +41,11 @@ public class SearchUI <T>{
 
     private void root() {
         if(!list.isEmpty()) {
-            if (list.get(0) instanceof Scheduled) {
-                ObservableList<Scheduled> calList = FXCollections.observableArrayList();
+            if (list.get(0) instanceof ScheduledEntry) {
+                ObservableList<ScheduledEntry> calList = FXCollections.observableArrayList();
                 calList.setAll(list.stream()
-                        .filter(item -> item instanceof Scheduled)
-                        .map(item -> (Scheduled) item)
+                        .filter(item -> item instanceof ScheduledEntry)
+                        .map(item -> (ScheduledEntry) item)
                         .collect(Collectors.toList())
                 );
                 CalendarTable calendarTable = new CalendarTable();
@@ -87,6 +87,7 @@ public class SearchUI <T>{
 
     private void saveSelections(ActionEvent actionEvent) {
         List<String[]> data = new ArrayList<>();
+        
         if(list.get(0) instanceof Log){
             for(T t: list){
                 Log log = (Log) t;
@@ -96,9 +97,9 @@ public class SearchUI <T>{
             FileSaver.saveFile(stage,data);
         }
 
-        if(list.get(0) instanceof Scheduled) {
+        if(list.get(0) instanceof ScheduledEntry) {
             for (T t : list) {
-                Scheduled calendar = (Scheduled) t;
+                ScheduledEntry calendar = (ScheduledEntry) t;
                 String[] row = calendar.toArray();
                 data.add(row);
             }

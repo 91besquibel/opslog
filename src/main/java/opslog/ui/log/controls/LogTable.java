@@ -170,8 +170,15 @@ public class LogTable extends TableView<Log>{
 					VBox vbox = new VBox();
 					for (Tag tag : item) {
 						Label lbl = new Label(tag.toString());
-						lbl.setBackground(new Background(new BackgroundFill(tag.colorProperty().get(),
-								Settings.CORNER_RADII, Settings.INSETS_ZERO)));
+						lbl.setBackground(
+							new Background(
+								new BackgroundFill(
+									tag.colorProperty().get(),
+									Settings.CORNER_RADII, 
+									Settings.INSETS_ZERO
+								)
+							)
+						);
 						lbl.setPadding(Settings.INSETS);
 						lbl.textFillProperty().bind(Settings.textColor);
 						lbl.setAlignment(Pos.TOP_CENTER);
