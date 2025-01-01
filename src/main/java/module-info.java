@@ -9,19 +9,13 @@ module test.opslog {
     requires java.logging;
     requires org.postgresql.jdbc;
 
-    requires spring.boot;
-    requires spring.boot.autoconfigure;
-    requires spring.web;
-    requires spring.webmvc;
-
     requires com.zaxxer.hikari;
     requires jdk.compiler;
     requires org.slf4j;
     requires com.calendarfx.view;
-    requires spring.core;
 
     opens opslog.object to javafx.base;
-    opens opslog to javafx.fxml; 
+    opens opslog to javafx.fxml;
 
     exports opslog; 
 }

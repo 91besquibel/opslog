@@ -5,8 +5,8 @@ opslog/ui/controls/MultiSelectBox$2.class
 opslog/ui/log/LogController.class
 opslog/ui/checklist/controllers/StatusController.class
 opslog/ui/checklist/controls/StatusTreeView.class
-opslog/sql/hikari/ConnectionManager.class
 opslog/util/Logging$1.class
+opslog/sql/hikari/ConnectionManager.class
 opslog/ui/controls/CustomColorPicker.class
 opslog/ui/log/controls/LogTable$3.class
 opslog/ui/calendar/event/entry/ScheduledEntry$1.class
@@ -30,8 +30,8 @@ opslog/ui/controls/CustomListView$1.class
 opslog/ui/calendar/event/entry/ScheduledEntry$2.class
 opslog/ui/checklist/controls/TaskTreeView$2.class
 opslog/util/AppClock.class
-opslog/sql/hikari/DatabaseConfig.class
 opslog/ui/controls/CustomComboBox$3.class
+opslog/sql/hikari/DatabaseConfig.class
 opslog/ui/search/controls/SearchQuery.class
 opslog/ui/log/LogLayout.class
 module-info.class
@@ -40,8 +40,8 @@ opslog/util/Debounce$1.class
 opslog/object/Type.class
 opslog/sql/hikari/HikariConfigSetup.class
 opslog/util/Debounce.class
-opslog/interfaces/SQL.class
 opslog/util/Settings.class
+opslog/interfaces/SQL.class
 opslog/ui/calendar/event/entry/ScheduledTask.class
 opslog/ui/controls/Buttons.class
 opslog/ui/log/managers/PinboardManager.class
@@ -73,8 +73,8 @@ opslog/ui/settings/SettingsUI.class
 opslog/ui/calendar/event/EventDistribution.class
 opslog/ui/controls/CustomVBox.class
 opslog/ui/calendar/event/entry/ScheduledEntry$3.class
-opslog/ui/controls/CustomMenu.class
 opslog/ui/calendar/controls/CustomTaskViewEvent.class
+opslog/ui/controls/CustomMenu.class
 opslog/ui/checklist/ChecklistUI.class
 opslog/ui/log/controls/LogTable$2.class
 opslog/ui/log/controls/LogTable.class
@@ -90,10 +90,10 @@ opslog/ui/checklist/controls/StatusTreeView$2.class
 opslog/util/CSV.class
 opslog/object/Event.class
 opslog/ui/controls/CustomMenuBar.class
-opslog/ui/controls/CustomButton.class
 opslog/ui/calendar/event/entry/ScheduledTask$2.class
-opslog/sql/pgsql/Notification.class
+opslog/ui/controls/CustomButton.class
 opslog/ui/controls/CustomMenuItem.class
+opslog/sql/pgsql/Notification.class
 opslog/ui/controls/ContextMenus.class
 opslog/ui/checklist/managers/TaskManager.class
 opslog/ui/startup/StartUI.class
@@ -108,8 +108,8 @@ opslog/object/event/Log.class
 opslog/ui/window/ResizeListener.class
 opslog/util/FileSaver.class
 opslog/ui/controls/CustomComboBox$1.class
-opslog/ui/controls/MultiSelectBox$1.class
 opslog/ui/calendar/event/entry/ScheduledTask$3.class
+opslog/ui/controls/MultiSelectBox$1.class
 opslog/ui/checklist/controls/ScheduleTable$2.class
 opslog/ui/search/SearchUI.class
 opslog/ui/calendar/CalendarLayout$1.class

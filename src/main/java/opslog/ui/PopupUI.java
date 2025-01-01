@@ -5,13 +5,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import opslog.ui.controls.*;
+import opslog.controls.simple.*;
+import opslog.controls.button.Buttons;
 import opslog.ui.window.WindowPane;
 import opslog.util.Settings;
 
 public class PopupUI {
 
-    private CustomVBox root;
+    private VBox root;
 
     private static Button ackBtn(String title) {
         Button btn = new Button(title);
@@ -58,7 +59,7 @@ public class PopupUI {
             stage.close();
         });
 
-        root = new CustomVBox();
+        root = new VBox();
         root.getChildren().addAll(label, btn);
         display();
     }
@@ -83,9 +84,9 @@ public class PopupUI {
             stage.close();
         });
 
-        CustomHBox btns = new CustomHBox();
+        HBox btns = new HBox();
         btns.getChildren().addAll(yesBtn, noBtn);
-        root = new CustomVBox();
+        root = new VBox();
         root.getChildren().addAll(label, btns);
 
         display();

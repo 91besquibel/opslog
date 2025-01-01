@@ -1,6 +1,5 @@
 package opslog.ui.checklist.layout;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -8,127 +7,80 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Orientation;
 
-import opslog.object.event.Checklist;
-import opslog.ui.calendar.event.entry.ScheduledTask;
-import opslog.ui.checklist.controls.ScheduleTable;
+import opslog.controls.button.CustomButton;
+import opslog.controls.complex.ScheduledChecklistSelector;
+import opslog.controls.complex.Scheduler;
+import opslog.controls.complex.checklist.StatusView;
+import opslog.ui.checklist.ChecklistView;
 import opslog.util.Settings;
-import opslog.ui.checklist.ChecklistUI;
-import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.controls.*;
+import opslog.controls.simple.*;
 import opslog.util.Directory;
 
-public class StatusLayout {
+public class StatusLayout extends VBox {
 
-    // Checklist Status Viewer Bar
-    public static final CustomButton swapView = new CustomButton(
+    public static final CustomButton SWAP = new CustomButton(
             Directory.SWAP_WHITE, Directory.SWAP_GREY, "Editor View"
     );
+    public static final StatusView STATUS_VIEW = new StatusView();
+    public static final ScheduledChecklistSelector SCHEDULED_CHECKLIST_SELECTOR = new ScheduledChecklistSelector();
+    public static final Scheduler SCHEDULER = new Scheduler();
 
-    // Scheduled Checklist Status Viewer
-    public static final VBox scheduledChecklistViewer = new VBox();
+    public StatusLayout() {
+        backgroundProperty().bind(Settings.rootBackground);
 
-    public static final ListView<ObservableList<ScheduledTask>> scheduledTaskListView = new ListView<>();
+        SWAP.setOnAction(e -> {
+            ChecklistView.EDITOR_LAYOUT.setVisible(true);
+            ChecklistView.STATUS_LAYOUT.setVisible(false);
+        });
 
-    public static final CustomComboBox<Checklist> checklistTemplateSelector = new CustomComboBox<>(
-            "Template",Settings.WIDTH_LARGE,Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final ScheduleTable scheduleTable = new ScheduleTable();
+        SplitPane verticalSplit = new SplitPane(
+                SCHEDULED_CHECKLIST_SELECTOR,
+                SCHEDULER
+        );
+        verticalSplit.setOrientation(Orientation.VERTICAL);
+        verticalSplit.setMaxWidth(400);
+        verticalSplit.backgroundProperty().bind(Settings.rootBackground);
 
-    // Scheduled Checklist Buttons
-    public static final CustomButton addSchedule = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add"
-    );
-    public static final CustomButton removeSchedule = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete"
-    );
+        VBox.setVgrow(STATUS_VIEW,Priority.ALWAYS);
 
-    public static void buildStatusWindow(){
-        SplitPane splitPane = new SplitPane(scheduledChecklistListView(),checklistSchedular());
-        splitPane.setOrientation(Orientation.VERTICAL);
-        splitPane.backgroundProperty().bind(Settings.rootBackground);
-        splitPane.setMaxWidth(400);
-        SplitPane statusRoot = new SplitPane(scheduledChecklistStatusView(), splitPane);
-        statusRoot.setDividerPositions(0.80f, .20f);
-        statusRoot.backgroundProperty().bind(Settings.rootBackground);
-        statusRoot.prefWidthProperty().bind(ChecklistUI.root.widthProperty());
-        statusRoot.prefHeightProperty().bind(ChecklistUI.root.heightProperty());
-        ChecklistUI.statusRoot = statusRoot;
+        SplitPane horizontalSplit = new SplitPane();
+        horizontalSplit.setOrientation(Orientation.HORIZONTAL);
+        horizontalSplit.getItems().addAll(STATUS_VIEW, verticalSplit);
+        horizontalSplit.backgroundProperty().bind(Settings.rootBackground);
+        horizontalSplit.setDividerPositions(0.80f, .20f);
+
+        getChildren().add(
+                horizontalSplit
+        );
     }
 
-    private static CustomVBox scheduledChecklistStatusView(){
-        CustomHBox checklistStatusViewBar = checklistStatusViewBar();
-        ScrollPane scrollPane = new ScrollPane(scheduledChecklistViewer);
-        CustomVBox vbox = new CustomVBox();
+    private static VBox scheduledChecklistStatusView(){
+        HBox checklistStatusViewBar = checklistStatusViewBar();
+        ScrollPane scrollPane = new ScrollPane(STATUS_VIEW);
+        VBox vbox = new VBox();
         vbox.getChildren().addAll(checklistStatusViewBar, scrollPane);
 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.prefWidthProperty().bind(vbox.widthProperty());
-        scheduledChecklistViewer.prefWidthProperty().bind(vbox.widthProperty().subtract(25));
+        STATUS_VIEW.prefWidthProperty().bind(vbox.widthProperty().subtract(25));
         vbox.setAlignment(Pos.TOP_CENTER);
         return vbox;
     }
 
-    private static CustomHBox checklistStatusViewBar() {
+    private static HBox checklistStatusViewBar() {
         CustomLabel label = new CustomLabel(
                 "Checklist Status",
                 Settings.WIDTH_LARGE,
                 Settings.SINGLE_LINE_HEIGHT
         );
-        CustomHBox hbox = new CustomHBox();
+        HBox hbox = new HBox();
         hbox.getChildren().addAll(
-                swapView,
+                SWAP,
                 label
         );
         hbox.setAlignment(Pos.CENTER);
         hbox.minHeight(Settings.SINGLE_LINE_HEIGHT);
         hbox.maxHeight(Settings.SINGLE_LINE_HEIGHT);
         return hbox;
-    }
-
-    private static CustomVBox scheduledChecklistListView(){
-        CustomLabel label = new CustomLabel(
-                "Scheduled Checklist's", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-        );
-        CustomVBox vbox = new CustomVBox();
-        scheduledTaskListView.prefWidthProperty().bind(vbox.widthProperty());
-        scheduledTaskListView.prefHeightProperty().bind(vbox.heightProperty().subtract(label.heightProperty()));
-        CustomHBox buttons = new CustomHBox();
-        buttons.getChildren().addAll(
-                addSchedule
-        );
-        buttons.setAlignment(Pos.CENTER_RIGHT);
-        vbox.getChildren().addAll(label, scheduledTaskListView,buttons);
-        return vbox;
-    }
-
-    private static CustomVBox checklistSchedular(){
-        CustomVBox vbox = new CustomVBox();
-        CustomLabel label = new CustomLabel(
-                "Checklist Schedular",
-                300,
-                Settings.SINGLE_LINE_HEIGHT
-        );
-        label.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-
-        checklistTemplateSelector.setItems(ChecklistManager.getList());
-        checklistTemplateSelector.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        checklistTemplateSelector.prefWidthProperty().bind(vbox.widthProperty());
-        VBox.setVgrow(checklistTemplateSelector, Priority.ALWAYS);
-
-
-        CustomHBox buttons = new CustomHBox();
-        buttons.getChildren().addAll(
-                addSchedule
-        );
-        buttons.setAlignment(Pos.CENTER_RIGHT);
-
-        vbox.getChildren().addAll(
-                label,
-                checklistTemplateSelector,
-                scheduleTable,
-                buttons
-        );
-
-        return vbox;
     }
 }

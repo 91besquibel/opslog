@@ -3,18 +3,18 @@ package opslog.ui.startup;
 import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.hikari.Connection;
+import opslog.sql.Refrences;
 import opslog.sql.pgsql.Listen;
-import opslog.ui.calendar.event.entry.ScheduledTaskManager;
-import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.checklist.managers.TaskManager;
-import opslog.ui.log.managers.LogManager;
-import opslog.ui.log.managers.PinboardManager;
-import opslog.ui.settings.managers.FormatManager;
-import opslog.ui.settings.managers.ProfileManager;
-import opslog.ui.settings.managers.TagManager;
-import opslog.ui.settings.managers.TypeManager;
+import opslog.managers.ScheduledTaskManager;
+import opslog.managers.ChecklistManager;
+import opslog.managers.TaskManager;
+import opslog.managers.LogManager;
+import opslog.managers.PinboardManager;
+import opslog.managers.FormatManager;
+import opslog.managers.ProfileManager;
+import opslog.managers.TagManager;
+import opslog.managers.TypeManager;
 
 public class StartController {
 
@@ -38,8 +38,8 @@ public class StartController {
 	public static void startNotifications(){
 		System.out.println("\n");
 		ExecutorService executor = Executors.newFixedThreadPool(10);
-		for (String threadName : DatabaseConfig.threadNames()) {
-			executor.submit(new Listen(ConnectionManager.getInstance(), threadName));
+		for (String threadName : Refrences.threadNames()) {
+			executor.submit(new Listen(Connection.getInstance(), threadName));
 		}
 		System.out.println("\n");
 	}

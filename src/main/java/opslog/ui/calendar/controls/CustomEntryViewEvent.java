@@ -1,6 +1,5 @@
 package opslog.ui.calendar.controls;
 
-import java.util.Arrays;
 import org.controlsfx.control.CheckComboBox;
 
 import impl.com.calendarfx.view.util.Util;
@@ -26,22 +25,17 @@ import javafx.scene.layout.VBox;
 import opslog.object.Format;
 import opslog.object.Tag;
 import opslog.object.Type;
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomComboBox;
-import opslog.ui.controls.CustomTextArea;
-import opslog.ui.controls.CustomTextField;
-import opslog.ui.settings.managers.FormatManager;
-import opslog.ui.settings.managers.TagManager;
-import opslog.ui.settings.managers.TypeManager;
-import opslog.util.Directory;
+import opslog.object.ScheduledEntry;
+import opslog.controls.simple.CustomComboBox;
+import opslog.controls.simple.CustomTextArea;
+import opslog.controls.simple.CustomTextField;
+import opslog.managers.FormatManager;
+import opslog.managers.TagManager;
+import opslog.managers.TypeManager;
 import opslog.util.Settings;
-import opslog.util.Debounce;
 
 public class CustomEntryViewEvent extends EntryPopOverPane {
-    
-    private static final Debounce debounce = new Debounce();
-    private static final long DEBOUNCE_DELAY = 300;
+
     private final Label summaryLabel;
     private final MenuButton recurrenceButton;
     private final TimeField startTimeField = new TimeField();

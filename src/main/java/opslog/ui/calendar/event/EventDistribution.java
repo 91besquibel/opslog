@@ -6,15 +6,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.calendarfx.model.CalendarEvent;
-import opslog.sql.hikari.DatabaseConfig;
+import opslog.sql.Refrences;
 import opslog.ui.calendar.CalendarLayout;
-import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.sql.hikari.ConnectionManager;
+import opslog.sql.QueryBuilder;
+import opslog.sql.hikari.Connection;
 import com.calendarfx.model.LoadEvent;
-import opslog.ui.calendar.event.entry.ScheduledTaskManager;
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.calendar.event.entry.ScheduledTask;
-import opslog.ui.calendar.event.entry.ScheduledEntryManager;
+import opslog.managers.ScheduledTaskManager;
+import opslog.object.ScheduledEntry;
+import opslog.object.ScheduledTask;
+import opslog.managers.ScheduledEntryManager;
 
 public class EventDistribution {
 	
@@ -133,8 +133,8 @@ public class EventDistribution {
 		if(event.getEntry() instanceof ScheduledEntry scheduledEntry){
 			try {
 				//System.out.println("EventDistribution: handleing scheduled entry query.");
-				DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-				boolean	exists = databaseQueryBuilder.exists(DatabaseConfig.SCHEDULED_EVENT_TABLE, scheduledEntry.getId());
+				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+				boolean	exists = queryBuilder.exists(Refrences.SCHEDULED_EVENT_TABLE, scheduledEntry.getId());
 				if(exists){
 					ScheduledEntryManager.updateEntry(event);
 				}else {

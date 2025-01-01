@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="opslogsql" />
+        <module name="demo" />
         <module name="operations-logger" />
       </profile>
     </annotationProcessing>

@@ -3,8 +3,6 @@ package opslog.util;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
-import opslog.ui.controls.Styles;
-import javafx.scene.control.ContentDisplay;
 
 public class Utilities {
 

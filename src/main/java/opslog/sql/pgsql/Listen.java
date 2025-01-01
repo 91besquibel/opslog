@@ -1,6 +1,6 @@
 package opslog.sql.pgsql;
 
-import opslog.sql.hikari.HikariConnectionProvider;
+import opslog.sql.hikari.ConnectionManager;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ import java.sql.Statement;
 public class Listen implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(Listen.class);
-    private final HikariConnectionProvider connectionProvider;
+    private final ConnectionManager connectionProvider;
     private final String threadName;
 
     /**
@@ -36,7 +36,7 @@ public class Listen implements Runnable {
      * @param connectionProvider the HikariCP connection provider for database connections
      * @param threadName          the name of the table to listen for notifications
      */
-    public Listen(HikariConnectionProvider connectionProvider, String threadName) {
+    public Listen(ConnectionManager connectionProvider, String threadName) {
         this.connectionProvider = connectionProvider;
         this.threadName = threadName;
     }

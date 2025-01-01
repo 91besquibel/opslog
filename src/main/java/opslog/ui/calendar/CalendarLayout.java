@@ -18,8 +18,8 @@ import opslog.ui.calendar.controls.CustomTaskViewEvent;
 import opslog.ui.calendar.event.EventDistribution;
 import opslog.util.DateTime;
 import opslog.object.Event;
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.calendar.event.entry.ScheduledTask;
+import opslog.object.ScheduledEntry;
+import opslog.object.ScheduledTask;
 
 public class CalendarLayout {
 

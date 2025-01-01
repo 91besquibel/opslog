@@ -16,12 +16,12 @@ import javafx.scene.control.*;
 import javafx.scene.Cursor;
 import java.util.Objects;
 
-import opslog.ui.controls.Buttons;
-import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.Styles;
+import opslog.controls.button.Buttons;
+import opslog.controls.button.CustomButton;
+import opslog.util.Styles;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import opslog.ui.search.controls.SearchBar;
+import opslog.controls.complex.SearchBar;
 
 public class WindowPane {
 

@@ -2,8 +2,8 @@ package opslog.sql.pgsql;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import opslog.ui.calendar.event.entry.ScheduledTaskManager;
-import opslog.ui.calendar.event.entry.ScheduledTask;
+import opslog.managers.ScheduledTaskManager;
+import opslog.object.ScheduledTask;
 import org.postgresql.PGNotification;
 import java.sql.SQLException;
 import java.util.List;
@@ -13,20 +13,18 @@ import opslog.object.Profile;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.object.event.*;
-import opslog.sql.hikari.ConnectionManager;
-import opslog.sql.hikari.DatabaseQueryBuilder;
-import opslog.ui.checklist.managers.ChecklistManager;
-import opslog.ui.checklist.managers.TaskManager;
-import opslog.ui.log.managers.LogManager;
-import opslog.ui.log.managers.PinboardManager;
-import opslog.ui.settings.managers.FormatManager;
-import opslog.ui.settings.managers.ProfileManager;
-import opslog.ui.settings.managers.TagManager;
-import opslog.ui.settings.managers.TypeManager;
-import opslog.ui.calendar.event.EventDistribution;
-import opslog.ui.calendar.event.EventDistributionUtil;
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.calendar.event.entry.ScheduledEntryManager;
+import opslog.sql.hikari.Connection;
+import opslog.sql.QueryBuilder;
+import opslog.managers.ChecklistManager;
+import opslog.managers.TaskManager;
+import opslog.managers.LogManager;
+import opslog.managers.PinboardManager;
+import opslog.managers.FormatManager;
+import opslog.managers.ProfileManager;
+import opslog.managers.TagManager;
+import opslog.managers.TypeManager;
+import opslog.object.ScheduledEntry;
+import opslog.managers.ScheduledEntryManager;
 
 
 public class Notification {
@@ -50,8 +48,8 @@ public class Notification {
             String id = parts[4];// "123e4567-e89b-12d3-a456-426614174000"
 
             try {
-                DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
-                List<String[]> result = databaseQueryBuilder.select(tableName,id);
+                QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+                List<String[]> result = queryBuilder.select(tableName,id);
                 synchronized (Notification.class) {
                     tableSwitch(tableName, id, operation, result);
                 }

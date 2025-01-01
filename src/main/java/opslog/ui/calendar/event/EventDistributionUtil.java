@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.calendar.event.entry.ScheduledEntryManager;
+import opslog.object.ScheduledEntry;
+import opslog.managers.ScheduledEntryManager;
+import opslog.sql.Refrences;
+import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.*;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,11 +36,11 @@ public class EventDistributionUtil{
 	// located here instead of manager for multi-threading 
 	public void handleScheduledEntry(LocalDate startDate, LocalDate stopDate) {
 		try {
-			DatabaseQueryBuilder databaseQueryBuilder = new DatabaseQueryBuilder(ConnectionManager.getInstance());
+			QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 
-			List<String[]> results = databaseQueryBuilder.rangeQuery(
-				DatabaseConfig.SCHEDULED_EVENT_TABLE,
-				DatabaseConfig.START_DATE_COLUMN_TITLE,
+			List<String[]> results = queryBuilder.rangeQuery(
+				Refrences.SCHEDULED_EVENT_TABLE,
+				Refrences.START_DATE_COLUMN_TITLE,
 				startDate.toString(),
 				stopDate.toString()
 			);

@@ -1,8 +1,5 @@
 package opslog.ui.calendar.controls;
 
-import java.util.Arrays;
-import org.controlsfx.control.CheckComboBox;
-
 import impl.com.calendarfx.view.util.Util;
 import com.calendarfx.model.Entry;
 import com.calendarfx.view.DateControl;
@@ -16,7 +13,6 @@ import com.calendarfx.view.popover.RecurrencePopup;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.collections.ListChangeListener;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -26,27 +22,12 @@ import javafx.scene.text.Text;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 
-import opslog.object.Format;
 import opslog.object.Tag;
-import opslog.object.Type;
-import opslog.ui.calendar.event.entry.ScheduledEntry;
-import opslog.ui.calendar.event.entry.ScheduledTask;
-import opslog.ui.controls.CustomButton;
-import opslog.ui.controls.CustomComboBox;
-import opslog.ui.controls.CustomTextArea;
-import opslog.ui.controls.CustomTextField;
-import opslog.ui.settings.managers.FormatManager;
-import opslog.ui.settings.managers.TagManager;
-import opslog.ui.settings.managers.TypeManager;
-import opslog.util.Directory;
+import opslog.object.ScheduledTask;
 import opslog.util.Settings;
-import opslog.util.Debounce;
-import opslog.ui.controls.CustomLabel;
 
 public class CustomTaskViewEvent extends EntryPopOverPane {
 
-	private static final Debounce debounce = new Debounce();
-	private static final long DEBOUNCE_DELAY = 300;
 	private final Label summaryLabel;
 	private final MenuButton recurrenceButton;
 	private final TimeField startTimeField = new TimeField();
