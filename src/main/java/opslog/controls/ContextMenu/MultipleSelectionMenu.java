@@ -15,66 +15,83 @@ import opslog.object.Type;
 import opslog.util.Styles;
 
 import java.util.HashMap;
+import java.util.Map;
 
-public class MultipleSelectionMenu extends ContextMenu {
+public class MultipleSelectionMenu<T> extends ContextMenu {
 	
-	private static final ObservableList<T> checkedList = FXCollections.observableArrayList();
-	private static final ObservableList<T> items = FXCollections.observableArrayList();
+	private final ObservableList<T> selected = FXCollections.observableArrayList();
+	
+	private ObservableList<T> items = FXCollections.observableArrayList();
+
+	private final Map<T, CheckMenuItem> map = new HashMap<>();
 
 	public MultipleSelectionMenu() {
 		super();
 		setStyle(Styles.contextMenu());
-		
-		//tag.setStyle(Styles.menuItem());
-
-
-		TagManager.getList().addListener(
-				(ListChangeListener<Tag>) change ->{
-					while (change.next()) {
-						if (change.wasAdded()) {
-							for (Tag tag : change.getAddedSubList()) {
-								addTagMenuItem(tag);
-							}
-						}
-						if(change.wasRemoved()) {
-							for (Tag tag : change.getRemoved()) {
-								removeTagMenuItem(tag);
-							}
-						}
-					}
-				}
-		);
 	}
 
-	public <T> ObservableList<T> getCheckedItems(){
-		return checkedList;
+	public ObservableList<T> getSelected(){
+		return selected;
 	}
 
-	public <T> void setItems(ObservableList<T> items){
-		
+	public void setSelected(ObservableList<T> selected){
+		this.selected.setAll(selected);
 	}
 
-	private void addTagMenuItem(Tag tag) {
+	public ObservableList<T> getList(){
+		return items;
+	}
+
+	public void setList(ObservableList<T> items) { 
+		// Remove the current listener if any
+		if (this.items != null) {
+			this.items.removeListener(itemsChangeListener);
+		} 
+		// Set the new list 
+		this.items = items;
+		// Add the listener to the new list
+		this.items.addListener(itemsChangeListener); 
+		// Update the menu items
+		getItems().clear();
+		map.clear(); 
+		for (T item : items) { 
+			addMenuItem(item);
+		}
+	}
+
+	private void addMenuItem(T item) {
 		CheckMenuItem menuItem = new CheckMenuItem();
-		menuItem.textProperty().bind(tag.titleProperty());
+		menuItem.setText(item.toString());
 		menuItem.setStyle(Styles.menuItem());
 		menuItem.selectedProperty().addListener((obs, ov, nv) -> {
 			if (nv) {
-				tagList.add(tag);
+				selected.add(item);
 			} else {
-				tagList.remove(tag);
+				selected.remove(item);
 			}
 		});
-		TAG_SUBMENU.getItems().add(menuItem);
-		tagMap.put(tag, menuItem);
+		getItems().add(menuItem);
+		map.put(item, menuItem);
 	}
 
-	private void removeTagMenuItem(Tag tag) {
-		TAG_SUBMENU.getItems().remove(tagMap.get(tag));
-		tagMap.remove(tag);
-		tagList.remove(tag);
+	private void removeMenuItem(T item) {
+		getItems().remove(map.get(item));
+		map.remove(item);
+		items.remove(item);
 	}
 
-
-	
+	private final ListChangeListener<T> itemsChangeListener = change -> {
+		while (change.next()) { 
+			if (change.wasAdded()) {
+				for (T item : change.getAddedSubList()) { 
+					addMenuItem(item); 
+				} 
+			} 
+			if (change.wasRemoved()) {
+				for (T item : change.getRemoved()) {
+					removeMenuItem(item);
+				}
+			}
+		}
+	};
 }
