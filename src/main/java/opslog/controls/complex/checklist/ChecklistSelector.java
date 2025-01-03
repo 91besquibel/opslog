@@ -12,7 +12,7 @@ public class ChecklistSelector extends VBox {
 
     private static final CustomListView<Checklist> listView = new CustomListView<>(
             ChecklistManager.getList(),
-            300,
+            200,
             Settings.WIDTH_LARGE,
             SelectionMode.SINGLE
     );

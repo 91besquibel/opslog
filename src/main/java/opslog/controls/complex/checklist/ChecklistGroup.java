@@ -49,19 +49,25 @@ public class ChecklistGroup extends VBox {
     public ChecklistGroup() {
         CHECKLIST_LABEL.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
 
+        CHECKLIST_CREATOR.setVisible(false);
+        CHECKLIST_VIEW.setVisible(true);
+        CHECKLIST_VIEW.getListView().setOnDragDetected(this::dragItem);
+        CHECKLIST_VIEW.getListView().getSelectionModel().selectedItemProperty().addListener(
+                (obs,ov,nv) -> selectItem(nv)
+        );
         StackPane checklistStack = new StackPane(
                 CHECKLIST_CREATOR,
                 CHECKLIST_VIEW
         );
-
-        CHECKLIST_VIEW.setVisible(true);
-        CHECKLIST_CREATOR.setVisible(false);
-
         VBox.setVgrow(
                 checklistStack,
                 Priority.ALWAYS
         );
 
+        SWAP.setOnAction(event -> handleSwap());
+        ADD.setOnAction(event -> handleAdd());
+        UPDATE.setOnAction(event -> handleEdit());
+        REMOVE.setOnAction(event -> handleDelete());
         HBox buttons = new HBox();
         buttons.getChildren().addAll(
                 SWAP,
@@ -69,29 +75,17 @@ public class ChecklistGroup extends VBox {
                 REMOVE,
                 UPDATE
         );
-
         buttons.setMaxWidth(300);
         buttons.setSpacing(Settings.SPACING);
-        buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox vbox = new VBox();
-        vbox.getChildren().addAll(
+        getChildren().addAll(
                 CHECKLIST_LABEL,
                 checklistStack,
                 buttons
         );
-
-        CHECKLIST_VIEW.getListView().setOnDragDetected(this::dragItem);
-        CHECKLIST_VIEW.getListView().getSelectionModel().selectedItemProperty().addListener(
-                (obs,ov,nv) -> selectItem(nv)
-        );
-
-        SWAP.setOnAction(event -> handleSwap());
-        ADD.setOnAction(event -> handleAdd());
-        UPDATE.setOnAction(event -> handleEdit());
-        REMOVE.setOnAction(event -> handleDelete());
-
+        backgroundProperty().bind(Settings.primaryBackground);
+        setPadding(Settings.INSETS);
     }
 
     private static void handleSwap(){

@@ -113,17 +113,4 @@ public class Styles {
             "-fx-border-radius:"  + Settings.CORNER_RADII_VALUE + " ;"+
             "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 6, 0.5, 0, 0); ";
     }
-
-    /*
-    * .context-menu {
-    * -fx-background-color: black;
-    * fx-background-radius: 6px;
-    * -fx-focus-color: transparent;
-    * -fx-faint-focus-color: transparent;
-    * -fx-border-color: grey;
-    * -fx-border-width: 2px;
-    * -fx-border-radius: 4px;
-    * -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0.5, 0, 0);
-    * }
-    * */
 }

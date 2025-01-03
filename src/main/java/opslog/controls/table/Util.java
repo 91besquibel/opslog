@@ -10,7 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import opslog.object.ScheduledTask;
 import opslog.object.Tag;
 import opslog.util.Settings;
 
@@ -24,7 +23,6 @@ public class Util {
         hbox.setAlignment(Pos.CENTER);
         return hbox;
     }
-
 
     public static VBox tagBox(ObservableList<Tag> item) {
         VBox vbox = new VBox();

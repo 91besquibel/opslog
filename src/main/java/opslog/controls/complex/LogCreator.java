@@ -20,6 +20,7 @@ import opslog.managers.TypeManager;
 import opslog.util.Directory;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
+import opslog.util.Styles;
 
 public class LogCreator extends VBox {
 
@@ -27,15 +28,20 @@ public class LogCreator extends VBox {
 
     // Data fields
     public final CustomComboBox<Type> typeSelection = new CustomComboBox<>(
-            "Type", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Type", 300, Settings.SINGLE_LINE_HEIGHT
+	);
     public final CheckComboBox<Tag> tagSelection= new CheckComboBox<>(
-            TagManager.getList());
+            TagManager.getList()
+	);
     public final CustomTextField initialsField = new CustomTextField(
-            "Initials",300, Settings.SINGLE_LINE_HEIGHT);
+            "Initials",300, Settings.SINGLE_LINE_HEIGHT
+	);
     public final CustomComboBox<Format> formatSelection = new CustomComboBox<>(
-            "Format", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Format", 300, Settings.SINGLE_LINE_HEIGHT
+	);
     public final CustomTextArea descriptionField = new CustomTextArea(
-            300, Settings.SINGLE_LINE_HEIGHT);
+            300, Settings.SINGLE_LINE_HEIGHT
+	);
 
     public final CustomButton addLog = new CustomButton(
             Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
@@ -45,14 +51,16 @@ public class LogCreator extends VBox {
             Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
 
     public LogCreator(){
-        tagSelection.prefWidthProperty().bind(this.widthProperty());
-        tagSelection.setFocusTraversable(true);
-        tagSelection.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        tagSelection.setMaxWidth(300);
-        tagSelection.setTitle("Tags");
-        tagSelection.backgroundProperty().bind(Settings.secondaryBackground);
-        tagSelection.borderProperty().bind(Settings.secondaryBorder);
-
+		
+		tagSelection.prefWidthProperty().bind(this.widthProperty());
+		tagSelection.setFocusTraversable(true);
+		tagSelection.prefHeight(Settings.SINGLE_LINE_HEIGHT);
+		tagSelection.setMaxWidth(300);
+		tagSelection.setTitle("Tags");
+		tagSelection.setStyle(Styles.getTextStyle());
+		tagSelection.backgroundProperty().bind(Settings.secondaryBackground);
+		tagSelection.borderProperty().bind(Settings.secondaryBorder);
+		
         formatSelection.setItems(FormatManager.getList());
 
         typeSelection.setItems(TypeManager.getList());

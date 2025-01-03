@@ -14,15 +14,12 @@ public class ChecklistView extends VBox {
 
     public ChecklistView() {
 
-        EDITOR_LAYOUT.minWidthProperty().bind(this.widthProperty());
-        EDITOR_LAYOUT.minHeightProperty().bind(this.heightProperty());
         EDITOR_LAYOUT.setVisible(false);
-        VBox.setVgrow(EDITOR_LAYOUT, Priority.ALWAYS);
-
-        STATUS_LAYOUT.minWidthProperty().bind(this.widthProperty());
-        STATUS_LAYOUT.minHeightProperty().bind(this.heightProperty());
+        EDITOR_LAYOUT.prefHeightProperty().bind(this.heightProperty());
+        EDITOR_LAYOUT.maxWidthProperty().bind(this.widthProperty());
+        VBox.setVgrow(EDITOR_LAYOUT,Priority.ALWAYS);
         STATUS_LAYOUT.setVisible(true);
-        VBox.setVgrow(STATUS_LAYOUT, Priority.ALWAYS);
+        VBox.setVgrow(STATUS_LAYOUT,Priority.ALWAYS);
 
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(
@@ -30,13 +27,12 @@ public class ChecklistView extends VBox {
                 STATUS_LAYOUT
         );
         stackPane.backgroundProperty().bind(Settings.rootBackground);
-        VBox.setVgrow(stackPane,Priority.ALWAYS);
-
-        stackPane.minWidthProperty().bind(this.widthProperty());
-
-        VBox vBox = new VBox(stackPane);
-        vBox.backgroundProperty().bind(Settings.primaryBackground);
-        VBox.setVgrow(vBox, Priority.ALWAYS);
-        getChildren().add(vBox);
+        stackPane.maxWidthProperty().bind(this.widthProperty());
+        
+        VBox vbox = new VBox(stackPane);
+        vbox.backgroundProperty().bind(Settings.primaryBackground);
+        VBox.setVgrow(vbox, Priority.ALWAYS);
+        vbox.maxWidthProperty().bind(this.widthProperty());
+        getChildren().add(vbox);
     }
 }

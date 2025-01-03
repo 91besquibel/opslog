@@ -4,9 +4,8 @@ import com.calendarfx.model.Interval;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
+import opslog.controls.simple.CustomTextField;
 import opslog.object.ScheduledTask;
 import opslog.util.Settings;
 import opslog.util.DateTime;
@@ -14,12 +13,7 @@ import opslog.util.DateTime;
 public class ScheduleTable extends TableView<ScheduledTask> {
 
     public ScheduleTable() {
-        initializeColumns();
-        initializeListeners();
-        setEditable(true); // Enable editing for the table
-    }
-
-    public void initializeColumns() {
+        getColumns().add(titleColumn());
         getColumns().add(startDateColumn());
         getColumns().add(startTimeColumn());
         getColumns().add(stopDateColumn());
@@ -27,17 +21,30 @@ public class ScheduleTable extends TableView<ScheduledTask> {
 
         backgroundProperty().bind(Settings.primaryBackground);
         setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        setRowFactory(tv -> createRow());
+        setRowFactory(tv-> {
+            TableRow<ScheduledTask> row  = Util.createRow();
+            row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
+            return row;
+        });
         setPadding(Settings.INSETS);
-    }
 
-    public void initializeListeners() {
         widthProperty().addListener((obs, oldWidth, newWidth) -> refresh());
         heightProperty().addListener((obs, oldHeight, newHeight) -> refresh());
+        setEditable(true); // Enable editing for the table
+    }
+
+    private TableColumn<ScheduledTask, String> titleColumn(){
+        TableColumn<ScheduledTask, String> column = new TableColumn<>();
+        column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
+        column.setGraphic(Util.createHeader("Title"));
+        column.setMinWidth(80);
+        column.setCellFactory(col -> Util.createCell());
+        return column;
     }
 
     private TableColumn<ScheduledTask, LocalDate> startDateColumn() {
-        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>("Start Date");
+        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>();
+        column.setGraphic(Util.createHeader("Start"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
         column.setCellFactory(col -> createEditableDateCell());
         column.setOnEditCommit(event -> {
@@ -45,12 +52,11 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             Interval interval = scheduledTask.intervalProperty().get().withStartDate(event.getNewValue());
             scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Start Date"));
         return column;
     }
 
     private TableColumn<ScheduledTask, LocalTime> startTimeColumn() {
-        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>("Start Time");
+        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
         column.setCellFactory(col -> createEditableTimeCell());
         column.setOnEditCommit(event -> {
@@ -58,12 +64,12 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             Interval interval = scheduledTask.intervalProperty().get().withStartTime(event.getNewValue());
             scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Start Time"));
         return column;
     }
 
     private TableColumn<ScheduledTask, LocalDate> stopDateColumn() {
-        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>("Stop Date");
+        TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>();
+        column.setGraphic(Util.createHeader("Stop"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
         column.setCellFactory(col -> createEditableDateCell());
         column.setOnEditCommit(event -> {
@@ -71,12 +77,11 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             Interval interval = scheduledTask.intervalProperty().get().withEndDate(event.getNewValue());
             scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Stop Date"));
         return column;
     }
 
     private TableColumn<ScheduledTask, LocalTime> stopTimeColumn() {
-        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>("Stop Time");
+        TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
         column.setCellFactory(col -> createEditableTimeCell());
         column.setOnEditCommit(event -> {
@@ -84,22 +89,12 @@ public class ScheduleTable extends TableView<ScheduledTask> {
             Interval interval = scheduledTask.intervalProperty().get().withEndTime(event.getNewValue());
             scheduledTask.setInterval(interval);
         });
-        column.setGraphic(createHeaderLabel("Stop Time"));
         return column;
-    }
-
-    private HBox createHeaderLabel(String title) {
-        Label label = new Label(title);
-        label.fontProperty().bind(Settings.fontPropertyBold);
-        label.textFillProperty().bind(Settings.textColor);
-        HBox hbox = new HBox(label);
-        hbox.setAlignment(Pos.CENTER);
-        return hbox;
     }
 
     private TableCell<ScheduledTask, LocalDate> createEditableDateCell() {
         return new TableCell<ScheduledTask, LocalDate>() {
-            private final TextField textField = new TextField();
+            private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
 
             {
                 textField.setOnAction(event -> commitEdit(parseLocalDate(textField.getText())));
@@ -162,7 +157,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
 
     private TableCell<ScheduledTask, LocalTime> createEditableTimeCell() {
         return new TableCell<ScheduledTask, LocalTime>() {
-            private final TextField textField = new TextField();
+            private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
 
             {
                 textField.setOnAction(event -> commitEdit(parseLocalTime(textField.getText())));
@@ -221,55 +216,6 @@ public class ScheduleTable extends TableView<ScheduledTask> {
                 }
             }
         };
-    }
-
-    private <T> TableRow<T> createRow() {
-        TableRow<T> row = new TableRow<>();
-        row.backgroundProperty().bind(Settings.primaryBackground);
-        row.minHeight(50);
-        row.borderProperty().bind(Settings.primaryBorder);
-
-        row.itemProperty().addListener((obs, oldItem, newItem) -> {
-            if (row.isEmpty()) {
-                row.borderProperty().bind(Settings.primaryBorder);
-                row.backgroundProperty().bind(Settings.secondaryBackground);
-            }
-        });
-
-        row.hoverProperty().addListener((obs, noHov, hov) -> {
-            if (!row.isEmpty()) {
-                row.borderProperty().unbind();
-                if (hov) {
-                    row.setBorder(Settings.focusBorder.get());
-                } else {
-                    row.borderProperty().bind(Settings.primaryBorder);
-                }
-            }
-        });
-
-        row.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-            if (!row.isEmpty()) {
-                row.borderProperty().unbind();
-                if (isFocused) {
-                    row.setBorder(Settings.focusBorder.get());
-                } else {
-                    row.borderProperty().bind(Settings.primaryBorder);
-                }
-            }
-        });
-
-        row.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            row.backgroundProperty().unbind();
-            if (isSelected) {
-                row.setBackground(Settings.selectedBackground.get());
-            } else {
-                row.backgroundProperty().bind(Settings.secondaryBackground);
-            }
-        });
-
-        row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
-
-        return row;
     }
 }
 

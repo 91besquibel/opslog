@@ -22,9 +22,9 @@ import opslog.util.*;
 public class App extends Application {
 
     public static ClipboardContent content = new ClipboardContent();
-    private static final LogView LOG_VIEW = new LogView();
-    private static final SettingsView SETTINGS_VIEW = new SettingsView();
-    private static final ChecklistView CHECKLIST_VIEW = new ChecklistView();
+    private static LogView LOG_VIEW;
+    private static SettingsView SETTINGS_VIEW;
+    private static ChecklistView CHECKLIST_VIEW;
     private static WindowPane appWindow;
 
     public static void main(String[] args) {
@@ -34,8 +34,8 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         try {
-            System.out.println("App: Starting application");
-
+            
+            initializeViews();
             DateTime.timeListPopulate();
             CalendarLayout.initialize();
 
@@ -56,6 +56,12 @@ public class App extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initializeViews() {
+        LOG_VIEW = new LogView();
+        SETTINGS_VIEW = new SettingsView();
+        CHECKLIST_VIEW = new ChecklistView();
     }
 
     public static void goToCalendar(ActionEvent event) {

@@ -9,7 +9,11 @@ import opslog.util.Directory;
 public class Buttons {
 
     public static Button exitAppBtn() {
-        CustomButton exit = new CustomButton(Directory.EXIT_WHITE, Directory.EXIT_RED, "Exit");
+        CustomButton exit = new CustomButton(
+            Directory.EXIT_WHITE, 
+            Directory.EXIT_RED, 
+            "Exit"
+        );
         exit.setOnAction(event -> {
             System.exit(0);
         });
@@ -17,7 +21,11 @@ public class Buttons {
     }
 
     public static Button exitWinBtn() {
-        CustomButton exit = new CustomButton(Directory.EXIT_WHITE, Directory.EXIT_RED, "Exit");
+        CustomButton exit = new CustomButton(
+            Directory.EXIT_WHITE, 
+            Directory.EXIT_RED, 
+            "Exit"
+        );
         exit.setOnAction(event -> {
             Stage stage = (Stage) exit.getScene().getWindow();
             stage.close();
@@ -26,14 +34,24 @@ public class Buttons {
     }
 
     public static Button minBtn() {
-        CustomButton minimize = new CustomButton(Directory.MINIMIZE_WHITE, Directory.MINIMIZE_YELLOW, "Minimize");
-        minimize.setOnAction(event -> ((Stage) minimize.getScene().getWindow()).setIconified(true));
+        CustomButton minimize = new CustomButton(
+            Directory.MINIMIZE_WHITE, 
+            Directory.MINIMIZE_YELLOW, 
+            "Minimize"
+        );
+        minimize.setOnAction(
+            event -> ((Stage) minimize.getScene().getWindow()).setIconified(true)
+        );
         return minimize;
     }
 
     public static Button maxBtn(double originalWidth, double originalHeight) {
         final double[] dimensions = {originalWidth, originalHeight};
-        CustomButton maximize = new CustomButton(Directory.MAXIMIZE_WHITE, Directory.MAXIMIZE_GREEN, "Maximize");
+        CustomButton maximize = new CustomButton(
+            Directory.MAXIMIZE_WHITE, 
+            Directory.MAXIMIZE_GREEN, 
+            "Maximize"
+        );
         maximize.setOnAction(event -> {
             Stage stage = (Stage) maximize.getScene().getWindow();
             if (stage.isFullScreen()) {

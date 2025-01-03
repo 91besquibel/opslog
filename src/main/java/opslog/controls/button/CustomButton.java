@@ -1,5 +1,6 @@
 package opslog.controls.button;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 
@@ -13,12 +14,13 @@ public class CustomButton extends Button {
         Tooltip tooltip = Utilities.createTooltip(toolTip);
         tooltip.setAnchorX(this.getLayoutX()-100);
         Tooltip.install(this,tooltip);
+		setAlignment(Pos.CENTER);
         setFocusTraversable(true);
         setPadding(Settings.INSETS_ZERO);
         prefWidthProperty().bind(Settings.buttonSize);
         prefHeightProperty().bind(Settings.buttonSize);
-        backgroundProperty().bind(Settings.primaryBackground);
-        borderProperty().bind(Settings.primaryBorder);
+        backgroundProperty().bind(Settings.transparentBackground);
+        borderProperty().bind(Settings.transparentBorder);
 
         try {
             setGraphic(Icon.loadImage(image));
@@ -27,7 +29,6 @@ public class CustomButton extends Button {
         }
 
         focusedProperty().addListener((ob, ov, nv) -> {
-            borderProperty().unbind();
             if (nv) {
                 setGraphic(Icon.loadImage(imageHover));
             } else {
@@ -36,7 +37,6 @@ public class CustomButton extends Button {
         });
 
         hoverProperty().addListener((obs, ov, nv) -> {
-            borderProperty().unbind();
             if (nv) {
                 setGraphic(Icon.loadImage(imageHover));
             } else {

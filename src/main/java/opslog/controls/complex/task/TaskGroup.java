@@ -43,20 +43,26 @@ public class TaskGroup extends VBox{
 
     public TaskGroup() {
         TASK_LABEL.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-
+        
+        TASK_CREATOR.setVisible(false);
+        TASK_SELECTOR.setVisible(true);
+        TASK_SELECTOR.getListView().setOnDragDetected(this::dragItem);
+        TASK_SELECTOR.getListView().getSelectionModel().selectedItemProperty().addListener(
+                (obs,ov,nv) -> selectItem(nv)
+        );
         StackPane stackPane = new StackPane(
                 TASK_CREATOR,
                 TASK_SELECTOR
         );
-
-        TASK_SELECTOR.setVisible(true);
-        TASK_CREATOR.setVisible(false);
-
         VBox.setVgrow(
                 stackPane,
                 Priority.ALWAYS
         );
 
+        SWAP.setOnAction(event -> handleSwap());
+        ADD.setOnAction(event -> handleAdd());
+        UPDATE.setOnAction(event -> handleEdit());
+        REMOVE.setOnAction(event -> handleDelete());
         HBox buttons = new HBox();
         buttons.getChildren().addAll(
                 SWAP,
@@ -67,26 +73,15 @@ public class TaskGroup extends VBox{
 
         buttons.setMaxWidth(300);
         buttons.setSpacing(Settings.SPACING);
-        buttons.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox vbox = new VBox();
-        vbox.getChildren().addAll(
+        getChildren().addAll(
                 TASK_LABEL,
                 stackPane,
                 buttons
         );
-
-        TASK_SELECTOR.getListView().setOnDragDetected(this::dragItem);
-        TASK_SELECTOR.getListView().getSelectionModel().selectedItemProperty().addListener(
-                (obs,ov,nv) -> selectItem(nv)
-        );
-
-        SWAP.setOnAction(event -> handleSwap());
-        ADD.setOnAction(event -> handleAdd());
-        UPDATE.setOnAction(event -> handleEdit());
-        REMOVE.setOnAction(event -> handleDelete());
-
+        backgroundProperty().bind(Settings.primaryBackground);
+        setPadding(Settings.INSETS);
     }
 
     private static void handleSwap(){

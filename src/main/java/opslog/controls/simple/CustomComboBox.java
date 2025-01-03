@@ -9,16 +9,23 @@ import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 import opslog.util.Settings;
 import opslog.util.Styles;
+import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
+
 
 public class CustomComboBox<T> extends ComboBox<T> {
 
+	private static TextField tf;
+	
     public CustomComboBox(String prompt, double width, double height) {
         
         setPrefWidth(width);
         setPrefHeight(height);
         setMinHeight(height);
-        setEditable(false);
+        setEditable(true);
         setFocusTraversable(true);
+		initializeEditor();
+		
         setPromptText(prompt);
         setStyle(Styles.getTextStyle());
         backgroundProperty().bind(Settings.secondaryBackground);
@@ -46,12 +53,15 @@ public class CustomComboBox<T> extends ComboBox<T> {
 
         Settings.textColor.addListener((obs, oldColor, newColor) -> {
             setStyle(Styles.getTextStyle());
+			tf.setStyle(Styles.getTextStyle());
         });
         Settings.textSize.addListener((obs, oldSize, newSize) -> {
             setStyle(Styles.getTextStyle());
+			tf.setStyle(Styles.getTextStyle());
         });
         Settings.textFont.addListener((obs, oldFont, newFont) -> {
             setStyle(Styles.getTextStyle());
+			tf.setStyle(Styles.getTextStyle());
         });
 
         addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -65,7 +75,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
             if (hov) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 
@@ -74,7 +84,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.secondaryBorder);
+                borderProperty().bind(Settings.transparentBorder);
             }
         });
 
@@ -86,8 +96,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
                 borderProperty().bind(Settings.transparentBorder);
                 backgroundProperty().bind(Settings.primaryBackground);
                 setAlignment(Pos.CENTER);
-                setPadding(Settings.INSETS);
-
+				
                 hoverProperty().addListener((obs, noHov, hov) -> {
                     borderProperty().unbind();
                     if (hov) {
@@ -133,15 +142,14 @@ public class CustomComboBox<T> extends ComboBox<T> {
             }
         });
 
-        // Custom button cell 
+        // Custom button cell this is only used once a selection is made
         ListCell<T> buttonCell = new ListCell<>() { 
-            Label label = new Label(); 
+            Label label = new Label();
             { 
-                label.setText(prompt); 
                 label.fontProperty().bind(Settings.fontProperty); 
                 label.textFillProperty().bind(Settings.textColor); 
                 label.setWrapText(true); 
-                setGraphic(label); 
+                setGraphic(label);
             } 
             @Override protected void updateItem(T item, boolean empty) { 
                 super.updateItem(item, empty); 
@@ -149,9 +157,36 @@ public class CustomComboBox<T> extends ComboBox<T> {
                     label.setText(prompt); 
                 } else { 
                     label.setText(item.toString()); 
-                } 
-            } 
+				} 
+            }
         };
         setButtonCell(buttonCell);
     }
+
+	private void initializeEditor(){
+		tf = getEditor();
+		tf.backgroundProperty().bind(Settings.secondaryBackground);
+		tf.setBorder(Settings.noBorder.get());
+		tf.setStyle(Styles.getTextStyle());
+		tf.setPadding(new Insets(0, 10, 0, 10));
+		tf.hoverProperty().addListener((obs, noHov, hov) -> {
+			if (hov) {
+				tf.setPadding(new Insets(0, 10, 0, 10));
+				tf.setBorder(Settings.noBorder.get());
+			} else {
+				tf.setPadding(new Insets(0, 10, 0, 10));
+				tf.setBorder(Settings.noBorder.get());
+			}
+		});
+
+		tf.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+			if (isFocused) {
+				tf.setPadding(new Insets(0, 10, 0, 10));
+				tf.setBorder(Settings.noBorder.get());
+			} else {
+				tf.setPadding(new Insets(0, 5, 0, 10));
+				tf.setBorder(Settings.noBorder.get());
+			}
+		});
+	}
 }

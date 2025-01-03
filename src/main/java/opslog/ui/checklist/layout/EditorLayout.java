@@ -14,56 +14,61 @@ import opslog.ui.checklist.ChecklistView;
 import opslog.util.Directory;
 import opslog.util.Settings;
 
-public class EditorLayout extends SplitPane {
+public class EditorLayout extends VBox {
 
-    public static final CustomButton swapView = new CustomButton(
+        public static final CustomButton swapView = new CustomButton(
             Directory.SWAP_WHITE, Directory.SWAP_GREY, "Status Page"
-    );
-    public static final TaskGroup taskGroup = new TaskGroup();
-    public static final ChecklistGroup checklistGroup = new ChecklistGroup();
-    public static final TaskTreeView taskTreeView = new TaskTreeView();
-
-    public EditorLayout(){
-        Region leftSpacer = new Region();
-        leftSpacer.prefWidth(Double.MAX_VALUE);
-
-        CustomLabel label = new CustomLabel(
-                "Checklist Editor",
-                Settings.WIDTH_LARGE,
-                Settings.SINGLE_LINE_HEIGHT
         );
+        public static final TaskGroup taskGroup = new TaskGroup();
+        public static final ChecklistGroup checklistGroup = new ChecklistGroup();
+        public static final TaskTreeView taskTreeView = new TaskTreeView();
 
-        Region rightSpacer = new Region();
-        rightSpacer.prefWidth(Double.MAX_VALUE);
-
-        HBox hbox = new HBox(
-                swapView,
-                leftSpacer,
-                label,
-                rightSpacer
-        );
-        hbox.setAlignment(Pos.CENTER);
-        hbox.minHeight(Settings.SINGLE_LINE_HEIGHT);
-        hbox.maxHeight(Settings.SINGLE_LINE_HEIGHT);
-        VBox.setVgrow(taskTreeView,Priority.ALWAYS);
-
-        SplitPane controls = new SplitPane(
-                checklistGroup,
-                taskGroup
-        );
-
-        swapView.setOnAction(e -> {
-            ChecklistView.EDITOR_LAYOUT.setVisible(false);
-            ChecklistView.STATUS_LAYOUT.setVisible(true);
-        });
-
-        controls.setOrientation(Orientation.VERTICAL);
-        controls.setDividerPositions(0.50f);
-        controls.setMaxWidth(300);
-        controls.backgroundProperty().bind(Settings.rootBackground);
-
-        getChildren().addAll(new VBox(hbox,taskTreeView), controls);
-        setDividerPositions(0.80f, 0.20f);
-        backgroundProperty().bind(Settings.rootBackground);
-    }
+        public EditorLayout(){
+                
+                swapView.setOnAction(e -> {
+                        ChecklistView.EDITOR_LAYOUT.setVisible(false);
+                        ChecklistView.STATUS_LAYOUT.setVisible(true);
+                });
+                CustomLabel label = new CustomLabel(
+                        "Checklist Editor",
+                        Settings.WIDTH_LARGE,
+                        Settings.SINGLE_LINE_HEIGHT
+                );
+                HBox hbox = new HBox(
+                        swapView,
+                        label
+                );
+                hbox.setAlignment(Pos.CENTER);
+                hbox.minHeight(Settings.SINGLE_LINE_HEIGHT);
+                hbox.maxHeight(Settings.SINGLE_LINE_HEIGHT);
+                
+                VBox.setVgrow(taskTreeView,Priority.ALWAYS);   
+                VBox vbox = new VBox(
+                        hbox,
+                        taskTreeView
+                );
+                vbox.backgroundProperty().bind(Settings.primaryBackground);
+                    
+                SplitPane controls = new SplitPane();
+                controls.getItems().addAll(
+                        checklistGroup,
+                        taskGroup
+                );
+                controls.setOrientation(Orientation.VERTICAL);
+                controls.setDividerPositions(0.50f);
+                controls.setMaxWidth(300);
+                controls.backgroundProperty().bind(Settings.rootBackground);
+                
+        
+                SplitPane splitPane = new SplitPane();
+                splitPane.getItems().addAll(
+                        vbox,
+                        controls
+                );
+                splitPane.setDividerPositions(0.80f, 0.20f);
+                splitPane.backgroundProperty().bind(Settings.rootBackground);
+                VBox.setVgrow(splitPane,Priority.ALWAYS);
+                getChildren().add(splitPane);
+                backgroundProperty().bind(Settings.rootBackground);
+        }
 }
