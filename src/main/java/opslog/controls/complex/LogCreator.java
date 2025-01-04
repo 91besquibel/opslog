@@ -21,6 +21,7 @@ import opslog.util.Directory;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
 import opslog.util.Styles;
+import opslog.controls.simple.MultiSelector;
 
 public class LogCreator extends VBox {
 
@@ -30,9 +31,8 @@ public class LogCreator extends VBox {
     public final CustomComboBox<Type> typeSelection = new CustomComboBox<>(
             "Type", 300, Settings.SINGLE_LINE_HEIGHT
 	);
-    public final CheckComboBox<Tag> tagSelection= new CheckComboBox<>(
-            TagManager.getList()
-	);
+	public final MultiSelector<Tag> multiSelector = new MultiSelector<>();
+
     public final CustomTextField initialsField = new CustomTextField(
             "Initials",300, Settings.SINGLE_LINE_HEIGHT
 	);
@@ -52,14 +52,9 @@ public class LogCreator extends VBox {
 
     public LogCreator(){
 		
-		tagSelection.prefWidthProperty().bind(this.widthProperty());
-		tagSelection.setFocusTraversable(true);
-		tagSelection.prefHeight(Settings.SINGLE_LINE_HEIGHT);
-		tagSelection.setMaxWidth(300);
-		tagSelection.setTitle("Tags");
-		tagSelection.setStyle(Styles.getTextStyle());
-		tagSelection.backgroundProperty().bind(Settings.secondaryBackground);
-		tagSelection.borderProperty().bind(Settings.secondaryBorder);
+		multiSelector.setMenuList(TagManager.getList());
+		multiSelector.setPromptText("Tags");
+		multiSelector.prefWidthProperty().bind(this.widthProperty());
 		
         formatSelection.setItems(FormatManager.getList());
 
@@ -77,7 +72,7 @@ public class LogCreator extends VBox {
         setSpacing(Settings.SPACING);
         getChildren().addAll(
             typeSelection,
-            tagSelection,
+			multiSelector,
             initialsField,
             formatSelection,
             descriptionField,

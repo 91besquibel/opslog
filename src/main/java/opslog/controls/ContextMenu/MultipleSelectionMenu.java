@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseEvent;
 import opslog.controls.simple.CustomMenuItem;
 import opslog.managers.TagManager;
 import opslog.managers.TypeManager;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 public class MultipleSelectionMenu<T> extends ContextMenu {
 	
-	private final ObservableList<T> selected = FXCollections.observableArrayList();
+	private ObservableList<T> selected = FXCollections.observableArrayList();
 	
 	private ObservableList<T> items = FXCollections.observableArrayList();
 
@@ -28,6 +29,19 @@ public class MultipleSelectionMenu<T> extends ContextMenu {
 	public MultipleSelectionMenu() {
 		super();
 		setStyle(Styles.contextMenu());
+		addEventFilter(
+			MouseEvent.MOUSE_EXITED,
+			event -> {
+				if (event.getScreenX() >= getX() &&
+					event.getScreenX() <= getX() + getWidth() && 
+					event.getScreenY() >= getY() && 
+					event.getScreenY() <= getY() + getHeight()) { 
+					event.consume(); 
+				} else { 
+					hide();
+				} 
+			}
+		);
 	}
 
 	public ObservableList<T> getSelected(){
@@ -35,7 +49,14 @@ public class MultipleSelectionMenu<T> extends ContextMenu {
 	}
 
 	public void setSelected(ObservableList<T> selected){
-		this.selected.setAll(selected);
+		if (this.selected != null) {
+			this.selected.removeListener(selectedChangeListener);
+		} 
+		this.selected = selected;
+		this.selected.addListener(selectedChangeListener);
+		for(T item : selected){
+			map.get(item).setSelected(true);
+		}
 	}
 
 	public ObservableList<T> getList(){
@@ -90,6 +111,21 @@ public class MultipleSelectionMenu<T> extends ContextMenu {
 			if (change.wasRemoved()) {
 				for (T item : change.getRemoved()) {
 					removeMenuItem(item);
+				}
+			}
+		}
+	};
+
+	private final ListChangeListener<T> selectedChangeListener = change -> {
+		while (change.next()) { 
+			if (change.wasAdded()) {
+				for (T item : change.getAddedSubList()) { 
+					map.get(item).setSelected(true);
+				} 
+			} 
+			if (change.wasRemoved()) {
+				for (T item : change.getRemoved()) {
+					map.get(item).setSelected(false);
 				}
 			}
 		}

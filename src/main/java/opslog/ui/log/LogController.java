@@ -18,19 +18,19 @@ public class LogController {
         LogView.logCreator.updateLog.setOnAction(event -> handleUpdateLog());
         LogView.logCreator.logProperty().bind(LogView.logTable.getSelectionModel().selectedItemProperty());
         LogView.logCreator.logProperty.addListener((obs, ov, nv) -> {
-            LogView.logCreator.tagSelection.getCheckModel().clearChecks();
+            LogView.logCreator.multiSelector.getMenu().getSelected().clear();
             if(nv != null){
                 LogView.logCreator.typeSelection.valueProperty().set(nv.typeProperty().get());
                 for(Tag tag : nv.tagList()) {
-                    if(LogView.logCreator.tagSelection.getItems().contains(tag)){
-                        LogView.logCreator.tagSelection.getCheckModel().check(tag);
+                    if(LogView.logCreator.multiSelector.getMenu().getList().contains(tag)){
+                        LogView.logCreator.multiSelector.getMenu().getSelected().add(tag);
                     }
                 }
                 LogView.logCreator.initialsField.setText(nv.initialsProperty().get());
                 LogView.logCreator.descriptionField.setText(nv.descriptionProperty().get());
             } else {
                 LogView.logCreator.typeSelection.getSelectionModel().clearSelection();
-                LogView.logCreator.tagSelection.getCheckModel().clearChecks();
+                LogView.logCreator.multiSelector.getMenu().getSelected().clear();
                 LogView.logCreator.initialsField.setText(null);
                 LogView.logCreator.descriptionField.setText(null);
             }
@@ -97,7 +97,7 @@ public class LogController {
 
     private static void getLogFieldValues(Log log){
         log.typeProperty().set(LogView.logCreator.typeSelection.getValue());
-        log.tagList().setAll(LogView.logCreator.tagSelection.getCheckModel().getCheckedItems());
+        log.tagList().setAll(LogView.logCreator.multiSelector.getMenu().getSelected());
         log.initialsProperty().set(LogView.logCreator.initialsField.getText().trim());
         log.descriptionProperty().set(LogView.logCreator.descriptionField.getText().trim());
     }

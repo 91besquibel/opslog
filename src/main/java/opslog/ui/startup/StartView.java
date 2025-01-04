@@ -25,8 +25,7 @@ public class StartView {
     private static Stage stage;
     private static volatile StartView instance;
 
-    private static final ObservableList<String> dataBaseTypes =
-            FXCollections.observableArrayList("postgresql");
+    private static final ObservableList<String> dataBaseTypes = FXCollections.observableArrayList("postgresql");
 
     private static CustomComboBox<String> serverType;
     private static CustomTextField serverAddress;
@@ -54,7 +53,6 @@ public class StartView {
         HBox root = new HBox(sqlBody);
         root.setAlignment(Pos.CENTER);
         WindowPane windowPane = new WindowPane(stage, Buttons.exitAppBtn());
-        windowPane.getSearchBar().setVisible(false);
         windowPane.viewAreaProperty().get().getChildren().add(root);
         AnchorPane.setTopAnchor(root, 0.0);
         AnchorPane.setBottomAnchor(root, 0.0);

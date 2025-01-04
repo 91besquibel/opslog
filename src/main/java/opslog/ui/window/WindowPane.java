@@ -33,7 +33,8 @@ public class WindowPane {
 
     private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
     private final Button exitButton;
-    private final SearchBar searchBar = new SearchBar();
+    private SearchBar searchBar;
+	
     private final CustomButton menuButton = new CustomButton(
             Directory.MENU_WHITE,
             Directory.MENU_GREY,
@@ -41,15 +42,26 @@ public class WindowPane {
     );
 
     // Constructor: Accepts a Stage and MenuBar for flexible window customization
-    public WindowPane(Stage stage, Button exitButton) {
+    public WindowPane(Stage stage, Button exitButton, SearchBar searchBar) {
         this.stage = stage;
         this.exitButton = exitButton;
+		this.searchBar = searchBar;
         viewAreaProperty.set(new AnchorPane());
         menuButton.setOnAction(event -> {
             menuButton.contextMenuProperty().get().show(this.getMenuButton(), Side.BOTTOM,0,0);
         });
         createUI();
     }
+
+	public WindowPane(Stage stage, Button exitButton) {
+		this.stage = stage;
+		this.exitButton = exitButton;
+		viewAreaProperty.set(new AnchorPane());
+		menuButton.setOnAction(event -> {
+			menuButton.contextMenuProperty().get().show(this.getMenuButton(), Side.BOTTOM,0,0);
+		});
+		createUI();
+	}
 
     public SearchBar getSearchBar(){
         return searchBar;
@@ -145,15 +157,20 @@ public class WindowPane {
                 menuItem.setStyle(Styles.menuItem());
             }
         });
+		HBox hbox = new HBox();
+		hbox.getChildren().add(windowButtons);
+		hbox.getChildren().add(spacer);
+		if(searchBar != null){
+			hbox.getChildren().add(searchBar);
+		}
+		hbox.getChildren().add(menuButton);
+		hbox.borderProperty().bind(Settings.windowBarBorder);
+		hbox.backgroundProperty().bind(Settings.windowBarBackground);
+		hbox.setAlignment(Pos.CENTER);
+		hbox.setSpacing(Settings.SPACING);
+		hbox.setPadding(Settings.INSETS_WB);
 
-        HBox windowBar = new HBox(windowButtons,spacer, searchBar, menuButton);
-        windowBar.borderProperty().bind(Settings.windowBarBorder);
-        windowBar.backgroundProperty().bind(Settings.windowBarBackground);
-        windowBar.setAlignment(Pos.CENTER);
-        windowBar.setSpacing(Settings.SPACING);
-        windowBar.setPadding(Settings.INSETS_WB);
-
-        return windowBar;
+        return hbox;
     }
 
     private HBox createWindowButtons() {

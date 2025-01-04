@@ -1,0 +1,241 @@
+============================================================================
+--------------------How it works--------------------------------------------
+============================================================================
+
+When using HikariCP and JDBC without Spring Boot, you can ensure that your database connections are encrypted by configuring SSL/TLS in your JDBC connection string and the database server. Here's how you can achieve that:
+
+1. Enable SSL/TLS in JDBC Connection String
+For example, if you're using MySQL, your JDBC connection string might look like this:
+
+java
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+public class DatabaseConnection {
+
+	private static HikariDataSource dataSource;
+
+	static {
+	
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl("jdbc:mysql://your-database-host:3306/your-database-name?useSSL=true&requireSSL=true");
+		config.setUsername("your-username");
+		config.setPassword("your-password");
+		config.addDataSourceProperty("useSSL", "true");
+		config.addDataSourceProperty("requireSSL", "true");
+
+		// Optional: Specify SSL/TLS properties
+		config.addDataSourceProperty("verifyServerCertificate", "true");
+		config.addDataSourceProperty("sslMode", "VERIFY_IDENTITY");
+		config.addDataSourceProperty("trustCertificateKeyStoreUrl", "file:path/to/keystore");
+		config.addDataSourceProperty("trustCertificateKeyStorePassword", "keystore-password");
+
+		dataSource = new HikariDataSource(config);
+		
+	}
+
+	public static HikariDataSource getDataSource() {
+		return dataSource;
+	}
+}
+2. Configure Database Server for SSL/TLS
+Ensure your database server is configured to support SSL/TLS. For MySQL, you might need to:
+
+Generate SSL certificates:
+
+bash
+openssl genrsa 2048 > ca-key.pem
+openssl req -new -x509 -nodes -days 3600 -key ca-key.pem -out ca-cert.pem
+openssl req -newkey rsa:2048 -days 3600 -nodes -keyout server-key.pem -out server-req.pem
+openssl x509 -req -in server-req.pem -days 3600 -CA ca-cert.pem -CAkey ca-key.pem -set_serial 01 -out server-cert.pem
+Configure MySQL to use the certificates: Edit your my.cnf or my.ini file:
+
+ini
+[mysqld]
+ssl-ca=path/to/ca-cert.pem
+ssl-cert=path/to/server-cert.pem
+ssl-key=path/to/server-key.pem
+Restart MySQL Server:
+
+bash
+sudo service mysql restart
+3. Verify SSL/TLS Connection
+You can verify that SSL/TLS is being used by checking the connection properties or using database-specific commands.
+
+MySQL Example:
+sql
+SHOW VARIABLES LIKE '%ssl%';
+This should show that SSL is enabled and the connection is encrypted.
+
+Summary:
+Configure your JDBC connection string to use SSL/TLS.
+
+Ensure your database server is set up to support SSL/TLS.
+
+Verify the SSL/TLS connection to confirm encryption.
+
+By following these steps, you can ensure that your database queries over the internet are encrypted, even without Spring Boot. If you have more questions or need further details, feel free to ask! 😊
+
+1github.com
+this is for a postgresSQL server
+Got it! Here's how you can ensure that your connections to a PostgreSQL database using HikariCP are encrypted:
+
+Configuring SSL/TLS for PostgreSQL with HikariCP
+1. Enable SSL on PostgreSQL Server
+First, you need to enable SSL on the PostgreSQL server:
+
+Generate SSL Certificates:
+
+bash
+openssl req -new -text -out server.req
+openssl rsa -in privkey.pem -out server.key
+openssl req -x509 -in server.req -text -key server.key -out server.crt
+Move the Certificates to PostgreSQL Data Directory:
+
+bash
+mv server.crt /var/lib/pgsql/data/
+mv server.key /var/lib/pgsql/data/
+Set Permissions:
+
+bash
+chown postgres:postgres /var/lib/pgsql/data/server.key
+chmod 600 /var/lib/pgsql/data/server.key
+Edit postgresql.conf: Edit the postgresql.conf file to enable SSL:
+
+ini
+ssl = on
+Edit pg_hba.conf: Configure the pg_hba.conf file to enforce SSL:
+
+ini
+hostssl all all 0.0.0.0/0 md5
+Restart PostgreSQL:
+
+bash
+sudo service postgresql restart
+2. Configure HikariCP to Use SSL
+Configure HikariCP to use SSL in your Java application:
+
+Add HikariCP Dependency: Make sure you have the HikariCP dependency in your pom.xml:
+
+xml
+<dependency>
+	<groupId>com.zaxxer</groupId>
+	<artifactId>HikariCP</artifactId>
+	<version>3.4.5</version>
+</dependency>
+Configure HikariCP in Your Application: Here is an example of how to configure HikariCP to connect to a PostgreSQL database with SSL:
+
+java
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+public class DatabaseConnection {
+
+	private static HikariDataSource dataSource;
+
+	static {
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl("jdbc:postgresql://your-database-host:5432/your-database-name?sslmode=require");
+		config.setUsername("your-username");
+		config.setPassword("your-password");
+
+		// Optional: Specify SSL properties
+		config.addDataSourceProperty("ssl", "true");
+		config.addDataSourceProperty("sslmode", "require");
+		config.addDataSourceProperty("sslrootcert", "path/to/ca-cert.pem");
+		config.addDataSourceProperty("sslfactory", "org.postgresql.ssl.DefaultJavaSSLFactory");
+
+		dataSource = new HikariDataSource(config);
+	}
+
+	public static HikariDataSource getDataSource() {
+		return dataSource;
+	}
+}
+3. Verify SSL/TLS Connection
+You can verify that SSL/TLS is being used by querying the PostgreSQL server:
+
+sql
+SHOW ssl;
+This command should return on, indicating that SSL is enabled.
+
+Summary
+Enable SSL on PostgreSQL Server: Generate and configure SSL certificates, update postgresql.conf and pg_hba.conf.
+
+Configure HikariCP: Set SSL properties in your HikariCP configuration.
+
+Verify: Ensure SSL is enabled by querying the PostgreSQL server.
+
+By following these steps, you can ensure that your database queries over the internet are encrypted using SSL/TLS. 
+
+============================================================================
+--------------------How it works--------------------------------------------
+============================================================================
+
+SSL (Secure Sockets Layer) and its successor, TLS (Transport Layer Security), are cryptographic protocols designed to provide secure communication over a computer network, including the internet. They work by establishing an encrypted connection between a client (such as a web browser) and a server (such as a web server). Here’s an overview of how SSL/TLS works and its key components:
+
+Overview of SSL/TLS
+Encryption: SSL/TLS encrypts data transmitted between the client and the server, ensuring that even if the data is intercepted, it cannot be read by unauthorized parties.
+
+Authentication: SSL/TLS uses certificates to authenticate the server to the client, and optionally the client to the server. This ensures that the client is communicating with the intended server.
+
+Data Integrity: SSL/TLS ensures data integrity by using cryptographic hashes. This prevents data from being tampered with or altered during transmission.
+
+How SSL/TLS Works
+The SSL/TLS handshake process is the foundation of establishing a secure connection. Here’s a simplified version of how it works:
+
+Client Hello:
+
+The client sends a "Client Hello" message to the server, which includes information about the SSL/TLS version it supports, the cryptographic algorithms it supports, and a randomly generated number.
+
+Server Hello:
+
+The server responds with a "Server Hello" message, which includes the SSL/TLS version and cryptographic algorithms chosen by the server, and a randomly generated number.
+
+Server Certificate:
+
+The server sends its digital certificate to the client. This certificate includes the server’s public key and is signed by a trusted Certificate Authority (CA).
+
+Server Key Exchange (if necessary):
+
+If the chosen cryptographic algorithm requires additional parameters, the server sends a "Server Key Exchange" message.
+
+Client Certificate Request (optional):
+
+The server may request a certificate from the client to authenticate the client (mutual authentication).
+
+Server Hello Done:
+
+The server sends a "Server Hello Done" message, indicating that it has finished its part of the handshake.
+
+Client Key Exchange:
+
+The client generates a "pre-master secret" (a random string of bytes) and encrypts it with the server's public key. The client then sends this encrypted "pre-master secret" to the server.
+
+Client Certificate (optional):
+
+If the server requested a client certificate, the client sends it to the server.
+
+Change Cipher Spec:
+
+The client sends a "Change Cipher Spec" message, indicating that it will switch to using the agreed-upon encryption algorithm.
+
+Client Finished:
+
+The client sends a "Client Finished" message, which is encrypted with the new encryption algorithm.
+
+Server Change Cipher Spec:
+
+The server sends a "Change Cipher Spec" message, indicating that it will switch to using the agreed-upon encryption algorithm.
+
+Server Finished:
+
+The server sends a "Server Finished" message, which is encrypted with the new encryption algorithm.
+
+Secure Communication
+Once the SSL/TLS handshake is complete, a secure, encrypted communication channel is established. All data exchanged between the client and the server is encrypted, ensuring privacy and security.
+
+Certificates and Certificate Authorities (CAs)
+Certificates play a crucial role in SSL/TLS. They are issued by trusted Certificate Authorities (CAs) and contain the server's public key. The CA’s signature on the certificate guarantees its authenticity. Clients (browsers) trust the CAs and, by extension, trust the certificates they issue.
+
+By following these steps, SSL/TLS ensures that communication over the network is secure, private, and authenticated.

@@ -2,6 +2,8 @@ package opslog.util;
 
 public class Directory {
 
+	public static final String CARROT_DOWN = "/IconLib/carrot_down.png";
+	
     public static final String MENU_WHITE = "/IconLib/menu_IW.png";
     public static final String MENU_GREY = "/IconLib/menu_IG.png";
 

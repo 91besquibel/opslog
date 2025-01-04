@@ -16,15 +16,11 @@ import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.sql.hikari.Connection;
 import opslog.controls.simple.*;
-import opslog.controls.simple.CustomMenuItem;
-import opslog.managers.TagManager;
-import opslog.managers.TypeManager;
 import opslog.sql.Search;
 import opslog.ui.search.SearchView;
 import opslog.util.Directory;
 import opslog.util.Settings;
 import javafx.geometry.Pos;
-import opslog.util.Styles;
 
 public class SearchBar extends HBox {
 
@@ -89,7 +85,15 @@ public class SearchBar extends HBox {
 		});
 
 		filterButton.setOnAction(event -> {
-			filterMenu.show(filterButton,Side.BOTTOM,0,0);
+			try{
+
+				System.out.println("Search Button Pressed");
+				filterMenu.show(filterButton,Side.BOTTOM,0,0);
+				
+			}catch(Exception e){
+				System.out.println("Search Button failed");
+				e.printStackTrace();
+			}
 		});
 
 		textField.setOnAction(e -> handleQuery());
@@ -112,7 +116,6 @@ public class SearchBar extends HBox {
 	public ObservableList<LocalDate> dateList(){
 		return dates;
 	}
-
 
 	private void handleQuery() {
 		if (!filterMenu.getLog().isSelected() && !filterMenu.getCalendar().isSelected()) {

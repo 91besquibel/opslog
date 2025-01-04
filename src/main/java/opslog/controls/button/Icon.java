@@ -13,6 +13,14 @@ public class Icon {
         if (imageStream == null) {
             throw new NullPointerException("Image not found: " + imagePath);
         }
-        return new ImageView(new Image(imageStream, Settings.buttonSize.get(), Settings.buttonSize.get(), true, true));
+        return new ImageView(
+			new Image(
+				imageStream,
+				Settings.buttonSize.get(),
+				Settings.buttonSize.get(),
+				true, 
+				true
+			)
+		);
     }
 }

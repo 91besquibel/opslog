@@ -13,6 +13,7 @@ import opslog.managers.TypeManager;
 import opslog.object.Tag;
 import opslog.object.Type;
 import opslog.util.Styles;
+import javafx.geometry.Side;
 
 import java.util.HashMap;
 
@@ -23,15 +24,17 @@ public class FilterMenu extends ContextMenu {
     private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
     private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
 
-    private static ContextMenu TABLE_SUBMENU = new ContextMenu();
-    private static ContextMenu TYPE_SUBMENU = new ContextMenu();
-    private static ContextMenu TAG_SUBMENU = new ContextMenu();
-
     private static final CustomMenuItem TABLE_OPTIONS = new CustomMenuItem("Table");
-    private static final CheckMenuItem LOG = new CheckMenuItem("Log");
-    private static final CheckMenuItem CALENDAR = new CheckMenuItem("Calendar");
-    private static final CustomMenuItem TAG_FILTERS = new CustomMenuItem("Tag");
-    private static final CustomMenuItem TYPE_FILTERS = new CustomMenuItem("Type");
+	private static final CustomMenuItem TAG_FILTERS = new CustomMenuItem("Tag");
+	private static final CustomMenuItem TYPE_FILTERS = new CustomMenuItem("Type");
+
+	private static final ContextMenu TABLE_SUBMENU = new ContextMenu();
+	private static final ContextMenu TYPE_SUBMENU = new ContextMenu();
+	private static final ContextMenu TAG_SUBMENU = new ContextMenu();
+	
+    private final CheckMenuItem LOG = new CheckMenuItem("Log");
+    private final CheckMenuItem CALENDAR = new CheckMenuItem("Calendar");
+    
 
     public FilterMenu() {
         super();
@@ -46,6 +49,10 @@ public class FilterMenu extends ContextMenu {
         TAG_FILTERS.setStyle(Styles.menuItem());
         TYPE_FILTERS.setStyle(Styles.menuItem());
 
+		TAG_FILTERS.setOnAction(event -> {
+			System.out.println("tag submenu opening");
+			TAG_SUBMENU.show(TAG_FILTERS.getParentPopup().getOwnerNode(), Side.BOTTOM, 0, 0);
+		});
         Platform.runLater(() -> {
             TABLE_SUBMENU.getItems().add(LOG);
         });
@@ -88,7 +95,11 @@ public class FilterMenu extends ContextMenu {
                 }
         );
 
-        getItems().addAll(TABLE_OPTIONS, TYPE_FILTERS, TAG_FILTERS);
+        getItems().addAll(
+			TABLE_OPTIONS, 
+			TYPE_FILTERS, 
+			TAG_FILTERS
+		);
     }
 
     public CustomMenuItem getTableOptions() {
@@ -135,7 +146,12 @@ public class FilterMenu extends ContextMenu {
             }
         });
         TYPE_SUBMENU.getItems().add(menuItem);
-        typeMap.put(type, menuItem);
+		Platform.runLater(() -> {
+			TYPE_SUBMENU.getItems().add(menuItem);
+			System.out.println("Type submenu added");
+			typeMap.put(type, menuItem);
+		});
+        
     }
 
     private void addTagMenuItem(Tag tag) {
@@ -149,8 +165,12 @@ public class FilterMenu extends ContextMenu {
                 tagList.remove(tag);
             }
         });
-        TAG_SUBMENU.getItems().add(menuItem);
-        tagMap.put(tag, menuItem);
+		Platform.runLater(() -> {
+        	TAG_SUBMENU.getItems().add(menuItem);
+			System.out.println("Tag submenu added");
+			tagMap.put(tag, menuItem);
+		});
+        
     }
 
     private void removeTagMenuItem(Tag tag) {

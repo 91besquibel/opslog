@@ -68,29 +68,53 @@ public class Settings {
         public static final int CORNER_RADII_VALUE = 3;
         public static final int CORNER_RADII_BG_VALUE = 5;
         // Button Size
-        public static DoubleProperty buttonSize = new SimpleDoubleProperty(20.0);
+        public static DoubleProperty buttonSize = new SimpleDoubleProperty(20);
         public static BorderWidths BORDER_WIDTH = new BorderWidths(BORDER_WIDTH_VALUE); // border width
-        public static BorderWidths BORDER_WEEKVIEW =
-                new BorderWidths(0.0, 2.0, 0.0, 0.0);
+        public static BorderWidths BORDER_WEEKVIEW = new BorderWidths(0, 2, 0, 0);
+	
         public static CornerRadii CORNER_RADII_BG = new CornerRadii(CORNER_RADII_BG_VALUE);
         public static CornerRadii CORNER_RADII = new CornerRadii(CORNER_RADII_VALUE); // corner radius
-        public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0.0); // corner radius
+        public static CornerRadii CORNER_RADII_ZERO = new CornerRadii(0); // corner radius
+
+		public static ObjectProperty<Background> comboboxButton =
+			new SimpleObjectProperty<>(
+					new Background(
+						new BackgroundFill(
+							Color.web("#D7D7D7"), 
+							new CornerRadii(0,3,3,0,false), 
+							new Insets(0)
+						)
+					)
+				);
 
         // Color
         public static ObjectProperty<Color> textColor =
-                new SimpleObjectProperty<Color>(Color.web("#FAFAFA"));
+			new SimpleObjectProperty<Color>(
+				Color.web("#FAFAFA")
+			);
+	
         public static ObjectProperty<Color> promptTextColor =
-                new SimpleObjectProperty<Color>(darkenColor(textColor.get(), 0.30));
+			new SimpleObjectProperty<Color>(
+				darkenColor(
+					textColor.get(), 
+					0.30
+				)
+			);
         
         public static ObjectProperty<Color> rootColor =
-                new SimpleObjectProperty<>(Color.web("#040F0F"));
+			new SimpleObjectProperty<>(
+				Color.web("#040F0F")
+			);
+	
         public static ObjectProperty<Color> primaryColor =
-                new SimpleObjectProperty<>(Color.web("#0F2D40"));
+			new SimpleObjectProperty<>(
+				Color.web("#0F2D40")
+			);
 	
         public static ObjectProperty<Color> secondaryColor =
-                new SimpleObjectProperty<>(
-					Color.web("#445C6A")
-				);
+			new SimpleObjectProperty<>(
+				Color.web("#445C6A")
+			);
         
         public static ObjectProperty<Color> transparent =
             new SimpleObjectProperty<>(

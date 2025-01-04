@@ -3,7 +3,6 @@ package opslog.controls.button;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
-
 import opslog.util.Settings;
 import opslog.util.Utilities;
 

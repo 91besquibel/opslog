@@ -1,5 +1,6 @@
 package opslog.controls.complex.task;
 
+import javafx.collections.ObservableList;
 import javafx.scene.layout.VBox;
 import opslog.controls.simple.CustomComboBox;
 import opslog.controls.simple.CustomTextField;
@@ -11,33 +12,37 @@ import opslog.object.Type;
 import opslog.object.event.Task;
 import opslog.util.Settings;
 import org.controlsfx.control.CheckComboBox;
+import opslog.controls.simple.MultiSelector;
 
 import java.util.List;
 
 public class TaskCreator extends VBox {
 
     public static final CustomComboBox<Task> SELECTOR = new CustomComboBox<>(
-            "Task", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Task", 300, Settings.SINGLE_LINE_HEIGHT
+	);
     public static final CustomTextField TITLE_FIELD = new CustomTextField(
-            "Title", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Title", 300, Settings.SINGLE_LINE_HEIGHT
+	);
     public static final CustomComboBox<Type> TYPE_SELECTOR = new CustomComboBox<>(
-            "Type", 300, Settings.SINGLE_LINE_HEIGHT);
-    public static final CheckComboBox<Tag> TAG_SELECTOR = new CheckComboBox<>(TagManager.getList());
-    public static final CustomTextField INITIALS_FIELD = new CustomTextField(
-            "Initials", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Type", 300, Settings.SINGLE_LINE_HEIGHT
+	);
+	public final MultiSelector<Tag> TAG_SELECTOR = new MultiSelector<>();
+	public static final CustomTextField INITIALS_FIELD = new CustomTextField(
+            "Initials", 300, Settings.SINGLE_LINE_HEIGHT
+	);
     public static final CustomTextField DESCRIPTION_FIELD = new CustomTextField(
-            "Description", 300, Settings.SINGLE_LINE_HEIGHT);
+            "Description", 300, Settings.SINGLE_LINE_HEIGHT
+	);
 
     public TaskCreator() {
         super();
         SELECTOR.setItems(TaskManager.getList());
         TYPE_SELECTOR.setItems(TypeManager.getList());
-        TAG_SELECTOR.setFocusTraversable(true);
-        TAG_SELECTOR.setMinHeight(Settings.SINGLE_LINE_HEIGHT);
-        TAG_SELECTOR.setMaxWidth(300);
-        TAG_SELECTOR.setTitle("Tags");
-        TAG_SELECTOR.backgroundProperty().bind(Settings.secondaryBackground);
-        TAG_SELECTOR.borderProperty().bind(Settings.secondaryBorder);
+		
+		TAG_SELECTOR.setMenuList(TagManager.getList());
+		TAG_SELECTOR.setPromptText("Tags");
+		TAG_SELECTOR.prefWidthProperty().bind(this.widthProperty());
 
         getChildren().addAll(
                 SELECTOR,
@@ -75,16 +80,15 @@ public class TaskCreator extends VBox {
         TYPE_SELECTOR.setValue(type);
     }
 
-    public List<Tag> getTags() {
-        return TAG_SELECTOR.getCheckModel().getCheckedItems();
-    }
+	public ObservableList<Tag> getTags(){
+		return TAG_SELECTOR.getMenu().getSelected();
+	}
 
-    public void setTags(List<Tag> tags) {
-        TAG_SELECTOR.getCheckModel().clearChecks();
-        for (Tag tag : tags) {
-            TAG_SELECTOR.getCheckModel().check(tag);
-        }
-    }
+	public void setTags(ObservableList<Tag> tags){
+		for(Tag tag : tags){
+			TAG_SELECTOR.getMenu().getSelected().add(tag);
+		}
+	}
 
     public String getInitials() {
         return INITIALS_FIELD.getText();
@@ -105,8 +109,8 @@ public class TaskCreator extends VBox {
     public void clearAll() {
         TITLE_FIELD.setText(null);
         TYPE_SELECTOR.setValue(null);
-        TAG_SELECTOR.getCheckModel().clearChecks();
-        INITIALS_FIELD.setText(null);
+		TAG_SELECTOR.getMenu().getSelected().clear();
+		INITIALS_FIELD.setText(null);
         DESCRIPTION_FIELD.setText(null);
     }
 }

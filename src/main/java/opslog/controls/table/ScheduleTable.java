@@ -37,7 +37,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         TableColumn<ScheduledTask, String> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
         column.setGraphic(Util.createHeader("Title"));
-        column.setMinWidth(80);
+        column.setMinWidth(100);
         column.setCellFactory(col -> Util.createCell());
         return column;
     }
@@ -47,6 +47,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         column.setGraphic(Util.createHeader("Start"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
         column.setCellFactory(col -> createEditableDateCell());
+		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
         column.setOnEditCommit(event -> {
             ScheduledTask scheduledTask = event.getRowValue();
             Interval interval = scheduledTask.intervalProperty().get().withStartDate(event.getNewValue());
@@ -59,6 +60,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
         column.setCellFactory(col -> createEditableTimeCell());
+		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
         column.setOnEditCommit(event -> {
             ScheduledTask scheduledTask = event.getRowValue();
             Interval interval = scheduledTask.intervalProperty().get().withStartTime(event.getNewValue());
@@ -71,7 +73,8 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>();
         column.setGraphic(Util.createHeader("Stop"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
-        column.setCellFactory(col -> createEditableDateCell());
+ 		column.setCellFactory(col -> createEditableDateCell());
+		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
         column.setOnEditCommit(event -> {
             ScheduledTask scheduledTask = event.getRowValue();
             Interval interval = scheduledTask.intervalProperty().get().withEndDate(event.getNewValue());
@@ -84,6 +87,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
         column.setCellFactory(col -> createEditableTimeCell());
+		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
         column.setOnEditCommit(event -> {
             ScheduledTask scheduledTask = event.getRowValue();
             Interval interval = scheduledTask.intervalProperty().get().withEndTime(event.getNewValue());
@@ -93,16 +97,22 @@ public class ScheduleTable extends TableView<ScheduledTask> {
     }
 
     private TableCell<ScheduledTask, LocalDate> createEditableDateCell() {
-        return new TableCell<ScheduledTask, LocalDate>() {
-            private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
-
+        TableCell<ScheduledTask, LocalDate> cell = new TableCell<ScheduledTask, LocalDate>() {
+            public final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
+			
             {
                 textField.setOnAction(event -> commitEdit(parseLocalDate(textField.getText())));
                 textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                     if (!isNowFocused) {
-                        commitEdit(parseLocalDate(textField.getText()));
+                        commitEdit(
+							parseLocalDate(
+								textField.getText()
+							)
+						);
                     }
                 });
+				textField.prefWidthProperty().bind(this.widthProperty()
+	);
             }
 
             @Override
@@ -122,6 +132,10 @@ public class ScheduleTable extends TableView<ScheduledTask> {
                     }
                 }
             }
+
+			public CustomTextField getTextField(){
+				return textField;
+			}
 
             @Override
             public void startEdit() {
@@ -153,6 +167,10 @@ public class ScheduleTable extends TableView<ScheduledTask> {
                 }
             }
         };
+
+		//cell.getTextField
+		
+		return cell;
     }
 
     private TableCell<ScheduledTask, LocalTime> createEditableTimeCell() {

@@ -18,6 +18,7 @@ import opslog.ui.checklist.ChecklistView;
 import opslog.controls.button.Buttons;
 import opslog.ui.window.WindowPane;
 import opslog.util.*;
+import opslog.controls.complex.SearchBar;
 
 public class App extends Application {
 
@@ -26,6 +27,7 @@ public class App extends Application {
     private static SettingsView SETTINGS_VIEW;
     private static ChecklistView CHECKLIST_VIEW;
     private static WindowPane appWindow;
+	private static SearchBar searchBar;
 
     public static void main(String[] args) {
         launch(args);
@@ -42,6 +44,7 @@ public class App extends Application {
             // Create and display database connection UI
             StartView startView = StartView.getInstance();
             startView.display(()-> {
+				searchBar = new SearchBar();
                 StartController.loadData();
                 StartController.startNotifications();
                 MainMenu mainMenu = new MainMenu(
@@ -49,7 +52,7 @@ public class App extends Application {
                         SETTINGS_VIEW,
                         CHECKLIST_VIEW
                 );
-                appWindow = new WindowPane(stage,Buttons.exitAppBtn());
+                appWindow = new WindowPane(stage,Buttons.exitAppBtn(),searchBar);
                 appWindow.getMenuButton().contextMenuProperty().set(mainMenu);
                 appWindow.display();
             });
