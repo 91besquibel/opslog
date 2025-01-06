@@ -4,7 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.Format;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public class FormatManager {
                 );
         try {
             List<String[]> result = queryBuilder.loadTable(
-                    Refrences.FORMAT_TABLE
+                    References.FORMAT_TABLE
             );
             for(String [] row : result){
                formatList.add(newItem(row));

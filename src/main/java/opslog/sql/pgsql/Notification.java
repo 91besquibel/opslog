@@ -209,13 +209,25 @@ public class Notification {
                 if (operation.contains("INSERT")) {
                     Tag originalTag = TagManager.getItem(id);
                     if (originalTag == null) {
+                        System.out.println("Notification: Tag does not exist inserting new tag\n");
                         TagManager.getList().add(tag);
+                    } else {
+                        System.out.println("Notification: Original tag exists doing nothing\n");
                     }
                 } else if (operation.contains("UPDATE")) {
                     Tag originalTag = TagManager.getItem(id);
                     if (originalTag != null) {
-                        int index = TagManager.getList().indexOf(originalTag);
-                        TagManager.getList().set(index, tag);
+                        System.out.println("Notification: Original tag exists checking for updates");
+                        if(!originalTag.titleProperty().get().contains(tag.titleProperty().get())){
+                            System.out.println("Notification: updating title");
+                            originalTag.titleProperty().set(tag.titleProperty().get());
+                        }
+                        if(originalTag.colorProperty().get() != tag.colorProperty().get()){
+                            System.out.println("Notification: updating color");
+                            originalTag.colorProperty().set(tag.colorProperty().get());
+                        }
+                    } else{
+                        System.out.println("Notification: Tag does not exist doing nothing\n");
                     }
                 } else if (operation.contains("DELETE")) {
                     Tag originalTag = TagManager.getItem(id);

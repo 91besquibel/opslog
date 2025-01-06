@@ -14,7 +14,7 @@ import opslog.controls.simple.CustomLabel;
 import opslog.managers.TaskManager;
 import opslog.object.event.Task;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
@@ -106,8 +106,8 @@ public class TaskGroup extends VBox{
                 );
 
                 String id = queryBuilder.insert(
-                        Refrences.TASK_TABLE,
-                        Refrences.TASK_COLUMN,
+                        References.TASK_TABLE,
+                        References.TASK_COLUMN,
                         task.toArray()
                 );
 
@@ -136,8 +136,8 @@ public class TaskGroup extends VBox{
                 );
 
                 queryBuilder.update(
-                        Refrences.TASK_TABLE,
-                        Refrences.TASK_COLUMN,
+                        References.TASK_TABLE,
+                        References.TASK_COLUMN,
                         task.toArray()
                 );
 
@@ -165,7 +165,7 @@ public class TaskGroup extends VBox{
                 );
 
                 queryBuilder.delete(
-                        Refrences.TASK_TABLE,
+                        References.TASK_TABLE,
                         TASK_SELECTOR.getSelected().getID()
                 );
 

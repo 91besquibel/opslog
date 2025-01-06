@@ -75,7 +75,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
             if (hov) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.transparentBorder);
+                borderProperty().bind(Settings.secondaryBorder);
             }
         });
 
@@ -84,7 +84,7 @@ public class CustomComboBox<T> extends ComboBox<T> {
             if (isFocused) {
                 setBorder(Settings.focusBorder.get());
             } else {
-                borderProperty().bind(Settings.transparentBorder);
+                borderProperty().bind(Settings.secondaryBorder);
             }
         });
 

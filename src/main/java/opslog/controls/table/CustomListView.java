@@ -6,6 +6,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import opslog.object.Format;
+import opslog.object.Tag;
+import opslog.object.Type;
+import opslog.object.event.Checklist;
 import opslog.util.Settings;
 import opslog.util.Styles;
 
@@ -13,7 +19,7 @@ import opslog.util.Styles;
 public class CustomListView<T> extends ListView<T> {
 
     public CustomListView(ObservableList<T> list, double width, double height, SelectionMode selectionMode) {
-        setItems(list);
+        super(list);
         setPrefWidth(width);
         setPrefHeight(height);
         setEditable(false);
@@ -84,7 +90,39 @@ public class CustomListView<T> extends ListView<T> {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label label = new Label(item.toString());
+                    Label label = new Label();
+                    if(item instanceof Tag tag){
+                        label.textProperty().bind(tag.titleProperty());
+                        label.setBackground(
+                                new Background(
+                                        new BackgroundFill(
+                                                tag.colorProperty().get(),
+                                                Settings.CORNER_RADII,
+                                                Settings.INSETS_ZERO
+                                        )
+                                )
+                        );
+                        tag.colorProperty().addListener((obs, oldColor, newColor) -> {
+                            label.setBackground(
+                                    new Background(
+                                            new BackgroundFill(
+                                                    newColor,
+                                                    Settings.CORNER_RADII,
+                                                    Settings.INSETS_ZERO
+                                            )
+                                    )
+                            );
+                        });
+                    }
+                    if (item instanceof Type type){
+                        label.textProperty().bind(type.titleProperty());
+                    }
+                    if (item instanceof Format format){
+                        label.textProperty().bind(format.titleProperty());
+                    }
+                    if(item instanceof Checklist checklist){
+                        label.textProperty().bind(checklist.titleProperty());
+                    }
                     label.fontProperty().bind(Settings.fontProperty);
                     label.textFillProperty().bind(Settings.textColor);
                     label.prefWidthProperty().bind(this.widthProperty());
@@ -96,4 +134,6 @@ public class CustomListView<T> extends ListView<T> {
             }
         });
     }
+
+
 }

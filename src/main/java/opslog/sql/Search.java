@@ -54,7 +54,7 @@ public class Search {
 
 
     public List<ScheduledEntry> calendarQuery(){
-        searchQuery.append(Refrences.SCHEDULED_EVENT_TABLE);
+        searchQuery.append(References.SCHEDULED_EVENT_TABLE);
         buildQuery();
         List<ScheduledEntry> list = new ArrayList<>();
         for(String[] row : results){
@@ -66,7 +66,7 @@ public class Search {
 
     public List<Log> logQuery(){
         // add the table name
-        searchQuery.append(Refrences.LOG_TABLE);
+        searchQuery.append(References.LOG_TABLE);
         buildQuery();
         List<Log> list = new ArrayList<>();
         for(String[] row : results){
@@ -98,7 +98,7 @@ public class Search {
     }
 
     private void dateQuery(){
-        String equalClause = equalClause(Refrences.DATE_COLUMN_TITLE, "?");
+        String equalClause = equalClause(References.DATE_COLUMN_TITLE, "?");
         String whereQuery = where(equalClause);
         searchQuery.append(whereQuery);
     }
@@ -131,17 +131,17 @@ public class Search {
                 String initialTypeID = quotes(wildCard(list.get(0)));
                 list.remove(0);
                 // tagIDs LIKE '%tagID%'
-                String likeClause = likeClause(Refrences.TYPE_COLUMN_TITLE, initialTypeID);
+                String likeClause = likeClause(References.TYPE_COLUMN_TITLE, initialTypeID);
                 // WHERE tagIDs LIKE '%tagID%'
                 String whereQuery = where(likeClause);
                 // add to search query
                 searchQuery.append(whereQuery);
 
-                andLoop(list, Refrences.TYPE_COLUMN_TITLE);
+                andLoop(list, References.TYPE_COLUMN_TITLE);
                 // if WHERE clause exists
                 //System.out.println("SearchQuery: appended to: " + searchQuery.toString());
             } else {
-                andLoop(list, Refrences.TYPE_COLUMN_TITLE);
+                andLoop(list, References.TYPE_COLUMN_TITLE);
                 //System.out.println("SearchQuery: appended to: " + searchQuery.toString());
             }
         }
@@ -161,18 +161,18 @@ public class Search {
                 // remove item
                 list.remove(0);
                 // tagIDs LIKE '%tagID%'
-                String likeClause = likeClause(Refrences.TAG_COLUMN_TITLE, initialTagID);
+                String likeClause = likeClause(References.TAG_COLUMN_TITLE, initialTagID);
                 // WHERE tagIDs LIKE '%tagID%'
                 String whereQuery = where(likeClause);
                 // add to search query
                 searchQuery.append(whereQuery);
                 // use a loop to build the rest of the query
-                andLoop(list, Refrences.TAG_COLUMN_TITLE);
+                andLoop(list, References.TAG_COLUMN_TITLE);
                 //System.out.println("SearchQuery: appended to: " + searchQuery.toString());
             // if WHERE clause exists
             } else {
                 // use a loop to build the rest of the query
-                andLoop(list, Refrences.TAG_COLUMN_TITLE);
+                andLoop(list, References.TAG_COLUMN_TITLE);
                 //System.out.println("SearchQuery: appended to: " + searchQuery.toString());
             }
         }

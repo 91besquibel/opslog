@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import opslog.controls.ContextMenu.MultipleSelectionMenu;
@@ -52,13 +53,12 @@ public class MultiSelector<T> extends HBox{
 		button.setMinWidth(36);
 		button.setMaxWidth(36);
 		button.prefWidth(36);
-		button.setOnAction((event) -> {
-			menu.setWidth(this.getWidth());
-			menu.show(
-				label, 
-				label.localToScene(0, label.getBoundsInLocal().getHeight()).getX(),
-				label.localToScene(0, label.getBoundsInLocal().getHeight()).getY()
-			);
+		button.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent event) -> {
+			// Get the mouse's screen coordinates
+			double mouseX = event.getScreenX();
+			double mouseY = event.getScreenY();
+			menu.setWidth(label.getWidth());
+			menu.show(button, mouseX, mouseY);
 		});
 
 		setAlignment(Pos.CENTER_RIGHT);
@@ -69,6 +69,24 @@ public class MultiSelector<T> extends HBox{
 			label,
 			button
 		);
+
+		focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+			borderProperty().unbind();
+			if (isFocused) {
+				setBorder(Settings.focusBorder.get());
+			} else {
+				borderProperty().bind(Settings.transparentBorder);
+			}
+		});
+
+		hoverProperty().addListener((obs, wasFocused, isFocused) -> {
+			borderProperty().unbind();
+			if (isFocused) {
+				setBorder(Settings.focusBorder.get());
+			} else {
+				borderProperty().bind(Settings.transparentBorder);
+			}
+		});
 	}
 
 	public MultipleSelectionMenu<T> getMenu(){

@@ -13,6 +13,8 @@ import com.calendarfx.view.DateControl;
 import com.calendarfx.view.VirtualGrid;
 
 import javafx.application.Platform;
+import opslog.controls.ContextMenu.CalendarMenu;
+import opslog.controls.ContextMenu.EntryMenu;
 import opslog.ui.calendar.controls.CustomEntryViewEvent;
 import opslog.ui.calendar.controls.CustomTaskViewEvent;
 import opslog.ui.calendar.event.EventDistribution;
@@ -33,15 +35,14 @@ public class CalendarLayout {
 		CALENDAR_VIEW.setRequestedTime(DateTime.getTime());
 		CALENDAR_VIEW.setDate(DateTime.getDate());
 		CALENDAR_VIEW.getCalendarSources().addAll(MAIN);
-		
+		CALENDAR_VIEW.setEntryContextMenuCallback(EntryMenu::new);
+		CALENDAR_VIEW.setContextMenuCallback(CalendarMenu::new);
 		MAIN.getCalendars().setAll(
 			EVENT_CALENDAR, TASK_CALENDAR
 		);
 		EVENT_CALENDAR.setStyle(Style.STYLE1);
 		TASK_CALENDAR.setStyle(Style.STYLE2);
-		CALENDAR_VIEW.setDefaultCalendarProvider(control -> {
-			return EVENT_CALENDAR;
-		});
+		CALENDAR_VIEW.setDefaultCalendarProvider(control -> EVENT_CALENDAR);
 		
 		startUpdates();
 		EventDistribution.startViewEventHandlers();

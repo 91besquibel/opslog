@@ -3,7 +3,6 @@ package opslog.ui.checklist.layout;
 import java.sql.SQLException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -12,8 +11,6 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Orientation;
 
 import opslog.controls.button.CustomButton;
-import opslog.controls.complex.ScheduledChecklistSelector;
-import opslog.controls.complex.checklist.StatusView;
 import opslog.controls.table.CustomListView;
 import opslog.controls.table.ScheduleTable;
 import opslog.managers.ChecklistManager;
@@ -22,13 +19,12 @@ import opslog.object.ScheduledTask;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.ui.checklist.ChecklistView;
 import opslog.util.Settings;
 import opslog.controls.simple.*;
 import opslog.util.Directory;
-import opslog.controls.table.ScheduleTable;
 
 public class StatusLayout extends VBox {
 
@@ -130,8 +126,8 @@ public class StatusLayout extends VBox {
                     scheduledTask.setTaskAssociationId(uuid);
                     QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
                     String id = queryBuilder.insert(
-                            Refrences.SCHEDULED_TASK_TABLE,
-                            Refrences.SCHEDULED_TASK_COLUMNS,
+                            References.SCHEDULED_TASK_TABLE,
+                            References.SCHEDULED_TASK_COLUMNS,
                             scheduledTask.toArray()
                     );
                     if (id != null) {

@@ -10,8 +10,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import opslog.controls.simple.CustomTextField;
+import opslog.object.ScheduledTask;
 import opslog.object.Tag;
+import opslog.util.DateTime;
 import opslog.util.Settings;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Util {
 
@@ -221,5 +227,152 @@ public class Util {
         vbox.setAlignment(Pos.CENTER);
         vbox.setPadding(Settings.INSETS);
         return vbox;
+    }
+
+    public static TableCell<ScheduledTask, LocalDate> editableDateCell(TableColumn<ScheduledTask, LocalDate> column) {
+        // Handle invalid format gracefully
+        return new TableCell<>() {
+            private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
+            private final VBox vbox = new VBox(textField);
+            {
+                textField.setOnAction(event -> commitEdit(parseLocalDate(textField.getText())));
+                textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                    if (!isNowFocused) {
+                        commitEdit(
+                                parseLocalDate(
+                                        textField.getText()
+                                )
+                        );
+                    }
+                });
+                textField.minWidthProperty().bind(column.widthProperty().subtract(5));
+                textField.setAlignment(Pos.CENTER);
+
+                vbox.setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (isEditing()) {
+                        textField.setText(formatLocalDate(item));
+                        setGraphic(vbox);
+                    } else {
+                        Text text = new Text(formatLocalDate(item));
+                        VBox vbox = Util.createCellLabel(text);
+                        setGraphic(vbox);
+                    }
+                }
+            }
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (getItem() != null) {
+                    textField.setText(formatLocalDate(getItem()));
+                    setGraphic(vbox);
+                }
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                Text text = new Text(formatLocalDate(getItem()));
+                VBox vbox = Util.createCellLabel(text);
+                setGraphic(vbox);
+            }
+
+            private String formatLocalDate(LocalDate date) {
+                return date != null ? DateTime.DATE_FORMAT.format(date) : "";
+            }
+
+            private LocalDate parseLocalDate(String text) {
+                try {
+                    return LocalDate.parse(text, DateTime.DATE_FORMAT);
+                } catch (Exception e) {
+                    // Handle invalid format gracefully
+                    return getItem();
+                }
+            }
+        };
+    }
+
+    public static TableCell<ScheduledTask, LocalTime> editableTimeCell(TableColumn<ScheduledTask, LocalTime> column) {
+        return new TableCell<>() {
+            private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
+
+            {
+                textField.setOnAction(event -> commitEdit(parseLocalTime(textField.getText())));
+                textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                    if (!isNowFocused) {
+                        commitEdit(
+                                parseLocalTime(
+                                        textField.getText()
+                                )
+                        );
+                    }
+                });
+                textField.minWidthProperty().bind(column.widthProperty().subtract(5));
+                textField.setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(LocalTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (isEditing()) {
+                        textField.setText(formatLocalTime(item));
+                        textField.setAlignment(Pos.CENTER);
+                        VBox vbox = new VBox(textField);
+                        vbox.setAlignment(Pos.CENTER);
+                        setGraphic(vbox);
+                    } else {
+                        Text text = new Text(formatLocalTime(item));
+                        VBox vbox = Util.createCellLabel(text);
+                        setGraphic(vbox);
+                    }
+                }
+            }
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (getItem() != null) {
+                    textField.setText(formatLocalTime(getItem()));
+                    textField.setAlignment(Pos.CENTER);
+                    VBox vbox = new VBox(textField);
+                    vbox.setAlignment(Pos.CENTER);
+                    setGraphic(vbox);
+                }
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                Text text = new Text(formatLocalTime(getItem()));
+                VBox vbox = Util.createCellLabel(text);
+                setGraphic(vbox);
+            }
+
+            private String formatLocalTime(LocalTime time) {
+                return time != null ? DateTime.TIME_FORMAT.format(time) : "";
+            }
+
+            private LocalTime parseLocalTime(String text) {
+                try {
+                    return LocalTime.parse(text, DateTime.TIME_FORMAT);
+                } catch (Exception e) {
+                    // Handle invalid format gracefully
+                    return getItem();
+                }
+            }
+        };
     }
 }

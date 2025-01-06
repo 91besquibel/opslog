@@ -12,7 +12,7 @@ import opslog.controls.simple.CustomTextField;
 import opslog.managers.ProfileManager;
 import opslog.object.Profile;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
@@ -135,7 +135,7 @@ public class ProfileCreator extends VBox {
             Profile profile = new Profile();
             newProfile(profile);
             QueryBuilder qB = new QueryBuilder(Connection.getInstance());
-            String id = qB.insert(Refrences.PROFILE_TABLE, Refrences.PROFILE_COLUMN, profile.toArray());
+            String id = qB.insert(References.PROFILE_TABLE, References.PROFILE_COLUMN, profile.toArray());
             profile.setID(id);
             ProfileManager.getList().add(profile);
             TITLE_FIELD.setText("");
@@ -150,7 +150,7 @@ public class ProfileCreator extends VBox {
             newProfile.setID(PROFILE_SELECTOR.getSelectionModel().getSelectedItem().getID());
             newProfile(newProfile);
             QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-            queryBuilder.update(Refrences.PROFILE_TABLE, Refrences.PROFILE_COLUMN, newProfile.toArray());
+            queryBuilder.update(References.PROFILE_TABLE, References.PROFILE_COLUMN, newProfile.toArray());
             Profile foundProfile = ProfileManager.getItem(newProfile.getID());
             if(foundProfile != null){
                 foundProfile.titleProperty().set(newProfile.titleProperty().get());
@@ -173,7 +173,7 @@ public class ProfileCreator extends VBox {
 
             Profile selectedProfile = PROFILE_SELECTOR.getValue();
             QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-            queryBuilder.delete(Refrences.PROFILE_TABLE, selectedProfile.getID());
+            queryBuilder.delete(References.PROFILE_TABLE, selectedProfile.getID());
             ProfileManager.getList().remove(selectedProfile);
         } catch (SQLException e) {
             throw new RuntimeException(e);

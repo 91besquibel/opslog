@@ -4,7 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.Type;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public class TypeManager {
                 );
         try {
             List<String[]> result = queryBuilder.loadTable(
-                    Refrences.TYPE_TABLE
+                    References.TYPE_TABLE
             );
             for(String [] row : result){
                 typeList.add(newItem(row));

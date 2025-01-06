@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import opslog.object.Profile;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -22,7 +22,7 @@ public class ProfileManager {
                 );
         try {
             List<String[]> result = queryBuilder.loadTable(
-                    Refrences.PROFILE_TABLE
+                    References.PROFILE_TABLE
             );
             for(String [] row : result){
                 profileList.add(newItem(row));

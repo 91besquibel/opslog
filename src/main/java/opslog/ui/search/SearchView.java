@@ -25,11 +25,12 @@ public class SearchView<T>{
             Buttons.exitWinBtn()
     );
     private final VBox root = new VBox();
-    private List<T> list = new ArrayList<>();
-    private final UtilityMenu<T> utilityMenu = new UtilityMenu<>(list,stage);
+    private final List<T> list;
+    private final UtilityMenu<T> utilityMenu = new UtilityMenu<>(stage);
 
     public SearchView(List<T> list) {
         this.list = list;
+        utilityMenu.setList(list);
         root();
         windowPane();
     }

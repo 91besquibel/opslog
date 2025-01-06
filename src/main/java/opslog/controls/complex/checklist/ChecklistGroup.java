@@ -16,7 +16,7 @@ import opslog.managers.ChecklistManager;
 import opslog.object.event.Checklist;
 import opslog.object.event.Task;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.ui.checklist.layout.EditorLayout;
 import opslog.util.Directory;
@@ -110,8 +110,8 @@ public class ChecklistGroup extends VBox {
                 );
 
                 String id = queryBuilder.insert(
-                        Refrences.CHECKLIST_TABLE,
-                        Refrences.CHECKLIST_COLUMNS,
+                        References.CHECKLIST_TABLE,
+                        References.CHECKLIST_COLUMNS,
                         checklist.toArray()
                 );
 
@@ -142,8 +142,8 @@ public class ChecklistGroup extends VBox {
                 );
 
                 queryBuilder.update(
-                        Refrences.CHECKLIST_TABLE,
-                        Refrences.CHECKLIST_COLUMNS,
+                        References.CHECKLIST_TABLE,
+                        References.CHECKLIST_COLUMNS,
                         checklist.toArray()
                 );
 
@@ -171,7 +171,7 @@ public class ChecklistGroup extends VBox {
                 );
 
                 queryBuilder.delete(
-                        Refrences.CHECKLIST_TABLE,
+                        References.CHECKLIST_TABLE,
                         CHECKLIST_VIEW.getSelected().getID()
                 );
 

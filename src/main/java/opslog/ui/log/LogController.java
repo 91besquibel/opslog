@@ -3,7 +3,7 @@ package opslog.ui.log;
 import opslog.object.Tag;
 import opslog.object.event.Log;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 import opslog.managers.LogManager;
 import opslog.util.DateTime;
@@ -53,7 +53,7 @@ public class LogController {
         if(newLog.hasValue()){
             try {
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                String id = queryBuilder.insert(Refrences.LOG_TABLE, Refrences.LOG_COLUMN, newLog.toArray());
+                String id = queryBuilder.insert(References.LOG_TABLE, References.LOG_COLUMN, newLog.toArray());
                 if (!id.trim().isEmpty()) {
                     newLog.setID(id);
                     LogManager.getList().add(newLog);
@@ -72,7 +72,7 @@ public class LogController {
         if(log.hasValue()){
             try {
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.update(Refrences.LOG_TABLE, Refrences.LOG_COLUMN, log.toArray());
+                queryBuilder.update(References.LOG_TABLE, References.LOG_COLUMN, log.toArray());
                 int i = LogManager.getList().indexOf(LogView.logCreator.logProperty.get());
                 LogManager.getList().set(i,log);
                 LogView.logTable.getSelectionModel().clearSelection();

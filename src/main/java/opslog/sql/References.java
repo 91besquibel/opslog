@@ -1,6 +1,6 @@
 package opslog.sql;
 
-public class Refrences {
+public class References {
 
     public static final String TAG_TABLE =
             "tag_table";
@@ -40,7 +40,7 @@ public class Refrences {
     public static final String LOG_TABLE =
             "log_table";
     public static final String LOG_COLUMN =
-            "id, date, time, typeID, tagIDs, initials, description";
+            "id, date, time, typeid, tagids, initials, description";
 
     public static final String SCHEDULED_EVENT_TABLE =
             "scheduled_event_table";
@@ -63,15 +63,15 @@ public class Refrences {
     public static String [] threadNames(){
         return new String[]{
                 "log_changes",
-                "pinboard_table",
-                "checklist_table",
-                "scheduled_checklist_table",
-                "task_table",
-                "calendar_table",
-                "format_table",
-                "tag_table",
-                "type_table",
-                "profile_table"
+                PINBOARD_TABLE,
+                CHECKLIST_TABLE,
+                SCHEDULED_TASK_TABLE,
+                TASK_TABLE,
+                SCHEDULED_EVENT_TABLE,
+                FORMAT_TABLE,
+                TAG_TABLE,
+                TYPE_TABLE,
+                PROFILE_TABLE,
         };
     }
 }

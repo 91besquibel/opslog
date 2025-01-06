@@ -4,7 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.event.Log;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public class LogManager {
         QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
         try {
             List<String[]> results = queryBuilder.rangeQuery(
-                    Refrences.LOG_TABLE,
+                    References.LOG_TABLE,
                     "date",
                     startDate.toString(),
                     date.toString()

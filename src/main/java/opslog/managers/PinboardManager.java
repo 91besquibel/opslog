@@ -4,7 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.event.Log;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ public class PinboardManager {
         QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
         try {
             List<String[]> results = queryBuilder.loadTable(
-                    Refrences.PINBOARD_TABLE
+                    References.PINBOARD_TABLE
             );
             for(String[] row: results){
                 pinList.add(newItem(row));

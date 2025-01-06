@@ -14,17 +14,20 @@ import java.util.List;
 
 public class UtilityMenu<T> extends ContextMenu {
 
-    private Stage stage = new Stage();
-    private static final MenuItem save = new MenuItem("Save All");
-    private List<T> list = new ArrayList<>();
+    private static final MenuItem save = new MenuItem("Save");
+    private final Stage stage;
+    private List<T> list;
 
-    public UtilityMenu(List<T> list,Stage stage) {
+    public UtilityMenu(Stage stage) {
         super();
-        setStyle(Styles.contextMenu());
-        this.list = list;
         this.stage = stage;
+        setStyle(Styles.contextMenu());
         save.setOnAction(this::saveSelections);
         getItems().add(save);
+    }
+
+    public void setList(List<T> list) {
+        this.list = list;
     }
 
     private void saveSelections(ActionEvent actionEvent) {

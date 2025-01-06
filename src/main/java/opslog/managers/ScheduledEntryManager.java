@@ -10,7 +10,7 @@ import com.calendarfx.model.CalendarEvent;
 
 import javafx.event.EventType;
 import opslog.object.ScheduledEntry;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.ui.calendar.CalendarLayout;
 import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.Connection;
@@ -129,8 +129,8 @@ public class ScheduledEntryManager{
 			try{
 				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 				String id = queryBuilder.insert(
-					Refrences.SCHEDULED_EVENT_TABLE,
-					Refrences.SCHEDULED_EVENT_COLUMNS,
+					References.SCHEDULED_EVENT_TABLE,
+					References.SCHEDULED_EVENT_COLUMNS,
 					scheduledEntry.toArray()
 				);
 				if(id != null){
@@ -150,8 +150,8 @@ public class ScheduledEntryManager{
 			try{
 				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 				queryBuilder.update(
-					Refrences.SCHEDULED_EVENT_TABLE,
-					Refrences.SCHEDULED_EVENT_COLUMNS,
+					References.SCHEDULED_EVENT_TABLE,
+					References.SCHEDULED_EVENT_COLUMNS,
 					scheduledEntry.toArray()
 				);
 			}catch(SQLException e){
@@ -166,7 +166,7 @@ public class ScheduledEntryManager{
 			try {
 				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 				queryBuilder.delete(
-					Refrences.SCHEDULED_EVENT_TABLE,
+					References.SCHEDULED_EVENT_TABLE,
 					event.getEntry().getId()
 				);
 			} catch (SQLException e) {

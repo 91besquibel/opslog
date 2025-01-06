@@ -11,7 +11,7 @@ import opslog.controls.table.CustomListView;
 import opslog.managers.TypeManager;
 import opslog.object.Type;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
@@ -67,7 +67,7 @@ public class TypeCreator extends VBox {
                 newType.titleProperty().set(titleTextField.getText());
                 newType.patternProperty().set(patternTextField.getText());
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                String id = queryBuilder.insert( Refrences.TYPE_TABLE, Refrences.TYPE_COLUMN, newType.toArray());
+                String id = queryBuilder.insert( References.TYPE_TABLE, References.TYPE_COLUMN, newType.toArray());
                 newType.setID(id);
                 TypeManager.getList().add(newType);
                 titleTextField.clear();
@@ -85,7 +85,7 @@ public class TypeCreator extends VBox {
                     newType.titleProperty().set(titleTextField.getText());
                     newType.patternProperty().set(patternTextField.getText());
                     QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                    queryBuilder.update( Refrences.TYPE_TABLE, Refrences.TYPE_COLUMN, newType.toArray());
+                    queryBuilder.update( References.TYPE_TABLE, References.TYPE_COLUMN, newType.toArray());
                     Type type = TypeManager.getItem(newType.getID());
                     if(type != null){
                         type.titleProperty().set(newType.titleProperty().get());
@@ -103,7 +103,7 @@ public class TypeCreator extends VBox {
             try {
                 Type selectedType = listView.getSelectionModel().getSelectedItem();
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.delete( Refrences.TYPE_TABLE, selectedType.getID());
+                queryBuilder.delete( References.TYPE_TABLE, selectedType.getID());
                 TypeManager.getList().remove(selectedType);
                 titleTextField.clear();
                 patternTextField.clear();

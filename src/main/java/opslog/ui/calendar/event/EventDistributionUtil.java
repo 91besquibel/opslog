@@ -6,7 +6,7 @@ import java.time.LocalTime;
 
 import opslog.object.ScheduledEntry;
 import opslog.managers.ScheduledEntryManager;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.*;
 import java.sql.SQLException;
@@ -29,18 +29,16 @@ public class EventDistributionUtil{
 	public boolean inRange(int currentMonth, LocalDateTime start, LocalDateTime stop){
 		return currentMonth == start.getMonthValue() && currentMonth == stop.getMonthValue();
 	}
-	
-	
 
-	// DB query executer for calendar view processor
+	// DB query execute for calendar view processor
 	// located here instead of manager for multi-threading 
 	public void handleScheduledEntry(LocalDate startDate, LocalDate stopDate) {
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 
 			List<String[]> results = queryBuilder.rangeQuery(
-				Refrences.SCHEDULED_EVENT_TABLE,
-				Refrences.START_DATE_COLUMN_TITLE,
+				References.SCHEDULED_EVENT_TABLE,
+				References.START_DATE_COLUMN_TITLE,
 				startDate.toString(),
 				stopDate.toString()
 			);

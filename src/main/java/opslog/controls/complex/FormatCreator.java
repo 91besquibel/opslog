@@ -11,7 +11,7 @@ import opslog.controls.table.CustomListView;
 import opslog.managers.FormatManager;
 import opslog.object.Format;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
@@ -67,7 +67,7 @@ public class FormatCreator extends VBox {
                 format.titleProperty().set(FormatCreator.titleTextField.getText());
                 format.formatProperty().set(FormatCreator.descriptionTextField.getText());
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                String id = queryBuilder.insert( Refrences.FORMAT_TABLE, Refrences.FORMAT_COLUMN, format.toArray());
+                String id = queryBuilder.insert( References.FORMAT_TABLE, References.FORMAT_COLUMN, format.toArray());
                 format.setID(id);
                 FormatManager.getList().add(format);
                 titleTextField.clear();
@@ -84,7 +84,7 @@ public class FormatCreator extends VBox {
                 format.titleProperty().set(titleTextField.getText());
                 format.formatProperty().set(descriptionTextField.getText());
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.update(Refrences.FORMAT_TABLE, Refrences.FORMAT_COLUMN, format.toArray());
+                queryBuilder.update(References.FORMAT_TABLE, References.FORMAT_COLUMN, format.toArray());
                 Format foundFormat = FormatManager.getItem(format.getID());
                 if(foundFormat != null){
                     foundFormat.titleProperty().set(format.titleProperty().get());
@@ -101,7 +101,7 @@ public class FormatCreator extends VBox {
             try {
                 Format selectedItem = listView.getSelectionModel().getSelectedItem();
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.delete(Refrences.FORMAT_TABLE, selectedItem.getID());
+                queryBuilder.delete(References.FORMAT_TABLE, selectedItem.getID());
                 FormatManager.getList().remove(selectedItem);
                 titleTextField.clear();
                 descriptionTextField.clear();

@@ -12,12 +12,13 @@ import opslog.controls.table.CustomListView;
 import opslog.managers.TagManager;
 import opslog.object.Tag;
 import opslog.sql.QueryBuilder;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class TagCreator extends VBox {
 
@@ -51,12 +52,14 @@ public class TagCreator extends VBox {
                 Tag tag = new Tag();
                 tag.titleProperty().set(TEXT_FIELD.getText());
                 tag.colorProperty().set(COLOR_PICKER.getValue());
-                QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                String id = queryBuilder.insert( Refrences.TAG_TABLE, Refrences.TAG_COLUMN, tag.toArray());
-                tag.setID(id);
-                TagManager.getList().add(tag);
-                TEXT_FIELD.clear();
-                COLOR_PICKER.setValue(null);
+                if(!tag.titleProperty().get().isBlank() && tag.colorProperty().get() != null){
+                    QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+                    String id = queryBuilder.insert( References.TAG_TABLE, References.TAG_COLUMN, tag.toArray());
+                    tag.setID(id);
+                    TagManager.getList().add(tag);
+                    TEXT_FIELD.clear();
+                    COLOR_PICKER.setValue(null);
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -64,22 +67,13 @@ public class TagCreator extends VBox {
 
         edit.setOnAction(event -> {
             try {
-
-                Tag tag = new Tag();
-                tag.setID(LIST_VIEW.getSelectionModel().getSelectedItem().getID());
-                tag.titleProperty().set(TEXT_FIELD.getText());
-                tag.colorProperty().set(COLOR_PICKER.getValue());
-
-                QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.update(Refrences.TAG_TABLE, Refrences.TAG_COLUMN, tag.toArray());
-                Tag foundTag = TagManager.getItem(tag.getID());
-                if(foundTag != null){
-                    foundTag.titleProperty().set(tag.titleProperty().get());
-                    foundTag.colorProperty().set(tag.colorProperty().get());
+                Tag tag = LIST_VIEW.getSelectionModel().getSelectedItem();
+                if (tag != null) {
+                    tag.titleProperty().set(TEXT_FIELD.getText());
+                    tag.colorProperty().set(COLOR_PICKER.getValue());
+                    QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+                    queryBuilder.update(References.TAG_TABLE, References.TAG_COLUMN, tag.toArray());
                 }
-                TEXT_FIELD.clear();
-                COLOR_PICKER.setValue(null);
-
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -88,12 +82,14 @@ public class TagCreator extends VBox {
         delete.setOnAction(event -> {
             try {
                 Tag selectedItem = LIST_VIEW.getSelectionModel().getSelectedItem();
-                QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                queryBuilder.delete(Refrences.TAG_TABLE, selectedItem.getID());
-                TagManager.getList().remove(selectedItem);
-                TEXT_FIELD.clear();
-                COLOR_PICKER.setValue(null);
-                LIST_VIEW.getSelectionModel().clearSelection();
+                if (selectedItem != null) {
+                    QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+                    queryBuilder.delete(References.TAG_TABLE, selectedItem.getID());
+                    TagManager.getList().remove(selectedItem);
+                    TEXT_FIELD.clear();
+                    COLOR_PICKER.setValue(null);
+                    LIST_VIEW.getSelectionModel().clearSelection();
+                }
             }catch (SQLException e){
                 throw new RuntimeException(e);
             }

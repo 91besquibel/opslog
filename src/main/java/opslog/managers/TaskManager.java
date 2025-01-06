@@ -4,7 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.object.event.Task;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public class TaskManager {
                 );
         try {
             List<String[]> result = queryBuilder.loadTable(
-                    Refrences.TASK_TABLE
+                    References.TASK_TABLE
             );
             for(String [] row : result){
                 taskList.add(newItem(row));

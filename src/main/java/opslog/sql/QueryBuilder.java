@@ -261,6 +261,7 @@ public class QueryBuilder {
         PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setDate(1, Date.valueOf(start));
             statement.setDate(2, Date.valueOf(end));
+            System.out.println("DatabaseQueryBuilder: " + statement.toString());
             try (ResultSet resultSet = statement.executeQuery()) {
                 results = processResultSet(resultSet, results);
             }

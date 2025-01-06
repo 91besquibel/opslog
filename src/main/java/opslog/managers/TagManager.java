@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import opslog.object.Tag;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class TagManager {
     public static void loadTable(){
         QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
         try {
-            List<String[]> result = queryBuilder.loadTable(Refrences.TAG_TABLE);
+            List<String[]> result = queryBuilder.loadTable(References.TAG_TABLE);
             for(String [] row : result){
                 list.add(newItem(row));
             }

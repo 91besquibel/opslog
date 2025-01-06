@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.calendarfx.model.CalendarEvent;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.ui.calendar.CalendarLayout;
 import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.Connection;
@@ -46,7 +46,7 @@ public class EventDistribution {
 		int incomingMonth = startDate.getMonthValue();
 		// If the month has changed, update the view range and query
 		if (CalendarLayout.getMonth() != incomingMonth) {
-			//System.out.println("EventDistribution: Start date is outside of the current month, recalculating for new month.");
+			//System.out.println("EventDistribution: Start date is outside the current month, recalculating for new month.");
 			LocalDate firstDayOfMonth = startDate.withDayOfMonth(1);
 			LocalDate lastDayOfMonth = startDate.withDayOfMonth(startDate.lengthOfMonth());
 			CalendarLayout.setMonth(startDate.getMonthValue());
@@ -66,14 +66,14 @@ public class EventDistribution {
 		CalendarLayout.TASK_CALENDAR.addEventHandler(event -> {
 
 			if (event.getEventType().equals(CalendarEvent.ENTRY_INTERVAL_CHANGED)) {
-				if(event.getEntry() instanceof ScheduledTask scheduledTask){
+				if(event.getEntry() instanceof ScheduledTask){
 					ScheduledTaskManager.updateEntry(event);
 				}
 			}
 
 			if (event.getEventType().equals(ScheduledTaskManager.TASK_COMPLETION_STATUS_CHANGED)) {
-				if(event.getEntry() instanceof ScheduledTask scheduledTask){
-					System.out.println("EventDistribution: entry completion satatus event");
+				if(event.getEntry() instanceof ScheduledTask ){
+					System.out.println("EventDistribution: entry completion status event");
 					ScheduledTaskManager.updateEntry(event);
 				}
 			}
@@ -132,9 +132,9 @@ public class EventDistribution {
 	public static void handleScheduledEntry(CalendarEvent event){
 		if(event.getEntry() instanceof ScheduledEntry scheduledEntry){
 			try {
-				//System.out.println("EventDistribution: handleing scheduled entry query.");
+				//System.out.println("EventDistribution: handling scheduled entry query.");
 				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-				boolean	exists = queryBuilder.exists(Refrences.SCHEDULED_EVENT_TABLE, scheduledEntry.getId());
+				boolean	exists = queryBuilder.exists(References.SCHEDULED_EVENT_TABLE, scheduledEntry.getId());
 				if(exists){
 					ScheduledEntryManager.updateEntry(event);
 				}else {

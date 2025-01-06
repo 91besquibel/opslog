@@ -14,7 +14,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.event.EventType;
 import opslog.object.ScheduledTask;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.ui.calendar.CalendarLayout;
 import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.Connection;
@@ -100,8 +100,8 @@ public class ScheduledTaskManager{
 			try{
 				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
 				queryBuilder.update(
-					Refrences.SCHEDULED_TASK_TABLE,
-					Refrences.SCHEDULED_TASK_COLUMNS,
+					References.SCHEDULED_TASK_TABLE,
+					References.SCHEDULED_TASK_COLUMNS,
 					scheduledTask.toArray()
 				);
 			}catch(SQLException e){
@@ -189,7 +189,7 @@ public class ScheduledTaskManager{
 			
 			// result
 			List<String[]> result = queryBuilder.loadTable(
-				Refrences.SCHEDULED_TASK_TABLE
+				References.SCHEDULED_TASK_TABLE
 			);
 			
 			for (String[] row : result) {

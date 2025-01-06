@@ -3,7 +3,7 @@ package opslog.managers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import opslog.sql.hikari.Connection;
-import opslog.sql.Refrences;
+import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 import opslog.object.event.Checklist;
 
@@ -21,7 +21,7 @@ public class ChecklistManager {
                 );
         try {
             List<String[]> result = queryBuilder.loadTable(
-                    Refrences.CHECKLIST_TABLE
+                    References.CHECKLIST_TABLE
             );
             for(String [] row : result){
                 list.add(newItem(row));
