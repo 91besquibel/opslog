@@ -50,7 +50,6 @@ public class FilterMenu extends ContextMenu {
         TYPE_FILTERS.setStyle(Styles.menuItem());
 
 		TAG_FILTERS.setOnAction(event -> {
-			System.out.println("tag submenu opening");
 			TAG_SUBMENU.show(TAG_FILTERS.getParentPopup().getOwnerNode(), Side.BOTTOM, 0, 0);
 		});
         Platform.runLater(() -> {
@@ -148,7 +147,6 @@ public class FilterMenu extends ContextMenu {
         TYPE_SUBMENU.getItems().add(menuItem);
 		Platform.runLater(() -> {
 			TYPE_SUBMENU.getItems().add(menuItem);
-			System.out.println("Type submenu added");
 			typeMap.put(type, menuItem);
 		});
         
@@ -167,7 +165,6 @@ public class FilterMenu extends ContextMenu {
         });
 		Platform.runLater(() -> {
         	TAG_SUBMENU.getItems().add(menuItem);
-			System.out.println("Tag submenu added");
 			tagMap.put(tag, menuItem);
 		});
         

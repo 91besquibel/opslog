@@ -31,47 +31,41 @@ public class SearchView<T>{
     public SearchView(List<T> list) {
         this.list = list;
         utilityMenu.setList(list);
-        root();
-        windowPane();
-    }
-
-    private void root() {
-        if(!list.isEmpty()) {
-            if (list.get(0) instanceof ScheduledEntry) {
-                ObservableList<ScheduledEntry> calList = FXCollections.observableArrayList();
-                calList.setAll(list.stream()
-                        .filter(item -> item instanceof ScheduledEntry)
-                        .map(item -> (ScheduledEntry) item)
-                        .collect(Collectors.toList())
-                );
-                CalendarTable calendarTable = new CalendarTable();
-                calendarTable.setList(calList);
-                VBox.setVgrow(calendarTable,Priority.ALWAYS);
-                root.getChildren().addAll(calendarTable);
-            }
-            if (list.get(0) instanceof Log) {
-                ObservableList<Log> logList = FXCollections.observableArrayList();
-                logList.setAll(list.stream()
-                        .filter(item -> item instanceof Log)
-                        .map(item -> (Log) item)
-                        .collect(Collectors.toList())
-                );
-                LogTable logTable = new LogTable();
-                logTable.setItems(logList);
-                VBox.setVgrow(logTable,Priority.ALWAYS);
-                root.getChildren().addAll(logTable);
-            }
-        }
-    }
-
-    private void windowPane(){
-        windowPane.getMenuButton().contextMenuProperty().set(utilityMenu);
-        windowPane.viewAreaProperty().get().getChildren().clear();
-        windowPane.viewAreaProperty().get().getChildren().add(root);
-        AnchorPane.setTopAnchor(root, 0.0);
-        AnchorPane.setBottomAnchor(root, 0.0);
-        AnchorPane.setLeftAnchor(root, 0.0);
-        AnchorPane.setRightAnchor(root, 0.0);
+		
+		if(!list.isEmpty()) {
+			if (list.get(0) instanceof ScheduledEntry) {
+				ObservableList<ScheduledEntry> calList = FXCollections.observableArrayList();
+				calList.setAll(list.stream()
+						.filter(item -> item instanceof ScheduledEntry)
+						.map(item -> (ScheduledEntry) item)
+						.collect(Collectors.toList())
+				);
+				CalendarTable calendarTable = new CalendarTable();
+				calendarTable.setList(calList);
+				VBox.setVgrow(calendarTable,Priority.ALWAYS);
+				root.getChildren().addAll(calendarTable);
+			}
+			if (list.get(0) instanceof Log) {
+				ObservableList<Log> logList = FXCollections.observableArrayList();
+				logList.setAll(list.stream()
+						.filter(item -> item instanceof Log)
+						.map(item -> (Log) item)
+						.collect(Collectors.toList())
+				);
+				LogTable logTable = new LogTable();
+				logTable.setItems(logList);
+				VBox.setVgrow(logTable,Priority.ALWAYS);
+				root.getChildren().addAll(logTable);
+			}
+		}
+		
+		windowPane.getMenuButton().contextMenuProperty().set(utilityMenu);
+		windowPane.viewAreaProperty().get().getChildren().clear();
+		windowPane.viewAreaProperty().get().getChildren().add(root);
+		AnchorPane.setTopAnchor(root, 0.0);
+		AnchorPane.setBottomAnchor(root, 0.0);
+		AnchorPane.setLeftAnchor(root, 0.0);
+		AnchorPane.setRightAnchor(root, 0.0);
     }
 
     public void display() {

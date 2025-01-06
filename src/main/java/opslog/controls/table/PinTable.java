@@ -48,27 +48,8 @@ public class PinTable extends TableView<Log> {
         TableColumn<Log, String> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
         column.setGraphic(Util.createHeader("Description"));
+		column.setCellFactory(Util::createCell);
 
-        column.setCellFactory(col -> new TableCell<>() {
-            private final Text text = new Text();
-            {
-                borderProperty().bind(Settings.transparentBorder);
-                setAlignment(Pos.TOP_CENTER);
-                setPadding(Settings.INSETS);
-            }
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setGraphic(null);
-                } else {
-                    text.setText(item.toString());
-                    text.wrappingWidthProperty().bind(column.widthProperty().subtract(8));
-                    setGraphic(Util.createCellLabel(text));
-                }
-            }
-        });
-        
         this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
             double totalWidth = newWidth.doubleValue();
             for (TableColumn<Log, ?> col : this.getColumns()) {

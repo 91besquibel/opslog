@@ -3,6 +3,7 @@ package opslog.ui.log;
 import opslog.object.Tag;
 import opslog.object.event.Log;
 import opslog.sql.hikari.Connection;
+import opslog.ui.CustomPopup;
 import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 import opslog.managers.LogManager;
@@ -10,12 +11,14 @@ import opslog.util.DateTime;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import opslog.App;
 
 public class LogController {
 
     public static void initialize(){
         LogView.logCreator.addLog.setOnAction(event -> handleAddLog());
         LogView.logCreator.updateLog.setOnAction(event -> handleUpdateLog());
+		LogView.logCreator.removeLog.setOnAction(event -> handleDeleteLog());
         LogView.logCreator.logProperty().bind(LogView.logTable.getSelectionModel().selectedItemProperty());
         LogView.logCreator.logProperty.addListener((obs, ov, nv) -> {
             LogView.logCreator.multiSelector.getMenu().getSelected().clear();
@@ -73,15 +76,32 @@ public class LogController {
             try {
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
                 queryBuilder.update(References.LOG_TABLE, References.LOG_COLUMN, log.toArray());
-                int i = LogManager.getList().indexOf(LogView.logCreator.logProperty.get());
-                LogManager.getList().set(i,log);
-                LogView.logTable.getSelectionModel().clearSelection();
             } catch (SQLException ex){
                 System.out.println("EventUI: Failed to insert log into database \n");
                 ex.printStackTrace();
             }
         }
     }
+
+	private static void handleDeleteLog(){
+		getLogFieldValues(LogView.logCreator.logProperty.get());
+		Log log = LogView.logCreator.logProperty.get();
+		if(log.hasValue()){
+			try {
+				String message = " Are you sure you want to delete this log";
+				CustomPopup popup = new CustomPopup(message, App.getStage());
+				if(popup.getAck()){
+					QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+					queryBuilder.delete(References.LOG_TABLE,log.getID());
+					LogView.logTable.getSelectionModel().clearSelection();
+					LogManager.getList().remove(log);
+				}
+			} catch (SQLException ex){
+				System.out.println("EventUI: Failed to insert log into database \n");
+				ex.printStackTrace();
+			}
+		}
+	}
 
     public static void handleSwapView(){
         if(LogView.pinTableView.isVisible()){

@@ -8,7 +8,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import opslog.sql.QueryBuilder;
-import opslog.ui.PopupUI;
+import opslog.ui.CustomPopup;
 import opslog.ui.window.WindowPane;
 import opslog.controls.simple.CustomComboBox;
 import opslog.controls.simple.CustomTextField;
@@ -19,6 +19,7 @@ import opslog.sql.hikari.ConnectionConfiguration;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import com.zaxxer.hikari.HikariConfig;
+import opslog.controls.button.CustomButton;
 
 public class StartView {
 
@@ -103,29 +104,7 @@ public class StartView {
     }
 
     private Button createLoadButton(Runnable onComplete){
-        Button load = new Button("Load");
-        load.setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
-        load.setBackground(Settings.secondaryBackground.get());
-        load.setFont(Settings.fontProperty.get());
-        load.setTextFill(Settings.textColor.get());
-
-        load.hoverProperty().addListener((obs,ov,nv) -> {
-            if(nv){
-                load.setBackground(Settings.primaryBackground.get());
-                load.setBorder(Settings.focusBorder.get());
-            }else{
-                load.setBackground(Settings.secondaryBackground.get());
-                load.setBorder(Settings.transparentBorder.get());
-            }
-        });
-
-        load.pressedProperty().addListener((obs,ov,nv) -> {
-            if(nv){
-               load.setBackground(Settings.secondaryBackground.get());
-            } else {
-               load.setBackground(Settings.primaryBackground.get());
-            }
-        });
+        CustomButton load = new CustomButton("Load");
         
         load.setOnAction(actionEvent -> {
             if (!emptyFields()) {
@@ -179,13 +158,7 @@ public class StartView {
                 onComplete.run();
             }
         } catch (Exception e) {
-            showPopup();
             e.printStackTrace();
         }
-    }
-
-    private void showPopup() {
-        PopupUI popup = new PopupUI();
-        popup.message("Connection Provider", "Could not connect to the database! Verify database information.");
     }
 }

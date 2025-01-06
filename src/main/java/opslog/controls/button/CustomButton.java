@@ -43,4 +43,46 @@ public class CustomButton extends Button {
             }
         });
     }
+
+	public CustomButton(String title){
+		setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
+		setPadding(Settings.INSETS);
+		setAlignment(Pos.CENTER);
+		setFocusTraversable(true);
+		
+		setFont(Settings.fontProperty.get());
+		setTextFill(Settings.textColor.get());
+
+		backgroundProperty().bind(Settings.secondaryBackground);
+		borderProperty().bind(Settings.secondaryBorder);
+
+		hoverProperty().addListener((obs,ov,nv) -> {
+			borderProperty().unbind();
+			if(nv){
+				setBorder(Settings.focusBorder.get());
+			}else{
+				borderProperty().bind(Settings.secondaryBorder);
+			}
+		});
+
+		focusedProperty().addListener((obs,ov,nv) -> {
+			borderProperty().unbind();
+			if(nv){
+				setBorder(Settings.focusBorder.get());
+			}else{
+				borderProperty().bind(Settings.secondaryBorder);
+			}
+		});
+
+		pressedProperty().addListener((obs,ov,nv) -> {
+			backgroundProperty().unbind();
+			if(nv){
+			   setBackground(Settings.primaryBackground.get());
+			} else {
+				backgroundProperty().bind(Settings.secondaryBackground);
+				borderProperty().bind(Settings.secondaryBorder);
+			}
+		});
+		
+	}
 }

@@ -60,7 +60,7 @@ public class LogTable extends TableView<Log>{
 		TableColumn<Log, LocalDate> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
 		column.setGraphic(Util.createHeader("Date"));
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -68,7 +68,7 @@ public class LogTable extends TableView<Log>{
 		TableColumn<Log, LocalTime> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().timeProperty());
 		column.setGraphic(Util.createHeader("Time"));
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -76,13 +76,13 @@ public class LogTable extends TableView<Log>{
 		TableColumn<Log, Type> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
 		column.setGraphic(Util.createHeader("Type"));
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
 	private TableColumn<Log, ObservableList<Tag>> tagColumn() {
 		TableColumn<Log, ObservableList<Tag>> column = new TableColumn<>();
-		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().tagList()));
+		column.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().tagList()));
 		column.setGraphic(Util.createHeader("Tag"));
 		column.setCellFactory(col -> new TableCell<Log, ObservableList<Tag>>() {
 			@Override
@@ -108,8 +108,7 @@ public class LogTable extends TableView<Log>{
 		TableColumn<Log, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
 		column.setGraphic(Util.createHeader("Initials"));
-		column.setMinWidth(80);
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -117,27 +116,8 @@ public class LogTable extends TableView<Log>{
 		TableColumn<Log, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
 		column.setGraphic(Util.createHeader("Description"));
-
-		column.setCellFactory(col -> new TableCell<>() {
-			private final Text text = new Text();
-			{
-				borderProperty().bind(Settings.transparentBorder);
-				setAlignment(Pos.TOP_CENTER);
-				setPadding(Settings.INSETS);
-			}
-			@Override
-			protected void updateItem(String item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setGraphic(null);
-				} else {
-					text.setText(item.toString());
-					text.wrappingWidthProperty().bind(column.widthProperty().subtract(8));
-					setGraphic(Util.createCellLabel(text));
-				}
-			}
-		});
-
+		column.setCellFactory(Util::createCell);
+		
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {
 			double totalWidth = newWidth.doubleValue();
 			for (TableColumn<Log, ?> col : this.getColumns()) {

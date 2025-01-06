@@ -36,7 +36,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
         column.setGraphic(Util.createHeader("Title"));
         column.setMinWidth(100);
-        column.setCellFactory(col -> Util.createCell());
+        column.setCellFactory(Util::createCell);
         return column;
     }
 
@@ -57,7 +57,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
     private TableColumn<ScheduledTask, LocalTime> startTimeColumn() {
         TableColumn<ScheduledTask, LocalTime> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
-        column.setCellFactory(col -> Util.editableTimeCell(column));
+        column.setCellFactory(Util::editableTimeCell);
 		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
         column.setOnEditCommit(event -> {
             ScheduledTask scheduledTask = event.getRowValue();

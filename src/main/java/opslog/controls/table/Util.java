@@ -102,7 +102,7 @@ public class Util {
         return row;
     }
 
-    public static <S, T> TableCell<S, T> createCell() {
+    public static <S, T> TableCell<S, T> createCell(TableColumn<S,T> column) {
         TableCell<S,T> cell = new TableCell<S, T>() {
             private final Text text = new Text();
             {
@@ -117,6 +117,7 @@ public class Util {
                     setText(null);
                 } else {
                     text.setText(item.toString());
+					text.wrappingWidthProperty().bind(column.widthProperty().subtract(8));
                     setGraphic(createCellLabel(text));
                 }
             }
@@ -235,6 +236,8 @@ public class Util {
             private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
             private final VBox vbox = new VBox(textField);
             {
+				borderProperty().bind(Settings.transparentBorder);
+				
                 textField.setOnAction(event -> commitEdit(parseLocalDate(textField.getText())));
                 textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                     if (!isNowFocused) {
@@ -249,6 +252,8 @@ public class Util {
                 textField.setAlignment(Pos.CENTER);
 
                 vbox.setAlignment(Pos.CENTER);
+				vbox.backgroundProperty().bind(Settings.secondaryBackground);
+				vbox.borderProperty().bind(Settings.secondaryBorder);
             }
 
             @Override
@@ -304,8 +309,10 @@ public class Util {
     public static TableCell<ScheduledTask, LocalTime> editableTimeCell(TableColumn<ScheduledTask, LocalTime> column) {
         return new TableCell<>() {
             private final CustomTextField textField = new CustomTextField("", 100, Settings.SINGLE_LINE_HEIGHT);
-
+			private final VBox vbox = new VBox(textField);
+			
             {
+				borderProperty().bind(Settings.transparentBorder);
                 textField.setOnAction(event -> commitEdit(parseLocalTime(textField.getText())));
                 textField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                     if (!isNowFocused) {
@@ -318,6 +325,9 @@ public class Util {
                 });
                 textField.minWidthProperty().bind(column.widthProperty().subtract(5));
                 textField.setAlignment(Pos.CENTER);
+				vbox.setAlignment(Pos.CENTER);
+				vbox.backgroundProperty().bind(Settings.secondaryBackground);
+				vbox.borderProperty().bind(Settings.secondaryBorder);
             }
 
             @Override
@@ -330,8 +340,6 @@ public class Util {
                     if (isEditing()) {
                         textField.setText(formatLocalTime(item));
                         textField.setAlignment(Pos.CENTER);
-                        VBox vbox = new VBox(textField);
-                        vbox.setAlignment(Pos.CENTER);
                         setGraphic(vbox);
                     } else {
                         Text text = new Text(formatLocalTime(item));
@@ -347,8 +355,6 @@ public class Util {
                 if (getItem() != null) {
                     textField.setText(formatLocalTime(getItem()));
                     textField.setAlignment(Pos.CENTER);
-                    VBox vbox = new VBox(textField);
-                    vbox.setAlignment(Pos.CENTER);
                     setGraphic(vbox);
                 }
             }

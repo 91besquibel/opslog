@@ -86,12 +86,8 @@ public class SearchBar extends HBox {
 
 		filterButton.setOnAction(event -> {
 			try{
-
-				System.out.println("Search Button Pressed");
 				filterMenu.show(filterButton,Side.BOTTOM,0,0);
-				
 			}catch(Exception e){
-				System.out.println("Search Button failed");
 				e.printStackTrace();
 			}
 		});
@@ -143,19 +139,10 @@ public class SearchBar extends HBox {
 	private void prepQuery(Search search){
 		ObservableList<Tag> tags = filterMenu.getTagList();
 		ObservableList<Type> types = filterMenu.getTypeList();
-		printLoop(dates);
-		printLoop(tags);
-		printLoop(types);
 		search.dateList().setAll(dates);
 		search.tagList().setAll(tags);
 		search.typeList().setAll(types);
 		search.keywordProperty().set(textField.getText());
-	}
-
-	private <T>void printLoop(List<T> list){
-		for(T item : list){
-			System.out.println(item.toString());
-		}
 	}
 
 	private <T> void display(List<T> list){

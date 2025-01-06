@@ -65,7 +65,7 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
 		column.setGraphic(Util.createHeader("Title"));
 		column.setMinWidth(80);
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -73,7 +73,7 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		TableColumn<ScheduledEntry, Interval> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().intervalProperty());
 		column.setGraphic(Util.createHeader("Interval"));
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 	
@@ -81,7 +81,7 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		TableColumn<ScheduledEntry, Type> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
 		column.setGraphic(Util.createHeader("Type"));
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -111,7 +111,7 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		column.setCellValueFactory(cellData -> cellData.getValue().initialsProperty());
 		column.setGraphic(Util.createHeader("Initials"));
 		column.setMinWidth(80);
-		column.setCellFactory(col -> Util.createCell());
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 
@@ -119,26 +119,7 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		TableColumn<ScheduledEntry, String> column = new TableColumn<>();
 		column.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
 		column.setGraphic(Util.createHeader("Description"));
-
-		column.setCellFactory(col -> new TableCell<>() {
-			private final Text text= new Text();
-			{
-				borderProperty().bind(Settings.transparentBorder);
-				setAlignment(Pos.TOP_CENTER);
-				setPadding(Settings.INSETS);
-			}
-			@Override
-			protected void updateItem(String item, boolean empty) {
-				super.updateItem(item, empty);
-				if (empty || item == null) {
-					setGraphic(null);
-				} else {
-					text.setText(item.toString());
-					text.wrappingWidthProperty().bind(column.widthProperty().subtract(8));
-					setGraphic(Util.createCellLabel(text));
-				}
-			}
-		});
+		column.setCellFactory(Util::createCell);
 		return column;
 	}
 }

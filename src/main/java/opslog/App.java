@@ -28,6 +28,7 @@ public class App extends Application {
     private static ChecklistView CHECKLIST_VIEW;
     private static WindowPane appWindow;
 	private static SearchBar searchBar;
+	private static Stage stage;
 
     public static void main(String[] args) {
         launch(args);
@@ -36,6 +37,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         try {
+			App.stage = stage;
             
             initializeViews();
             DateTime.timeListPopulate();
@@ -79,5 +81,9 @@ public class App extends Application {
     public static WindowPane getAppWindow() {
         return appWindow;
     }
+
+	public static Stage getStage(){
+		return stage;
+	}
 
 }

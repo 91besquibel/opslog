@@ -1,3 +1,4 @@
+/home/runner/opslog/src/main/java/opslog/controls/ContextMenu/CalendarMenu.java
 /home/runner/opslog/src/main/java/opslog/sql/hikari/ConnectionManager.java
 /home/runner/opslog/src/main/java/opslog/util/CSV.java
 /home/runner/opslog/src/main/java/opslog/sql/hikari/ConnectionConfiguration.java
@@ -18,7 +19,6 @@
 /home/runner/opslog/src/main/java/opslog/controls/table/StatusTreeView.java
 /home/runner/opslog/src/main/java/opslog/managers/ProfileManager.java
 /home/runner/opslog/src/main/java/opslog/controls/button/Buttons.java
-/home/runner/opslog/src/main/java/opslog/sql/Refrences.java
 /home/runner/opslog/src/main/java/opslog/util/Directory.java
 /home/runner/opslog/src/main/java/opslog/ui/settings/SettingsView.java
 /home/runner/opslog/src/main/java/opslog/controls/button/CustomButton.java
@@ -29,6 +29,7 @@
 /home/runner/opslog/src/main/java/opslog/controls/complex/SearchBar.java
 /home/runner/opslog/src/main/java/opslog/sql/Search.java
 /home/runner/opslog/src/main/java/opslog/ui/log/LogController.java
+/home/runner/opslog/src/main/java/opslog/ui/CustomPopup.java
 /home/runner/opslog/src/main/java/opslog/controls/table/CustomListView.java
 /home/runner/opslog/src/main/java/opslog/ui/checklist/layout/StatusLayout.java
 /home/runner/opslog/src/main/java/opslog/controls/table/Util.java
@@ -38,7 +39,6 @@
 /home/runner/opslog/src/main/java/opslog/controls/complex/DatabaseConnector.java
 /home/runner/opslog/src/main/java/opslog/managers/PinboardManager.java
 /home/runner/opslog/src/main/java/opslog/controls/ContextMenu/ChecklistMenu.java
-/home/runner/opslog/src/main/java/opslog/controls/complex/checklist/StatusView.java
 /home/runner/opslog/src/main/java/opslog/controls/complex/task/TaskSelector.java
 /home/runner/opslog/src/main/java/opslog/object/Format.java
 /home/runner/opslog/src/main/java/opslog/controls/complex/checklist/ChecklistGroup.java
@@ -58,10 +58,10 @@
 /home/runner/opslog/src/main/java/opslog/controls/table/ScheduledTaskView.java
 /home/runner/opslog/src/main/java/opslog/controls/complex/ProfileCreator.java
 /home/runner/opslog/src/main/java/opslog/object/event/Checklist.java
-/home/runner/opslog/src/main/java/opslog/ui/PopupUI.java
+/home/runner/opslog/src/main/java/opslog/sql/References.java
 /home/runner/opslog/src/main/java/opslog/controls/table/ScheduleTable.java
-/home/runner/opslog/src/main/java/opslog/controls/complex/TagCreator.java
 /home/runner/opslog/src/main/java/opslog/controls/complex/checklist/ChecklistCreator.java
+/home/runner/opslog/src/main/java/opslog/controls/complex/TagCreator.java
 /home/runner/opslog/src/main/java/opslog/managers/ScheduledEntryManager.java
 /home/runner/opslog/src/main/java/opslog/controls/table/LogTable.java
 /home/runner/opslog/src/main/java/opslog/controls/table/PinTable.java
@@ -72,6 +72,7 @@
 /home/runner/opslog/src/main/java/opslog/util/Settings.java
 /home/runner/opslog/src/main/java/opslog/controls/table/CalendarTable.java
 /home/runner/opslog/src/main/java/opslog/ui/startup/StartController.java
+/home/runner/opslog/src/main/java/opslog/controls/ContextMenu/EntryMenu.java
 /home/runner/opslog/src/main/java/opslog/controls/complex/checklist/ChecklistSelector.java
 /home/runner/opslog/src/main/java/opslog/managers/TypeManager.java
 /home/runner/opslog/src/main/java/opslog/object/Profile.java

@@ -19,8 +19,6 @@ import opslog.managers.TagManager;
 import opslog.managers.TypeManager;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import org.controlsfx.control.CheckComboBox;
-import opslog.util.Styles;
 import opslog.controls.simple.MultiSelector;
 
 public class LogCreator extends VBox {
