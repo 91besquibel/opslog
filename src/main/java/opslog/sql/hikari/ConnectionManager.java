@@ -1,25 +1,32 @@
 package opslog.sql.hikari;
 
 import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-/*
-	Singleton instance to store the current database connection
-*/
+/**
+ * The {@code HikariConnectionProvider} class is responsible for managing 
+ * database connections using HikariCP. It encapsulates the 
+ * HikariDataSource and provides methods to obtain and manage connections 
+ * to a database.
+ */
 public class ConnectionManager {
-	
-	private static HikariConnectionProvider instance;
-	private static HikariConfig config;
-	
-	private ConnectionManager() {}
 
-	public static void setInstance(HikariConfig newConfig){
-		config = newConfig;
+	private final HikariDataSource dataSource;
+
+	public ConnectionManager(HikariConfig config) {
+		this.dataSource = new HikariDataSource(config);
 	}
 
-	public static HikariConnectionProvider getInstance() {
-		if (instance == null) { 
-			instance = new HikariConnectionProvider(config);
+	public Connection getConnection() throws SQLException {
+		return dataSource.getConnection();
+	}
+
+	public void closeConnection() {
+		if (dataSource != null && !dataSource.isClosed()) {
+			dataSource.close();
 		}
-		return instance;
 	}
 }
+

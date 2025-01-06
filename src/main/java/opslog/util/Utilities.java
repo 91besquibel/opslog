@@ -4,7 +4,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
-
 public class Utilities {
 
     public static String toHex(Color color) {
@@ -16,10 +15,9 @@ public class Utilities {
 
     public static Tooltip createTooltip(String text) {
         Tooltip tooltip = new Tooltip(text);
+        tooltip.setStyle(Styles.tooltip());
         tooltip.setShowDelay(Duration.seconds(0.5));
-        tooltip.setHideDelay(Duration.seconds(2));
+        tooltip.setHideDelay(Duration.seconds(0.5));
         return tooltip;
     }
-
-
 }

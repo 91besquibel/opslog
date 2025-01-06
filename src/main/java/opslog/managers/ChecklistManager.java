@@ -2,58 +2,52 @@ package opslog.managers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import opslog.sql.hikari.Connection;
+import opslog.sql.References;
+import opslog.sql.QueryBuilder;
 import opslog.object.event.Checklist;
+
+import java.sql.SQLException;
 import java.util.List;
 
 public class ChecklistManager {
 
-    // Definition
-    private static final ObservableList<Checklist> checklistList = FXCollections.observableArrayList();
+    private static final ObservableList<Checklist> list = FXCollections.observableArrayList();
 
-    public static final String CHCK_COL =
-            "id, title, task_list, typeID, tagID, initials, description";
-
-    // determine the operation for SQL
-    public static void operation(String operation, List<String[]> rows, String ID) {
-        switch (operation) {
-            case "INSERT":
-                for (String[] row : rows) {
-                    Checklist item = newItem(row);
-                    if(getItem(item.getID()) == null){
-                        ListOperation.insert(item,getList());
-                    }
-                }
-                break;
-            case "DELETE":
-                ListOperation.delete(getItem(ID),getList());
-                break;
-            case "UPDATE":
-                for (String[] row : rows) {
-                    Checklist item = newItem(row);
-                    ListOperation.update(getItem(item.getID()),getList());
-                }
-                break;
-            default:
-                break;
+    public static void loadTable(){
+        QueryBuilder queryBuilder =
+                new QueryBuilder(
+                        Connection.getInstance()
+                );
+        try {
+            List<String[]> result = queryBuilder.loadTable(
+                    References.CHECKLIST_TABLE
+            );
+            for(String [] row : result){
+                list.add(newItem(row));
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
         }
     }
-
 
     public static Checklist newItem(String [] row){
         Checklist checklist = new Checklist();
         checklist.setID(row[0]);
-        checklist.setTitle(row[1]);
-        checklist.setTaskList(TaskManager.getItems(row[4]));
-        checklist.setType(TypeManager.getItem(row[9]));
-        checklist.setTags(TagManager.getItems(row[10]));
-        checklist.setInitials(row[11]);
-        checklist.setDescription(row[12]);
+        checklist.titleProperty().set(row[1]);  // Assuming title is a StringProperty
+        checklist.taskList().setAll(TaskManager.getItems(row[2]));  // Assuming taskList is an ObservableList
+        checklist.typeProperty().set(TypeManager.getItem(row[3]));  // Assuming type is a Property type (e.g., ObjectProperty<Type>)
+        checklist.tagList().setAll(TagManager.getItems(row[4]));  // Assuming tags is an ObservableList
+        checklist.initialsProperty().set(row[5]);  // Assuming initials is a StringProperty
+        checklist.descriptionProperty().set(row[6]);  // Assuming description is a StringProperty
         return checklist;
     }
 
     public static Checklist getItem(String ID) {
-        for (Checklist checklist : checklistList) {
+        for (Checklist checklist : list) {
+            //System.out.println("ChecklistManager: checking checklist: " + checklist.getID() + " against " + ID);
             if (checklist.getID().equals(ID)) {
+                //System.out.println("ChecklistManager: match found: " + ID);
                 return checklist;
             }
         }
@@ -61,9 +55,8 @@ public class ChecklistManager {
     }
 
     public static ObservableList<Checklist> getList() {
-        return checklistList;
+        return list;
     }
-
 }
 
 	

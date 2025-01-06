@@ -7,21 +7,6 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.FXCollections;
 import java.util.stream.Collectors;
-import opslog.interfaces.*;
-
-/*
-
-	Abstract super class for:
-	Log.java
-	Calendar.java
-	Checklist.java
-	Task.java
-    
-	This will allow the DateCell in the CalendarContent.java 
-	to Display all the values associated with that date.
-	By using the Event Data type in an observable list in the CustomDateCell.java
-    
-*/
 
 public abstract class Event {
 
@@ -46,81 +31,48 @@ public abstract class Event {
         this.initials.set(null);
         this.description.set(null);
     }
-    
-    public void setType(Type newType) {
-        type.set(newType);
-    }
-    public void setTag(Tag newTag) {
-        tags.add(newTag);
-    }
-    public void setTags(ObservableList<Tag> newTags) {
-        tags.setAll(newTags);
-    }
-    public void setInitials(String newInitials) {
-        initials.set(newInitials);
-    }
-    public void setDescription(String newDescription) {
-        description.set(newDescription);
-    }
-
-    public Type getType() {
-        return type.get();
-    }
-    public ObservableList<Tag> getTags() {
-        return tags;
-    }
-    public String getInitials() {
-        return initials.get();
-    }
-    public String getDescription() {
-        return description.get();
-    }
 
     public ObjectProperty<Type> typeProperty() {
         return type;
     }
 
+    public ObservableList<Tag> tagList() {
+        return tags;
+    }
+    
     public StringProperty initialsProperty(){
         return initials;
     }
-
     public StringProperty descriptionProperty(){
         return description;
     }
 
-    // Checkis if all properties have a value
     public boolean hasValue() {
-        System.out.println("Checking if type has a value: " + type.get().toString());
         return
-                type.get().hasValue() &&
-                !tags.isEmpty() && tags.stream().allMatch(Tag::hasValue) &&
-                initials.get() != null && !initials.get().trim().isEmpty() &&
-                description.get() != null && !description.get().trim().isEmpty();
+            type.get().hasValue() &&
+            !tags.isEmpty() && tags.stream().allMatch(Tag::hasValue) &&
+            initials.get() != null && !initials.get().trim().isEmpty() &&
+            description.get() != null && !description.get().trim().isEmpty();
     }
 
     public String[] toArray() {
         return new String[]{
-                getType().getID(),
-                tags.stream().map(Tag::getID).collect(Collectors.joining(" | ")),
-                getInitials(),
-                getDescription()
+            type.get().getID(),
+            tags.stream().map(Tag::getID).collect(Collectors.joining(" | ")),
+            initials.get(),
+            description.get()
         };
     }
 
     @Override
     public String toString() {
-        String typeStr = getType().toString();
-        String tagStr = tags.stream().map(Tag::toString).collect(Collectors.joining(" | "));
-        String initialsStr = getInitials();
-        String descriptionStr = getDescription();
-
-        return typeStr +
+        return type.get().toString() +
                 " " +
-                tagStr +
+                tags.stream().map(Tag::toString).collect(Collectors.joining(" | ")) +
                 " " +
-                initialsStr +
+                initials.get() +
                 " " +
-                descriptionStr;
+                description.get();
     }
 
     @Override
@@ -129,9 +81,9 @@ public abstract class Event {
         if (other == null || getClass() != other.getClass()) return false;
         Event otherEvent = (Event) other;
         return
-                type.get().equals(otherEvent.getType()) &&
-                        tags.equals(otherEvent.getTags()) &&
-                        initials.get().equals(otherEvent.getInitials()) &&
-                        description.get().equals(otherEvent.getDescription());
+            type.get().equals(otherEvent.typeProperty().get()) &&
+            tags.equals(otherEvent.tagList()) &&
+            initials.get().equals(otherEvent.initialsProperty().get()) &&
+            description.get().equals(otherEvent.descriptionProperty().get());
     }
 }

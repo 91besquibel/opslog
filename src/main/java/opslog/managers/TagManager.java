@@ -1,55 +1,44 @@
 package opslog.managers;
 
-import java.util.Arrays;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import opslog.object.Tag;
+import opslog.sql.hikari.Connection;
+import opslog.sql.References;
+import opslog.sql.QueryBuilder;
 
 import java.util.List;
-import java.util.Optional;
+
+import java.sql.SQLException;
 
 public class TagManager {
 
-    private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
-    public static final String TAG_COL = "id, title, color";
+    private static final ObservableList<Tag> list = FXCollections.observableArrayList();
 
-    public static void operation(String operation, List<String[]> rows, String ID) {
-        switch (operation) {
-            case "INSERT":
-                for (String[] row : rows) {
-                    Tag item = newItem(row);
-                    if(getItem(item.getID()) == null){
-                        ListOperation.insert(item,getList());
-                    }
-                }
-                break;
-            case "DELETE":
-                ListOperation.delete(getItem(ID),getList());
-                break;
-            case "UPDATE":
-                for (String[] row : rows) {
-                    Tag item = newItem(row);
-                    ListOperation.update(getItem(item.getID()),getList());
-                }
-                break;
-            default:
-                break;
+    public static void loadTable(){
+        QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+        try {
+            List<String[]> result = queryBuilder.loadTable(References.TAG_TABLE);
+            for(String [] row : result){
+                list.add(newItem(row));
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
         }
     }
 
     public static Tag newItem(String [] row){
         Tag tag = new Tag();
         tag.setID(row[0]);
-        tag.setTitle(row[1]);
-        tag.setColor(Color.web(row[2]));
+        tag.titleProperty().set(row[1]);
+        tag.colorProperty().set(Color.web(row[2]));
         return tag;
     }
 
-    private static Tag getItem(String ID) {
+    public static Tag getItem(String ID) {
         //System.out.println("TagManager: Attempting to retrive tag: " + ID);
-        for (Tag tag : tagList) {
+        for (Tag tag : list) {
             if (tag.getID().equals(ID.trim())) {
                 //System.out.println("TagManager: Tag found: " + tag.getID());
                 return tag;
@@ -73,6 +62,6 @@ public class TagManager {
     }
 
     public static ObservableList<Tag> getList() {
-        return tagList;
+        return list;
     }
 }
