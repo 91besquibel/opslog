@@ -71,7 +71,7 @@ public class ScheduledEntry extends Entry<Event> {
 					getCalendar().fireEvent(
 						new CalendarEvent(
 							ScheduledEntryManager.ENTRY_DESCRIPTION_CHANGED,
-							getCalendar(), 
+							getCalendar(),
 							ScheduledEntry.this
 						)
 					);

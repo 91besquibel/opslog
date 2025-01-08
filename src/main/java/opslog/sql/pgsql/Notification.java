@@ -12,6 +12,7 @@ import opslog.object.Format;
 import opslog.object.Profile;
 import opslog.object.Tag;
 import opslog.object.Type;
+import opslog.sql.References;
 import opslog.object.event.*;
 import opslog.sql.hikari.Connection;
 import opslog.sql.QueryBuilder;
@@ -36,15 +37,15 @@ public class Notification {
     }
 
     public void process(){
-        // NOTIFY log_changes, 'UPDATE on log_table id: 123e4567-e89b-12d3-a456-426614174000';
+        // NOTIFY newLog_changes, 'UPDATE on newLog_table id: 123e4567-e89b-12d3-a456-426614174000';
         String param = notification.getParameter();
         String [] parts = param.split(" ");
         System.out.println("Notification: processing notification: " + param);
 
         if(parts.length >= 4){
-            // UPDATE on log_table id: 123e4567-e89b-12d3-a456-426614174000
+            // UPDATE on newLog_table id: 123e4567-e89b-12d3-a456-426614174000
             String operation = parts[0]; // "UPDATE"
-            String tableName = parts[2];// "log_table"
+            String tableName = parts[2];// "newLog_table"
             String id = parts[4];// "123e4567-e89b-12d3-a456-426614174000"
 
             try {
@@ -61,43 +62,43 @@ public class Notification {
 
     private void tableSwitch(String tableName, String id, String operation, List<String[]> result){
         switch(tableName){
-            case "log_table":
+            case References.LOG_TABLE:
                 processLog(id,operation,result);
                 break;
 
-            case "tag_table":
+            case References.TAG_TABLE:
                 processTag(id,operation,result);
                 break;
 
-            case "type_table":
+            case References.TYPE_TABLE:
                 processType(id,operation,result);
                 break;
 
-            case "pinboard_table":
+            case References.PINBOARD_TABLE:
                 processPin(id,operation,result);
                 break;
 
-            case "format_table":
+            case References.FORMAT_TABLE:
                 processFormat(id,operation,result);
                 break;
 
-            case "task_table":
+            case References.TASK_TABLE:
                 processTask(id,operation,result);
                 break;
 
-            case "checklist_table":
+            case References.CHECKLIST_TABLE:
                 processChecklist(id,operation,result);
                 break;
 
-            case "schedule_checklist_table":
+            case References.SCHEDULED_TASK_TABLE:
                 processScheduledTask(id,operation,result);
                 break;
 
-            case "profile_table":
+            case References.PROFILE_TABLE:
                 processProfile(id,operation,result);
                 break;
 
-            case "scheduledEvent_table":
+			case References.SCHEDULED_EVENT_TABLE:
                 processScheduledEntry(id,operation,result);
                 break;
         }
@@ -126,218 +127,295 @@ public class Notification {
             }
         });
     }
-
-    private  void processProfile(String id, String operation, List<String[]> result) {
+	
+    private void processProfile(String id, String operation, List<String[]> result) {
         for (String[] row : result) {
             Platform.runLater(() -> {
-                Profile profile = ProfileManager.newItem(row);
+				
+                Profile newProfile = ProfileManager.newItem(row);
+				Profile oldProfile = ProfileManager.getItem(id);
+				
                 if (operation.contains("INSERT")) {
-                    Profile originalProfile = ProfileManager.getItem(id);
-                    if (originalProfile == null) {
-                        ProfileManager.getList().add(profile);
+                    if (oldProfile == null) {
+                        ProfileManager.getList().add(newProfile);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Profile originalProfile = ProfileManager.getItem(id);
-                    if (originalProfile != null) {
-                        int index = ProfileManager.getList().indexOf(originalProfile);
-                        ProfileManager.getList().set(index, profile);
+                    if (oldProfile != null) {
+                        int index = ProfileManager.getList().indexOf(oldProfile);
+                        ProfileManager.getList().set(index, newProfile);
                     }
                 } else if (operation.contains("DELETE")) {
-                    Profile originalProfile = ProfileManager.getItem(id);
-                    if (originalProfile != null) {
-                        ProfileManager.getList().remove(originalProfile);
+                    if (oldProfile != null) {
+                        ProfileManager.getList().remove(oldProfile);
                     }
                 }
+				
             });
         }
     }
-
-    private  void processPin(String id, String operation, List<String[]> result) {
+	
+    private void processPin(String id, String operation, List<String[]> result) {
         Platform.runLater(() -> {
             for(String [] row : result) {
-                Log log = PinboardManager.newItem(row);
+                Log newLog = PinboardManager.newItem(row);
+				Log oldLog = PinboardManager.getItem(id);
                 if (operation.contains("INSERT")) {
-                    Log originalLog = PinboardManager.getItem(id);
-                    if (originalLog == null) {
-                        PinboardManager.getList().add(log);
+                    if (oldLog == null) {
+                        PinboardManager.getList().add(newLog);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Log originalLog = PinboardManager.getItem(id);
-                    if (originalLog != null) {
-                        int index = PinboardManager.getList().indexOf(originalLog);
-                        PinboardManager.getList().set(index, log);
+                    if (oldLog != null) {
+						//date
+                        if(!oldLog.dateProperty().get().equals(newLog.dateProperty().get())){
+							oldLog.dateProperty().set(newLog.dateProperty().get());
+						}
+						//time
+						if(!oldLog.timeProperty().get().equals(newLog.timeProperty().get())){
+							oldLog.timeProperty().set(newLog.timeProperty().get());
+						}
+						//typeid
+						if(!oldLog.typeProperty().get().equals(newLog.typeProperty().get())){
+							oldLog.typeProperty().set(newLog.typeProperty().get());
+						}
+						//tagids
+						if(!oldLog.tagList().containsAll(newLog.tagList())){
+							oldLog.tagList().setAll(newLog.tagList());
+						}
+						//initials
+						if(!oldLog.initialsProperty().get().contains(newLog.initialsProperty().get())){
+							oldLog.initialsProperty().set(newLog.initialsProperty().get());
+						}
+						//description
+						if(!oldLog.descriptionProperty().get().contains(newLog.descriptionProperty().get())){
+							oldLog.descriptionProperty().set(newLog.descriptionProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Log originalLog = PinboardManager.getItem(id);
-                    if (originalLog != null) {
-                        PinboardManager.getList().remove(originalLog);
+                    if (oldLog != null) {
+                        PinboardManager.getList().remove(oldLog);
                     }
                 }
             }
         });
     }
 
-    private  void processType(String id, String operation, List<String[]> result) {
+    private void processType(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
             Platform.runLater(() -> {
-                Type type = TypeManager.newItem(row);
+                Type newType = TypeManager.newItem(row);
+				Type oldType = TypeManager.getItem(id);
                 if (operation.contains("INSERT")) {
-                    Type originalType = TypeManager.getItem(id);
-                    if (originalType == null) {
-                        TypeManager.getList().add(type);
-                    }
+                    if (oldType == null) {
+                        TypeManager.getList().add(newType);
+					}
                 } else if (operation.contains("UPDATE")) {
-                    Type originalType = TypeManager.getItem(id);
-                    if (originalType != null) {
-                        int index = TypeManager.getList().indexOf(originalType);
-                        TypeManager.getList().set(index, type);
+                    if (oldType != null) {
+                        if(!oldType.titleProperty().get().contains(newType.titleProperty().get())){
+							oldType.titleProperty().set(newType.titleProperty().get());
+						}
+						if(!oldType.patternProperty().get().contains(newType.patternProperty().get())){
+							oldType.patternProperty().set(newType.patternProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Type originalType = TypeManager.getItem(id);
-                    if (originalType != null) {
-                        TypeManager.getList().remove(originalType);
+                    if (oldType != null) {
+                        TypeManager.getList().remove(oldType);
                     }
                 }
             });
         }
     }
-
+	
     private  void processTag(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
             Platform.runLater(() -> {
-                Tag tag = TagManager.newItem(row);
+                Tag newTag = TagManager.newItem(row);
+				Tag oldTag = TagManager.getItem(id);
                 if (operation.contains("INSERT")) {
-                    Tag originalTag = TagManager.getItem(id);
-                    if (originalTag == null) {
-                        System.out.println("Notification: Tag does not exist inserting new tag\n");
-                        TagManager.getList().add(tag);
-                    } else {
-                        System.out.println("Notification: Original tag exists doing nothing\n");
+                    if (oldTag == null) {
+                        TagManager.getList().add(newTag);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Tag originalTag = TagManager.getItem(id);
-                    if (originalTag != null) {
-                        System.out.println("Notification: Original tag exists checking for updates");
-                        if(!originalTag.titleProperty().get().contains(tag.titleProperty().get())){
-                            System.out.println("Notification: updating title");
-                            originalTag.titleProperty().set(tag.titleProperty().get());
+                    if (oldTag != null) {
+                        if(!oldTag.titleProperty().get().contains(newTag.titleProperty().get())){
+                            oldTag.titleProperty().set(newTag.titleProperty().get());
                         }
-                        if(originalTag.colorProperty().get() != tag.colorProperty().get()){
-                            System.out.println("Notification: updating color");
-                            originalTag.colorProperty().set(tag.colorProperty().get());
-                        }
-                    } else{
-                        System.out.println("Notification: Tag does not exist doing nothing\n");
+                        if(oldTag.colorProperty().get() != newTag.colorProperty().get()){
+                            oldTag.colorProperty().set(newTag.colorProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Tag originalTag = TagManager.getItem(id);
-                    if (originalTag != null) {
-                        TagManager.getList().remove(originalTag);
+                    if (oldTag != null) {
+                        TagManager.getList().remove(oldTag);
                     }
                 }
             });
         }
     }
-
+	
     private  void processLog(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-
             Platform.runLater(() -> {
-                Log log = LogManager.newItem(row);
+                Log newLog = LogManager.newItem(row);
+				Log oldLog = LogManager.getItem(id);
+
                 if (operation.contains("INSERT")) {
-                    Log originalLog = LogManager.getItem(id);
-                    if (originalLog == null) {
-                        LogManager.getList().add(log);
-                        System.out.println("Notification: processing complete\n");
+                    if (oldLog == null) {
+                        LogManager.getList().add(newLog);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Log originalLog = LogManager.getItem(id);
-                    if (originalLog != null) {
-                        int index = LogManager.getList().indexOf(originalLog);
-                        LogManager.getList().set(index, log);
-                        System.out.println("Notification: processing complete\n");
+                    if (oldLog != null) {
+						//date
+						if(!oldLog.dateProperty().get().equals(newLog.dateProperty().get())){
+							oldLog.dateProperty().set(newLog.dateProperty().get());
+						}
+						//time
+						if(!oldLog.timeProperty().get().equals(newLog.timeProperty().get())){
+							oldLog.timeProperty().set(newLog.timeProperty().get());
+						}
+						//typeid
+						if(!oldLog.typeProperty().get().equals(newLog.typeProperty().get())){
+							oldLog.typeProperty().set(newLog.typeProperty().get());
+						}
+						//tagids
+						if(!oldLog.tagList().containsAll(newLog.tagList())){
+							oldLog.tagList().setAll(newLog.tagList());
+						}
+						//initials
+						if(!oldLog.initialsProperty().get().contains(newLog.initialsProperty().get())){
+							oldLog.initialsProperty().set(newLog.initialsProperty().get());
+						}
+						//description
+						if(!oldLog.descriptionProperty().get().contains(newLog.descriptionProperty().get())){
+							oldLog.descriptionProperty().set(newLog.descriptionProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Log originalLog = LogManager.getItem(id);
-                    if (originalLog != null) {
-                        LogManager.getList().remove(originalLog);
-                        System.out.println("Notification: processing complete\n");
+                    if (oldLog != null) {
+                        LogManager.getList().remove(oldLog);
                     }
                 }
             });
         }
     }
-
+	
     private  void processFormat(String id, String operation, List<String[]> result) {
         for(String [] row : result) {
             Platform.runLater(() -> {
-                Format format = FormatManager.newItem(row);
+				
+                Format newFormat = FormatManager.newItem(row);
+				Format oldFormat = FormatManager.getItem(id);
+				
                 if (operation.contains("INSERT")) {
-                    Format orginalFormat = FormatManager.getItem(id);
-                    if (orginalFormat == null) {
-                        FormatManager.getList().add(format);
+                    if (oldFormat == null) {
+                        FormatManager.getList().add(newFormat);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Format originalFormat = FormatManager.getItem(id);
-                    if (originalFormat != null) {
-                        int index = FormatManager.getList().indexOf(originalFormat);
-                        FormatManager.getList().set(index, format);
+                    if (oldFormat != null) {
+						if(!oldFormat.titleProperty().get().contains(newFormat.titleProperty().get())){
+							oldFormat.titleProperty().set(newFormat.titleProperty().get());
+						}
+						if(!oldFormat.formatProperty().get().contains(newFormat.formatProperty().get())){
+							oldFormat.formatProperty().set(newFormat.formatProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Format originalFormat = FormatManager.getItem(id);
-                    if (originalFormat != null) {
-                        FormatManager.getList().remove(originalFormat);
+
+					if (oldFormat != null) {
+                        FormatManager.getList().remove(oldFormat);
                     }
                 }
+				
             });
         }
     }
-
+	
     private  void processTask( String id, String operation, List<String[]> result) {
         for(String [] row : result) {
-
             Platform.runLater(() -> {
-                Task task = TaskManager.newItem(row);
+				
+                Task newTask = TaskManager.newItem(row);
+				Task oldTask = TaskManager.getItem(id);
+
                 if (operation.contains("INSERT")) {
-                    Task orginalTask = TaskManager.getItem(id);
-                    if (orginalTask == null) {
-                        TaskManager.getList().add(task);
+                    if (oldTask == null) {
+                        TaskManager.getList().add(newTask);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Task orginalTask = TaskManager.getItem(id);
-                    if (orginalTask != null) {
-                        int index = TaskManager.getList().indexOf(orginalTask);
-                        TaskManager.getList().set(index, task);
+                    if (oldTask != null) {
+						//title
+						if(!oldTask.titleProperty().get().contains(newTask.titleProperty().get())){
+							oldTask.titleProperty().set(newTask.titleProperty().get());
+						}
+						//type
+						if(!oldTask.typeProperty().get().equals(newTask.typeProperty().get())){
+							oldTask.typeProperty().set(newTask.typeProperty().get());
+						}
+						//tagids
+						if(!oldTask.tagList().containsAll(newTask.tagList())){
+							oldTask.tagList().setAll(newTask.tagList());
+						}
+						//initials
+						if(!oldTask.initialsProperty().get().contains(newTask.initialsProperty().get())){
+							oldTask.initialsProperty().set(newTask.initialsProperty().get());
+						}
+						//description
+						if(!oldTask.descriptionProperty().get().contains(newTask.descriptionProperty().get())){
+							oldTask.descriptionProperty().set(newTask.descriptionProperty().get());
+						}
                     }
                 } else if (operation.contains("DELETE")) {
-                    Task orginalTask = TaskManager.getItem(id);
-                    if (orginalTask != null) {
-                        TaskManager.getList().remove(orginalTask);
+                    if (oldTask != null) {
+                        TaskManager.getList().remove(oldTask);
                     }
                 }
             });
         }
     }
-
+	
     private  void processChecklist( String id, String operation, List<String[]> result) {
         for(String [] row : result) {
             Platform.runLater(() -> {
-                Checklist checklist = ChecklistManager.newItem(row);
+				
+                Checklist newChecklist = ChecklistManager.newItem(row);
+				Checklist oldChecklist = ChecklistManager.getItem(id);
+
                 if (operation.contains("INSERT")) {
-                    Checklist orignalChecklist = ChecklistManager.getItem(id);
-                    if (orignalChecklist == null) {
-                        ChecklistManager.getList().add(checklist);
+                    if (oldChecklist == null) {
+                        ChecklistManager.getList().add(newChecklist);
                     }
                 } else if (operation.contains("UPDATE")) {
-                    Checklist orignalChecklist = ChecklistManager.getItem(id);
-                    if (orignalChecklist != null) {
-                        int index = ChecklistManager.getList().indexOf(orignalChecklist);
-                        ChecklistManager.getList().set(index, checklist);
+                    if (oldChecklist != null) {
+						
+						//title
+						if(!oldChecklist.titleProperty().get().contains(newChecklist.titleProperty().get())){
+							oldChecklist.titleProperty().set(newChecklist.titleProperty().get());
+						}
+						//tasklist
+						if(!oldChecklist.taskList().containsAll(newChecklist.taskList())){
+							oldChecklist.taskList().setAll(newChecklist.taskList());
+						}
+						//typeid
+						if(!oldChecklist.typeProperty().get().equals(newChecklist.typeProperty().get())){
+							oldChecklist.typeProperty().set(newChecklist.typeProperty().get());
+						}
+						//tagids
+						if(!oldChecklist.tagList().containsAll(newChecklist.tagList())){
+							oldChecklist.tagList().setAll(newChecklist.tagList());
+						}
+						//initials
+						if(!oldChecklist.initialsProperty().get().contains(newChecklist.initialsProperty().get())){
+							oldChecklist.initialsProperty().set(newChecklist.initialsProperty().get());
+						}
+						//description
+						if(!oldChecklist.descriptionProperty().get().contains(newChecklist.descriptionProperty().get())){
+							oldChecklist.descriptionProperty().set(newChecklist.descriptionProperty().get());
+						}
+						
                     }
                 } else if (operation.contains("DELETE")) {
-                    Checklist orignalChecklist = ChecklistManager.getItem(id);
-                    if (orignalChecklist != null) {
-                        ChecklistManager.getList().remove(orignalChecklist);
+                    if (oldChecklist != null) {
+                        ChecklistManager.getList().remove(oldChecklist);
                     }
                 }
             });
@@ -357,7 +435,7 @@ public class Notification {
                     }else {
                         // if not create the new list 
                         ObservableList<ScheduledTask> taskList = FXCollections.observableArrayList();
-                        taskList.add(scheduledTask);
+						taskList.add(scheduledTask);
                         ScheduledTaskManager.addTaskList(scheduledTask.getTaskAssociationId(),taskList);
                     }
                 } else if (operation.contains("UPDATE")) {

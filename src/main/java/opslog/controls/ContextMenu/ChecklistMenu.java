@@ -30,6 +30,9 @@ public class ChecklistMenu extends ContextMenu {
             }
         });
 
-        getItems().addAll(deleteAll, delete);
+        getItems().addAll(
+			deleteAll,
+			delete
+		);
     }
 }

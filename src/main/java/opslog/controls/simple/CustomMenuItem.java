@@ -11,7 +11,7 @@ public class CustomMenuItem extends MenuItem{
 
     public CustomMenuItem(String title){
 		Label label = new Label(title);
-		label.fontProperty().bind(Settings.fontProperty);
+		label.fontProperty().bind(Settings.fontCalendarSmall);
 		label.textFillProperty().bind(Settings.textColor);
 		setGraphic(label);
 
@@ -49,10 +49,10 @@ public class CustomMenuItem extends MenuItem{
 		label.fontProperty().unbind();
 		label.textFillProperty().unbind();
 		if (nv) {
-			label.setFont(Settings.fontProperty.get());
+			label.setFont(Settings.fontCalendarSmall.get());
 			label.setTextFill(Settings.promptTextColor.get());
 		} else {
-			label.fontProperty().bind(Settings.fontProperty);
+			label.fontProperty().bind(Settings.fontCalendarSmall);
 			label.textFillProperty().bind(Settings.textColor);
 		}
 	}
@@ -61,11 +61,11 @@ public class CustomMenuItem extends MenuItem{
 		label.fontProperty().unbind();
 		label.textFillProperty().unbind();
 		if (nv) {
-			label.setFont(Settings.fontProperty.get());
+			label.setFont(Settings.fontCalendarSmall.get());
 			label.setTextFill(Settings.promptTextColor.get());
 			label.setGraphic(actionImage);
 		} else {
-			label.fontProperty().bind(Settings.fontProperty);
+			label.fontProperty().bind(Settings.fontCalendarSmall);
 			label.textFillProperty().bind(Settings.textColor);
 			label.setGraphic(standardImage);
 		}

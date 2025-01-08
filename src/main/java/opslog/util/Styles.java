@@ -69,11 +69,11 @@ public class Styles {
     }
 
     public static String contextMenu(){
-        return "-fx-background-color:" + primary + " ;" +
+        return  "-fx-background-color:" + primary + " ;" +
                 "-fx-background-radius:" + Settings.CORNER_RADII_BG_VALUE + " ;"+
                 "-fx-text-fill: " + textColor + ";" +
                 "-fx-font-family: " + Settings.textFont.get() + ";" +
-                "-fx-font-size: " + Settings.textSize.get() + ";" +
+                "-fx-font-size: " + Settings.textSizeSmall.get() + ";" +
                 "-fx-border-color:" + secondary + " ;"+
                 "-fx-border-width:" + Settings.BORDER_WIDTH_VALUE + " ;"+
                 "-fx-border-radius:"  + Settings.CORNER_RADII_VALUE + " ;"+
@@ -85,7 +85,7 @@ public class Styles {
                 "-fx-border-color: transparent ;"+
                 "-fx-text-fill: " + textColor + ";" +
                 "-fx-font-family: " + Settings.textFont.get() + ";" +
-                "-fx-font-size: " + Settings.textSize.get() + ";";
+                "-fx-font-size: " + Settings.textSizeSmall.get() + ";";
     }
 
     public static String menuItemHover(){

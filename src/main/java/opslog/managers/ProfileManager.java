@@ -7,6 +7,7 @@ import opslog.object.Profile;
 import opslog.sql.hikari.Connection;
 import opslog.sql.References;
 import opslog.sql.QueryBuilder;
+import opslog.util.Settings;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -30,6 +31,7 @@ public class ProfileManager {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
+		defaultProfile();
     }
 
     public static Profile newItem(String[] row) {
@@ -59,4 +61,17 @@ public class ProfileManager {
     public static ObservableList<Profile> getList() {
         return profileList;
     }
+
+	public static void defaultProfile(){
+		Profile profile = new Profile();
+		profile.titleProperty().set("Default");
+		profile.rootProperty().set(Settings.rootColor.get());
+		profile.primaryProperty().set(Settings.primaryColor.get());
+		profile.secondaryProperty().set(Settings.secondaryColor.get());
+		profile.borderProperty().set(Settings.focusColor.get());
+		profile.textColorProperty().set(Settings.textColor.get());
+		profile.textSizeProperty().set(Settings.textSize.get());
+		profile.textFontProperty().set(Settings.textFont.get());
+		getList().add(profile);
+	}
 }

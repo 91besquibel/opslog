@@ -62,7 +62,7 @@ public class References {
 
     public static String [] threadNames(){
         return new String[]{
-                "log_changes",
+                LOG_TABLE,
                 PINBOARD_TABLE,
                 CHECKLIST_TABLE,
                 SCHEDULED_TASK_TABLE,

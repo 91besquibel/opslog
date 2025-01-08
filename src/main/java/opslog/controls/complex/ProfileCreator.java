@@ -128,6 +128,15 @@ public class ProfileCreator extends VBox {
                 profileBtn
         );
 
+		// Set Default values
+		TITLE_FIELD.textProperty().set("Default");
+		ROOT_PICKER.valueProperty().set(Settings.rootColor.get());
+		PRIMARY_PICKER.valueProperty().set(Settings.primaryColor.get());
+		SECONDARY_PICKER.valueProperty().set(Settings.secondaryColor.get());
+		FOCUS_PICKER.valueProperty().set(Settings.focusColor.get());
+		TEXT_COLOR_PICKER.valueProperty().set(Settings.textColor.get());
+		TEXT_SIZE_PICKER.valueProperty().set(Settings.textSize.get());
+		TEXT_FONT_PICKER.valueProperty().set(Settings.textFont.get());
     }
 
     private void handleAdd(){

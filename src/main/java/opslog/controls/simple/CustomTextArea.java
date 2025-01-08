@@ -11,6 +11,7 @@ public class CustomTextArea extends TextArea {
         setPrefWidth(width);
         setPrefHeight(height);
         setWrapText(true);
+		setPadding(Settings.INSETS_ZERO);
         setFocusTraversable(true);
         fontProperty().bind(Settings.fontProperty);
         backgroundProperty().bind(Settings.secondaryBackground);

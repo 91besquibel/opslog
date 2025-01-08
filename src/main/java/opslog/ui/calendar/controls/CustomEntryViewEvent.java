@@ -33,6 +33,7 @@ import opslog.managers.FormatManager;
 import opslog.managers.TagManager;
 import opslog.managers.TypeManager;
 import opslog.util.Settings;
+import opslog.util.Styles;
 
 public class CustomEntryViewEvent extends EntryPopOverPane {
 
@@ -130,30 +131,40 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         startDatePicker.setValue(entry.getStartDate());
         endDatePicker.setValue(entry.getEndDate());
 
-        recurrenceButton = new MenuButton(Messages.getString("EntryDetailsView.MENU_BUTTON_NONE"));
         MenuItem none = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_NONE"));
         MenuItem everyDay = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_EVERY_DAY"));
         MenuItem everyWeek = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_EVERY_WEEK"));
         MenuItem everyMonth = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_EVERY_MONTH"));
         MenuItem everyYear = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_EVERY_YEAR"));
         MenuItem custom = new MenuItem(Messages.getString("EntryDetailsView.MENU_ITEM_CUSTOM"));
+		
         none.setOnAction(evt -> updateRecurrenceRule(entry, null));
         everyDay.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=DAILY"));
         everyWeek.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=WEEKLY"));
         everyMonth.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=MONTHLY"));
         everyYear.setOnAction(evt -> updateRecurrenceRule(entry, "RRULE:FREQ=YEARLY"));
         custom.setOnAction(evt -> showRecurrenceEditor(entry));
-        recurrenceButton.getItems().setAll(
-            none, 
-            everyDay, 
-            everyWeek, 
-            everyMonth, 
-            everyYear, 
-            new SeparatorMenuItem(), 
-            custom
-        );
-        recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
+		recurrenceButton = new MenuButton(Messages.getString("EntryDetailsView.MENU_BUTTON_NONE"));
+		recurrenceButton.contextMenuProperty().addListener((obs,ov,nv)->{
+			System.out.println("setting context menu");
+			nv.setStyle(Styles.contextMenu());
+		});
+		recurrenceButton.getItems().setAll(
+			none, 
+			everyDay, 
+			everyWeek, 
+			everyMonth, 
+			everyYear, 
+			new SeparatorMenuItem(), 
+			custom
+		);
+		
+        recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
+		recurrenceButton.backgroundProperty().bind(Settings.secondaryBackground);
+		recurrenceButton.fontProperty().bind(Settings.fontCalendarExtraSmall);
+		recurrenceButton.textFillProperty().bind(Settings.textColor);
+		recurrenceButton.borderProperty().bind(Settings.secondaryBorder);
         
         VBox vbox = new VBox();
         EntryHeaderView headerView = new EntryHeaderView(entry, dateControl.getCalendars());

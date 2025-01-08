@@ -13,8 +13,8 @@ CREATE TABLE log_table (
 CREATE OR REPLACE FUNCTION notify_log_table_change()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Send a notification to the 'log_changes' channel
-    PERFORM pg_notify('log_changes', TG_OP || ' on log_table id: ' || NEW.id::text);
+    -- Send a notification to the 'log_table' channel
+    PERFORM pg_notify('log_table', TG_OP || ' on log_table id: ' || NEW.id::text);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -22,6 +22,11 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER log_table_changes
 AFTER INSERT OR UPDATE OR DELETE ON log_table
 FOR EACH ROW EXECUTE FUNCTION notify_log_table_change();
+
+CREATE INDEX idx_log_date ON log_table(date);
+CREATE INDEX idx_log_typeID ON log_table(typeID);
+CREATE INDEX idx_log_initials ON log_table(initials);
+CREATE INDEX idx_log_description ON log_table(description);
 
 -- Create pinboard table
 CREATE TABLE pinboard_table (
@@ -156,6 +161,12 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER scheduled_event_table_changes
 AFTER INSERT OR UPDATE OR DELETE ON scheduled_event_table
 FOR EACH ROW EXECUTE FUNCTION notify_scheduled_event_table_change();
+
+CREATE INDEX idx_calendar_start_date ON scheduled_event_table(start_date);
+CREATE INDEX idx_calendar_stop_date ON scheduled_event_table(stop_date);
+CREATE INDEX idx_calendar_typeID ON scheduled_event_table(typeID);
+CREATE INDEX idx_calendar_initials ON scheduled_event_table(initials);
+CREATE INDEX idx_calendar_description ON scheduled_event_table(description);
 
 -- create format_table
 CREATE TABLE format_table (

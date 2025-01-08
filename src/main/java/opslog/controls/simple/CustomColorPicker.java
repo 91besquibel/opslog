@@ -9,6 +9,7 @@ import opslog.util.Styles;
 public class CustomColorPicker extends ColorPicker {
 
     public CustomColorPicker(double width, double height) {
+		super();
         setPrefWidth(width);
         setPrefHeight(height);
         setMinHeight(height);

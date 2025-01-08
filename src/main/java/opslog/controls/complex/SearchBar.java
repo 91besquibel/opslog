@@ -115,20 +115,24 @@ public class SearchBar extends HBox {
 
 	private void handleQuery() {
 		if (!filterMenu.getLog().isSelected() && !filterMenu.getCalendar().isSelected()) {
+			System.out.println("SearchBar: Begining log search");
 			Search search1 = new Search(Connection.getInstance());
 			prepQuery(search1);
 			display(search1.logQuery());
 
+			System.out.println("SearchBar: Begining calendar search");
 			Search search2 = new Search(Connection.getInstance());
 			prepQuery(search2);
 			display(search2.calendarQuery());
 		} else {
 			if (filterMenu.getLog().isSelected()) {
+				System.out.println("SearchBar: Begining log search");
 				Search search = new Search(Connection.getInstance());
 				prepQuery(search);
 				display(search.logQuery());
 			}
 			if (filterMenu.getCalendar().isSelected()) {
+				System.out.println("SearchBar: Begining calendar search");
 				Search search = new Search(Connection.getInstance());
 				prepQuery(search);
 				display(search.calendarQuery());
@@ -137,11 +141,9 @@ public class SearchBar extends HBox {
 	}
 
 	private void prepQuery(Search search){
-		ObservableList<Tag> tags = filterMenu.getTagList();
-		ObservableList<Type> types = filterMenu.getTypeList();
-		search.dateList().setAll(dates);
-		search.tagList().setAll(tags);
-		search.typeList().setAll(types);
+		search.dateList().setAll(filterMenu.getDateList());
+		search.tagList().setAll(filterMenu.getTagList());
+		search.typeList().setAll(filterMenu.getTypeList());
 		search.keywordProperty().set(textField.getText());
 	}
 

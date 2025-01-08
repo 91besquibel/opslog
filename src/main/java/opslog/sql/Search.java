@@ -30,6 +30,7 @@ public class Search {
     private final ObservableList<Type> typeList = FXCollections.observableArrayList();
     private final StringProperty keywordProperty = new SimpleStringProperty();
     private final StringBuilder searchQuery = new StringBuilder("SELECT * FROM ");
+	private final StringProperty tableName = new SimpleStringProperty();
 
     public Search(ConnectionManager connectionProvider){
         this.connectionProvider = connectionProvider;
@@ -51,10 +52,9 @@ public class Search {
         return keywordProperty;
     }
 
-
-
     public List<ScheduledEntry> calendarQuery(){
         searchQuery.append(References.SCHEDULED_EVENT_TABLE);
+		tableName.set(References.SCHEDULED_EVENT_TABLE);
         buildQuery();
         List<ScheduledEntry> list = new ArrayList<>();
         for(String[] row : results){
@@ -67,6 +67,7 @@ public class Search {
     public List<Log> logQuery(){
         // add the table name
         searchQuery.append(References.LOG_TABLE);
+		tableName.set(References.LOG_TABLE);
         buildQuery();
         List<Log> list = new ArrayList<>();
         for(String[] row : results){
@@ -88,6 +89,8 @@ public class Search {
                 tagQuery();
                 executeQuery();
                 dateProperty.set(null);
+				int j = searchQuery.capacity();
+				searchQuery.replace(0,j-1,"SELECT * FROM " + tableName.get());
             }
         } else {
             keywordQuery();
@@ -98,9 +101,17 @@ public class Search {
     }
 
     private void dateQuery(){
-        String equalClause = equalClause(References.DATE_COLUMN_TITLE, "?");
-        String whereQuery = where(equalClause);
-        searchQuery.append(whereQuery);
+		if(tableName.get().contains(References.LOG_TABLE)){
+        	String equalClause = equalClause(References.DATE_COLUMN_TITLE, "?");
+			String whereQuery = where(equalClause);
+			searchQuery.append(whereQuery);
+		}
+		if(tableName.get().contains(References.SCHEDULED_EVENT_TABLE)){
+			String equalClause = equalClause(References.START_DATE_COLUMN_TITLE, "?");
+			String whereQuery = where(equalClause);
+			searchQuery.append(whereQuery);
+		}
+        
     }
 
     private void keywordQuery(){
@@ -216,9 +227,9 @@ public class Search {
     }
 
     private void executeQuery(){
-        System.out.println("SearchQuery: " + searchQuery);
         try(Connection connection = connectionProvider.getConnection();
             PreparedStatement statement = connection.prepareStatement(searchQuery.toString())) {
+			System.out.println("Search: " + statement);
             // replace the ? for dates and keywords using prepared statements
             if(dateProperty.get() != null){
                 Date date = Date.valueOf(dateProperty.get());
@@ -237,13 +248,15 @@ public class Search {
                     }
                 }
             }
-
+			
+			System.out.println("Search: " + statement);
             try (ResultSet resultSet = statement.executeQuery()) {
                 processResultSet(resultSet, results);
             } catch (Exception e) {
                 System.out.println("SearchQuery: Query failed to return results");
                 throw new RuntimeException(e);
             }
+			
         } catch (SQLException e){
             System.out.println("SearchQuery: Failed to connect to database");
             throw new RuntimeException(e);
@@ -262,6 +275,5 @@ public class Search {
             results.add(row);
         }
     }
-
-
+	
 }

@@ -45,6 +45,7 @@ public class CustomButton extends Button {
     }
 
 	public CustomButton(String title){
+		setText(title);
 		setPrefSize(75, Settings.SINGLE_LINE_HEIGHT);
 		setPadding(Settings.INSETS);
 		setAlignment(Pos.CENTER);

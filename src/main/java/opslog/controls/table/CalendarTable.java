@@ -7,7 +7,8 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.*;
-import javafx.scene.text.Text;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import opslog.controls.ContextMenu.TableMenu;
 import opslog.object.ScheduledEntry;
@@ -19,7 +20,10 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 
 	public CalendarTable(){
 		getColumns().add(titleColumn());
-		getColumns().add(intervalColumn());
+		getColumns().add(startDate());
+		getColumns().add(startTime());
+		getColumns().add(stopDate());
+		getColumns().add(stopTime());
 		getColumns().add(typeColumn());
 		getColumns().add(tagColumn());
 		getColumns().add(initialsColumn());
@@ -40,19 +44,19 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		heightProperty().addListener((ob, ov, nv) -> refresh());
 
 		getSelectionModel().selectedItemProperty().addListener(
-				(ob, ov, nv) -> {
-					if (nv != null) {
-						refresh();
-					}
+			(ob, ov, nv) -> {
+				if (nv != null) {
+					refresh();
 				}
+			}
 		);
 
 		getFocusModel().focusedItemProperty().addListener(
-				(ob, ov, nv) -> {
-					if (nv != null) {
-						refresh();
-					}
+			(ob, ov, nv) -> {
+				if (nv != null) {
+					refresh();
 				}
+			}
 		);
 	}
 
@@ -69,10 +73,38 @@ public class CalendarTable extends TableView<ScheduledEntry>{
 		return column;
 	}
 
-	private TableColumn<ScheduledEntry, Interval> intervalColumn() {
-		TableColumn<ScheduledEntry, Interval> column = new TableColumn<>();
-		column.setCellValueFactory(cellData -> cellData.getValue().intervalProperty());
-		column.setGraphic(Util.createHeader("Interval"));
+	private TableColumn<ScheduledEntry, LocalDate> startDate() {
+		TableColumn<ScheduledEntry, LocalDate> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> new SimpleObjectProperty<LocalDate>(
+			cellData.getValue().startDateProperty().get()
+		));
+		column.setGraphic(Util.createHeader("Start"));
+		column.setCellFactory(Util::createCell);
+		return column;
+	}
+	private TableColumn<ScheduledEntry, LocalTime> startTime() {
+		TableColumn<ScheduledEntry, LocalTime> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> new SimpleObjectProperty<LocalTime>(
+			cellData.getValue().startTimeProperty().get()
+		));
+		column.setCellFactory(Util::createCell);
+		return column;
+	}
+
+	private TableColumn<ScheduledEntry, LocalDate> stopDate() {
+		TableColumn<ScheduledEntry, LocalDate> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> new SimpleObjectProperty<LocalDate>(
+			cellData.getValue().endDateProperty().get()
+		));
+		column.setGraphic(Util.createHeader("Stop"));
+		column.setCellFactory(Util::createCell);
+		return column;
+	}
+	private TableColumn<ScheduledEntry, LocalTime> stopTime() {
+		TableColumn<ScheduledEntry, LocalTime> column = new TableColumn<>();
+		column.setCellValueFactory(cellData -> new SimpleObjectProperty<LocalTime>(
+			cellData.getValue().endTimeProperty().get()
+		));
 		column.setCellFactory(Util::createCell);
 		return column;
 	}

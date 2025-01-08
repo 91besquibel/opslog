@@ -13,6 +13,7 @@ import opslog.ui.settings.SettingsView;
 import opslog.ui.window.WindowPane;
 import opslog.util.Directory;
 import opslog.util.Styles;
+import javafx.scene.control.SeparatorMenuItem;
 
 public class MainMenu extends ContextMenu{
 
@@ -58,8 +59,11 @@ public class MainMenu extends ContextMenu{
 
 		getItems().addAll(
 				logItem,
+				new SeparatorMenuItem(),
 				calendarItem,
+				new SeparatorMenuItem(),
 				checklistItem,
+				new SeparatorMenuItem(),
 				settingsItem
 		);
 	}
