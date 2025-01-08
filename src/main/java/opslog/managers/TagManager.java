@@ -9,6 +9,7 @@ import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 
 import java.util.List;
+import java.util.UUID;
 
 import java.sql.SQLException;
 
@@ -64,4 +65,13 @@ public class TagManager {
     public static ObservableList<Tag> getList() {
         return list;
     }
+
+	public static Tag getChecklistTag(){
+		UUID uuid = UUID.randomUUID();
+		Tag tag = new Tag();
+		tag.setID(uuid.toString());
+		tag.titleProperty().set("Scheduled Task");
+		tag.colorProperty().set(Color.web());
+		return tag;
+	}
 }
