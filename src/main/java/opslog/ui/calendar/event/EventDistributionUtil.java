@@ -5,7 +5,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import opslog.object.ScheduledEntry;
+import opslog.object.ScheduledTask;
+import opslog.object.event.Log;
+import opslog.managers.LogManager;
 import opslog.managers.ScheduledEntryManager;
+import opslog.managers.TagManager;
 import opslog.sql.References;
 import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.*;
@@ -30,8 +34,6 @@ public class EventDistributionUtil{
 		return currentMonth == start.getMonthValue() && currentMonth == stop.getMonthValue();
 	}
 
-	// DB query execute for calendar view processor
-	// located here instead of manager for multi-threading 
 	public void handleScheduledEntry(LocalDate startDate, LocalDate stopDate) {
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
@@ -57,5 +59,33 @@ public class EventDistributionUtil{
 			System.err.println("Unexpected Exception in handleScheduledEntry: " + e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	public void handleScheduledTaskLog(Log log){
+		if(log.hasValue()){
+			try {
+				QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
+				String id = queryBuilder.insert(References.LOG_TABLE, References.LOG_COLUMN, log.toArray());
+				if (!id.trim().isEmpty()) {
+					log.setID(id);
+					LogManager.getList().add(log);
+				}
+			} catch (SQLException ex){
+				System.out.println("EventUI: Failed to insert log into database \n");
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	public Log createLog(ScheduledTask scheduledTask){
+		Log log = new Log();
+		log.dateProperty().set(LocalDate.now());
+		log.timeProperty().set(LocalTime.now());
+		log.typeProperty().set(scheduledTask.getType());
+		log.tagList().setAll(scheduledTask.tagList());
+		log.tagList().add(0, TagManager.getChecklistTag());
+		log.initialsProperty().set(scheduledTask.getInitials());
+		log.descriptionProperty().set(scheduledTask.getDescription());
+		return log;
 	}
 }

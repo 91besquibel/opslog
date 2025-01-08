@@ -1,7 +1,6 @@
 package opslog.ui.calendar.event;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,11 +12,8 @@ import opslog.sql.QueryBuilder;
 import opslog.sql.hikari.Connection;
 import com.calendarfx.model.LoadEvent;
 import opslog.managers.ScheduledTaskManager;
-import opslog.managers.TagManager;
 import opslog.object.ScheduledEntry;
 import opslog.object.ScheduledTask;
-import opslog.object.Type;
-import opslog.object.event.Log;
 import opslog.managers.ScheduledEntryManager;
 
 public class EventDistribution {
@@ -154,15 +150,4 @@ public class EventDistribution {
 		}
 	}
 
-	public static void createLog(ScheduledTask scheduledTask){
-		Log log = new Log();
-		log.dateProperty().set(LocalDate.now());
-		log.timeProperty().set(LocalTime.now());
-		log.typeProperty().set(scheduledTask.getType());
-		log.tagList().setAll(scheduledTask.tagList());
-		log.tagList().add(0, TagManager.getChecklistTag());
-		log.initialsProperty().set(scheduledTask.getInitials());
-		log.descriptionProperty().set(scheduledTask.getDescription());
-		
-	}
 }

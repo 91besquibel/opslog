@@ -27,6 +27,7 @@ public class TagManager {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
+		list.add(getChecklistTag());
     }
 
     public static Tag newItem(String [] row){
@@ -71,7 +72,7 @@ public class TagManager {
 		Tag tag = new Tag();
 		tag.setID(uuid.toString());
 		tag.titleProperty().set("Scheduled Task");
-		tag.colorProperty().set(Color.web());
+		tag.colorProperty().set(Color.web("#DAA520"));
 		return tag;
 	}
 }
