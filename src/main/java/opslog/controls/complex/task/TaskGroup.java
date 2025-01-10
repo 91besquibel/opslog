@@ -29,16 +29,16 @@ public class TaskGroup extends VBox{
     public static final TaskCreator TASK_CREATOR = new TaskCreator();
     public static final TaskSelector TASK_SELECTOR = new TaskSelector();
     public static final CustomButton SWAP = new CustomButton(
-            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Swap"
+            Directory.SWAP_WHITE, Directory.SWAP_GREY
     );
     public static final CustomButton ADD = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add"
+            Directory.ADD_WHITE, Directory.ADD_GREY
     );
     public static final CustomButton REMOVE = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete"
+            Directory.DELETE_WHITE, Directory.DELETE_GREY
     );
     public static final CustomButton UPDATE = new CustomButton(
-            Directory.EDIT_WHITE, Directory.EDIT_GREY,"Edit"
+            Directory.EDIT_WHITE, Directory.EDIT_GREY
     );
 
     public TaskGroup() {
@@ -80,7 +80,7 @@ public class TaskGroup extends VBox{
                 stackPane,
                 buttons
         );
-        backgroundProperty().bind(Settings.primaryBackground);
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
         setPadding(Settings.INSETS);
     }
 

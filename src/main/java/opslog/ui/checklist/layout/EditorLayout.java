@@ -17,7 +17,7 @@ import opslog.util.Settings;
 public class EditorLayout extends VBox {
 
         public static final CustomButton swapView = new CustomButton(
-            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Status Page"
+            Directory.SWAP_WHITE, Directory.SWAP_GREY
         );
         public static final TaskGroup taskGroup = new TaskGroup();
         public static final ChecklistGroup checklistGroup = new ChecklistGroup();
@@ -47,7 +47,7 @@ public class EditorLayout extends VBox {
                         hbox,
                         taskTreeView
                 );
-                vbox.backgroundProperty().bind(Settings.primaryBackground);
+                vbox.backgroundProperty().bind(Settings.primaryBackgroundProperty);
                     
                 SplitPane controls = new SplitPane();
                 controls.getItems().addAll(
@@ -57,7 +57,7 @@ public class EditorLayout extends VBox {
                 controls.setOrientation(Orientation.VERTICAL);
                 controls.setDividerPositions(0.50f);
                 controls.setMaxWidth(300);
-                controls.backgroundProperty().bind(Settings.rootBackground);
+                controls.backgroundProperty().bind(Settings.rootBackgroundProperty);
                 
         
                 SplitPane splitPane = new SplitPane();
@@ -66,9 +66,9 @@ public class EditorLayout extends VBox {
                         controls
                 );
                 splitPane.setDividerPositions(0.80f, 0.20f);
-                splitPane.backgroundProperty().bind(Settings.rootBackground);
+                splitPane.backgroundProperty().bind(Settings.rootBackgroundProperty);
                 VBox.setVgrow(splitPane,Priority.ALWAYS);
                 getChildren().add(splitPane);
-                backgroundProperty().bind(Settings.rootBackground);
+                backgroundProperty().bind(Settings.rootBackgroundProperty);
         }
 }

@@ -34,11 +34,12 @@ public class WindowPane {
     private final ObjectProperty<AnchorPane> viewAreaProperty = new SimpleObjectProperty<>();
     private final Button exitButton;
     private SearchBar searchBar;
+
+
 	
     private final CustomButton menuButton = new CustomButton(
             Directory.MENU_WHITE,
-            Directory.MENU_GREY,
-            "Menu"
+            Directory.MENU_GREY
     );
 
     // Constructor: Accepts a Stage and MenuBar for flexible window customization
@@ -62,10 +63,6 @@ public class WindowPane {
 		});
 		createUI();
 	}
-
-    public SearchBar getSearchBar(){
-        return searchBar;
-    }
 
     public CustomButton getMenuButton(){
         return menuButton;
@@ -168,7 +165,7 @@ public class WindowPane {
 		hbox.backgroundProperty().bind(Settings.windowBarBackground);
 		hbox.setAlignment(Pos.CENTER);
 		hbox.setSpacing(Settings.SPACING);
-		hbox.setPadding(Settings.INSETS_WB);
+		hbox.setPadding(new Insets(0.0, 10.0, 0.0, 10.0));
 
         return hbox;
     }

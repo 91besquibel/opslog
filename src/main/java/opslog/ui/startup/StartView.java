@@ -8,7 +8,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import opslog.sql.QueryBuilder;
-import opslog.ui.CustomPopup;
 import opslog.ui.window.WindowPane;
 import opslog.controls.simple.CustomComboBox;
 import opslog.controls.simple.CustomTextField;
@@ -99,7 +98,7 @@ public class StartView {
         );
         root.setSpacing(Settings.SPACING);
         root.setPadding(Settings.INSETS);
-        root.backgroundProperty().bind(Settings.primaryBackground);
+        root.backgroundProperty().bind(Settings.primaryBackgroundProperty);
         return root;
     }
 

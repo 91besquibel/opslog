@@ -12,8 +12,8 @@ public class CustomLabel extends Label {
         setPrefHeight(height);
         setAlignment(Pos.CENTER);
         setFocusTraversable(false);
-        fontProperty().bind(Settings.fontPropertyBold);
-        textFillProperty().bind(Settings.textColor);
+        fontProperty().bind(Settings.fontBoldProperty);
+        textFillProperty().bind(Settings.textFillProperty);
     }
 
 }

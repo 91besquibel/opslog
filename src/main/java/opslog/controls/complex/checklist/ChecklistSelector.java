@@ -3,7 +3,7 @@ package opslog.controls.complex.checklist;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import opslog.controls.table.CustomListView;
+import opslog.controls.simple.CustomListView;
 import opslog.managers.ChecklistManager;
 import opslog.object.event.Checklist;
 import opslog.util.Settings;

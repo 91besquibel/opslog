@@ -16,8 +16,8 @@ public class Icon {
         return new ImageView(
 			new Image(
 				imageStream,
-				Settings.buttonSize.get(),
-				Settings.buttonSize.get(),
+				Settings.BUTTON_SIZE,
+				Settings.BUTTON_SIZE,
 				true, 
 				true
 			)

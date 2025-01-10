@@ -65,13 +65,13 @@ public class ProfileManager {
 	public static void defaultProfile(){
 		Profile profile = new Profile();
 		profile.titleProperty().set("Default");
-		profile.rootProperty().set(Settings.rootColor.get());
-		profile.primaryProperty().set(Settings.primaryColor.get());
-		profile.secondaryProperty().set(Settings.secondaryColor.get());
-		profile.borderProperty().set(Settings.focusColor.get());
-		profile.textColorProperty().set(Settings.textColor.get());
+		profile.rootProperty().set(Settings.rootColorProperty.get());
+		profile.primaryProperty().set(Settings.primaryColorProperty.get());
+		profile.secondaryProperty().set(Settings.secondaryColorProperty.get());
+		profile.borderProperty().set(Settings.focusColorProperty.get());
+		profile.textColorProperty().set(Settings.textFillProperty.get());
 		profile.textSizeProperty().set(Settings.textSize.get());
-		profile.textFontProperty().set(Settings.textFont.get());
+		profile.textFontProperty().set(Settings.FONT);
 		getList().add(profile);
 	}
 }

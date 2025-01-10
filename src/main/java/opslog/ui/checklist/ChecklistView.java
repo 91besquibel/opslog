@@ -26,11 +26,11 @@ public class ChecklistView extends VBox {
                 EDITOR_LAYOUT,
                 STATUS_LAYOUT
         );
-        stackPane.backgroundProperty().bind(Settings.rootBackground);
+        stackPane.backgroundProperty().bind(Settings.rootBackgroundProperty);
         stackPane.maxWidthProperty().bind(this.widthProperty());
         
         VBox vbox = new VBox(stackPane);
-        vbox.backgroundProperty().bind(Settings.primaryBackground);
+        vbox.backgroundProperty().bind(Settings.primaryBackgroundProperty);
         VBox.setVgrow(vbox, Priority.ALWAYS);
         vbox.maxWidthProperty().bind(this.widthProperty());
         getChildren().add(vbox);

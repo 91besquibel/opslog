@@ -145,7 +145,7 @@ public class TableMenu extends ContextMenu {
         MenuItem exportItem = new MenuItem("Export");
         exportItem.setOnAction(e -> {
 
-            Stage stage = (Stage) getScene().getWindow();
+            Stage stage = App.getStage();
 
             if (tableView instanceof CalendarTable calendarTable) {
                 ObservableList<ScheduledEntry> selectedItems = calendarTable.getSelectionModel().getSelectedItems();

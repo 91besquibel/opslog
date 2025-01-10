@@ -7,7 +7,7 @@ import javafx.scene.layout.VBox;
 import opslog.controls.button.CustomButton;
 import opslog.controls.simple.CustomLabel;
 import opslog.controls.simple.CustomTextField;
-import opslog.controls.table.CustomListView;
+import opslog.controls.simple.CustomListView;
 import opslog.managers.FormatManager;
 import opslog.object.Format;
 import opslog.sql.QueryBuilder;
@@ -20,52 +20,45 @@ import java.sql.SQLException;
 
 public class FormatCreator extends VBox {
 
-    public static final CustomLabel formatLabel = new CustomLabel(
-            "Format Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
+    public final CustomListView<Format> listView = new CustomListView<>(
+            FormatManager.getList(), 200, 250, SelectionMode.SINGLE
     );
-    public static final CustomListView<Format> listView = new CustomListView<>(
-            FormatManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE
+    public final CustomTextField titleTextField = new CustomTextField(
+            "Title", 200, Settings.SINGLE_LINE_HEIGHT
     );
-    public static final CustomTextField titleTextField = new CustomTextField(
-            "Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomTextField descriptionTextField = new CustomTextField(
-            "Format", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomButton add = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add"
-    );
-    public static final CustomButton edit = new CustomButton(
-            Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit"
-    );
-    public static final CustomButton delete = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete"
+    public final CustomTextField descriptionTextField = new CustomTextField(
+            "Format", 200, Settings.SINGLE_LINE_HEIGHT
     );
 
     public FormatCreator(){
         super();
-        backgroundProperty().bind(Settings.primaryBackground);
-        setSpacing(Settings.SPACING);
-        setAlignment(Pos.CENTER);
-        listView.setMaxWidth(Settings.WIDTH_LARGE);
-        setPadding(Settings.INSETS);
-        HBox buttons = new HBox();
-        buttons.getChildren().addAll(add,edit,delete);
-        buttons.setAlignment(Pos.BASELINE_RIGHT);
 
-        getChildren().addAll(
-            formatLabel,
-            listView,
-            titleTextField,
-            descriptionTextField,
-            buttons
+        CustomLabel formatLabel = new CustomLabel(
+                "Format Presets", 200, Settings.SINGLE_LINE_HEIGHT
         );
+
+        CustomButton add = new CustomButton(
+                Directory.ADD_WHITE,
+                Directory.ADD_GREY
+        );
+
+        CustomButton edit = new CustomButton(
+                Directory.EDIT_WHITE,
+                Directory.EDIT_GREY
+        );
+
+        CustomButton delete = new CustomButton(
+                Directory.DELETE_WHITE,
+                Directory.DELETE_GREY
+        );
+
+
 
         add.setOnAction(event -> {
             try{
                 Format format = new Format();
-                format.titleProperty().set(FormatCreator.titleTextField.getText());
-                format.formatProperty().set(FormatCreator.descriptionTextField.getText());
+                format.titleProperty().set(titleTextField.getText());
+                format.formatProperty().set(descriptionTextField.getText());
                 QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
                 String id = queryBuilder.insert( References.FORMAT_TABLE, References.FORMAT_COLUMN, format.toArray());
                 format.setID(id);
@@ -117,5 +110,22 @@ public class FormatCreator extends VBox {
                 descriptionTextField.setText(nv.formatProperty().get());
             }
         });
+
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
+        setSpacing(Settings.SPACING);
+        setAlignment(Pos.CENTER);
+        listView.setMaxWidth(Settings.WIDTH_LARGE);
+        setPadding(Settings.INSETS);
+        HBox buttons = new HBox();
+        buttons.getChildren().addAll(add,edit,delete);
+        buttons.setAlignment(Pos.BASELINE_RIGHT);
+
+        getChildren().addAll(
+                formatLabel,
+                listView,
+                titleTextField,
+                descriptionTextField,
+                buttons
+        );
     }
 }

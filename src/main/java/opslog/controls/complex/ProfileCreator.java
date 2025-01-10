@@ -16,7 +16,6 @@ import opslog.sql.References;
 import opslog.sql.hikari.Connection;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import opslog.util.Utilities;
 
 import java.sql.SQLException;
 
@@ -50,13 +49,19 @@ public class ProfileCreator extends VBox {
     public static final CustomComboBox<Integer> TEXT_SIZE_PICKER = new CustomComboBox<>(
             "Text Size", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
     );
-    public static final CustomComboBox<String> TEXT_FONT_PICKER = new CustomComboBox<>(
-            "Font", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
 
-    public static final CustomButton ADD = new CustomButton(Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
-    public static final CustomButton EDIT = new CustomButton(Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
-    public static final CustomButton DELETE = new CustomButton(Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+    public static final CustomButton ADD = new CustomButton(
+            Directory.ADD_WHITE,
+            Directory.ADD_GREY
+    );
+    public static final CustomButton EDIT = new CustomButton(
+            Directory.EDIT_WHITE,
+            Directory.EDIT_GREY
+    );
+    public static final CustomButton DELETE = new CustomButton(
+            Directory.DELETE_WHITE,
+            Directory.DELETE_GREY
+    );
 
     public ProfileCreator(){
         super();
@@ -69,16 +74,10 @@ public class ProfileCreator extends VBox {
         TEXT_COLOR_PICKER.getStyleClass().add("button");
 
         //Popup values
-        ROOT_PICKER.setTooltip(Utilities.createTooltip("Background Color"));
-        PRIMARY_PICKER.setTooltip(Utilities.createTooltip("Panel Color"));
-        SECONDARY_PICKER.setTooltip(Utilities.createTooltip("Field Color"));
-        FOCUS_PICKER.setTooltip(Utilities.createTooltip("Focus Color"));
-        TEXT_COLOR_PICKER.setTooltip(Utilities.createTooltip("Text Color"));
 
         //Preset Values
         PROFILE_SELECTOR.setItems(ProfileManager.getList());
         TEXT_SIZE_PICKER.setItems(Settings.textSizeList);
-        TEXT_FONT_PICKER.setItems(Settings.textFontList);
 
         // value bindings
         TITLE_FIELD.textProperty().bindBidirectional(tempProfile.titleProperty());
@@ -88,16 +87,14 @@ public class ProfileCreator extends VBox {
         FOCUS_PICKER.valueProperty().bindBidirectional(tempProfile.borderProperty());
         TEXT_COLOR_PICKER.valueProperty().bindBidirectional(tempProfile.textColorProperty());
         TEXT_SIZE_PICKER.valueProperty().bindBidirectional(tempProfile.textSizeProperty());
-        TEXT_FONT_PICKER.valueProperty().bindBidirectional(tempProfile.textFontProperty());
 
         // Settings listeners
-        ROOT_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.rootColor.set(nv)));
-        PRIMARY_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.primaryColor.set(nv)));
-        SECONDARY_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.secondaryColor.set(nv)));
-        FOCUS_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.focusColor.set(nv)));
-        TEXT_COLOR_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.textColor.set(nv)));
+        ROOT_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.rootColorProperty.set(nv)));
+        PRIMARY_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.primaryColorProperty.set(nv)));
+        SECONDARY_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.secondaryColorProperty.set(nv)));
+        FOCUS_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.focusColorProperty.set(nv)));
+        TEXT_COLOR_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.textFillProperty.set(nv)));
         TEXT_SIZE_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.textSize.set(nv)));
-        TEXT_FONT_PICKER.valueProperty().addListener(((ob, ov, nv) -> Settings.textFont.set(nv)));
 
         // Buttons
         ADD.setOnAction(event -> handleAdd());
@@ -109,7 +106,7 @@ public class ProfileCreator extends VBox {
         profileBtn.getChildren().addAll(ADD, EDIT, DELETE);
         profileBtn.setAlignment(Pos.BASELINE_RIGHT);
 
-        backgroundProperty().bind(Settings.primaryBackground);
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
         setSpacing(Settings.SPACING);
         setAlignment(Pos.CENTER);
         setPadding(Settings.INSETS);
@@ -124,19 +121,17 @@ public class ProfileCreator extends VBox {
                 FOCUS_PICKER,
                 TEXT_COLOR_PICKER,
                 TEXT_SIZE_PICKER,
-                TEXT_FONT_PICKER,
                 profileBtn
         );
 
 		// Set Default values
 		TITLE_FIELD.textProperty().set("Default");
-		ROOT_PICKER.valueProperty().set(Settings.rootColor.get());
-		PRIMARY_PICKER.valueProperty().set(Settings.primaryColor.get());
-		SECONDARY_PICKER.valueProperty().set(Settings.secondaryColor.get());
-		FOCUS_PICKER.valueProperty().set(Settings.focusColor.get());
-		TEXT_COLOR_PICKER.valueProperty().set(Settings.textColor.get());
+		ROOT_PICKER.valueProperty().set(Settings.rootColorProperty.get());
+		PRIMARY_PICKER.valueProperty().set(Settings.primaryColorProperty.get());
+		SECONDARY_PICKER.valueProperty().set(Settings.secondaryColorProperty.get());
+		FOCUS_PICKER.valueProperty().set(Settings.focusColorProperty.get());
+		TEXT_COLOR_PICKER.valueProperty().set(Settings.textFillProperty.get());
 		TEXT_SIZE_PICKER.valueProperty().set(Settings.textSize.get());
-		TEXT_FONT_PICKER.valueProperty().set(Settings.textFont.get());
     }
 
     private void handleAdd(){
@@ -198,7 +193,6 @@ public class ProfileCreator extends VBox {
             FOCUS_PICKER.setValue(nv.borderProperty().get());
             TEXT_COLOR_PICKER.setValue(nv.textColorProperty().get());
             TEXT_SIZE_PICKER.setValue(nv.textSizeProperty().get());
-            TEXT_FONT_PICKER.setValue(nv.textFontProperty().get());
             Platform.runLater(() -> PROFILE_SELECTOR.getSelectionModel().clearSelection());
         }
     }
@@ -211,6 +205,5 @@ public class ProfileCreator extends VBox {
         newProfile.borderProperty().set(FOCUS_PICKER.getValue());
         newProfile.textColorProperty().set(TEXT_COLOR_PICKER.getValue());
         newProfile.textSizeProperty().set(TEXT_SIZE_PICKER.getSelectionModel().getSelectedItem());
-        newProfile.textFontProperty().set(TEXT_FONT_PICKER.getSelectionModel().getSelectedItem());
     }
 }

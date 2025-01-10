@@ -40,7 +40,7 @@ public class TaskCreator extends VBox {
         SELECTOR.setItems(TaskManager.getList());
         TYPE_SELECTOR.setItems(TypeManager.getList());
 		
-		TAG_SELECTOR.setMenuList(TagManager.getList());
+		TAG_SELECTOR.getMenu().getMenuItems().setAll(TagManager.getList());
 		TAG_SELECTOR.setPromptText("Tags");
 		TAG_SELECTOR.prefWidthProperty().bind(this.widthProperty());
 

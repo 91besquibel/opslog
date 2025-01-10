@@ -8,7 +8,7 @@ import opslog.controls.button.CustomButton;
 import opslog.controls.simple.CustomColorPicker;
 import opslog.controls.simple.CustomLabel;
 import opslog.controls.simple.CustomTextField;
-import opslog.controls.table.CustomListView;
+import opslog.controls.simple.CustomListView;
 import opslog.managers.TagManager;
 import opslog.object.Tag;
 import opslog.sql.QueryBuilder;
@@ -18,59 +18,62 @@ import opslog.util.Directory;
 import opslog.util.Settings;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class TagCreator extends VBox {
 
-    public static final CustomLabel LABEL = new CustomLabel(
-            "Tag Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
+    private final CustomListView<Tag> listView = new CustomListView<>(
+            TagManager.getList(),
+            200,
+            250,
+            SelectionMode.SINGLE
     );
-    public static final CustomListView<Tag> LIST_VIEW = new CustomListView<>(
-            TagManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE
+    private final CustomTextField textField = new CustomTextField(
+            "Title",
+            200,
+            Settings.SINGLE_LINE_HEIGHT
     );
-    public static final CustomTextField TEXT_FIELD = new CustomTextField(
-            "Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomColorPicker COLOR_PICKER = new CustomColorPicker(
-            Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomButton add = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add"
-    );
-    public static final CustomButton edit = new CustomButton(
-            Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit"
-    );
-    public static final CustomButton delete = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete"
+    private final CustomColorPicker colorPicker = new CustomColorPicker(
+            200,
+            Settings.SINGLE_LINE_HEIGHT
     );
 
     public TagCreator() {
         super();
 
-        add.setOnAction(event -> {
-            try{
+        CustomButton addButton = new CustomButton(
+                Directory.ADD_WHITE,
+                Directory.ADD_GREY
+        );
+
+        addButton.setOnAction(event -> {
+            try {
                 Tag tag = new Tag();
-                tag.titleProperty().set(TEXT_FIELD.getText());
-                tag.colorProperty().set(COLOR_PICKER.getValue());
-                if(!tag.titleProperty().get().isBlank() && tag.colorProperty().get() != null){
+                tag.titleProperty().set(textField.getText());
+                tag.colorProperty().set(colorPicker.getValue());
+                if (!tag.titleProperty().get().isBlank() && tag.colorProperty().get() != null) {
                     QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
-                    String id = queryBuilder.insert( References.TAG_TABLE, References.TAG_COLUMN, tag.toArray());
+                    String id = queryBuilder.insert(References.TAG_TABLE, References.TAG_COLUMN, tag.toArray());
                     tag.setID(id);
                     TagManager.getList().add(tag);
-                    TEXT_FIELD.clear();
-                    COLOR_PICKER.setValue(null);
+                    textField.clear();
+                    colorPicker.setValue(null);
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        edit.setOnAction(event -> {
+        CustomButton editButton = new CustomButton(
+                Directory.EDIT_WHITE,
+                Directory.EDIT_GREY
+        );
+
+        editButton.setOnAction(event -> {
             try {
-                Tag tag = LIST_VIEW.getSelectionModel().getSelectedItem();
+                Tag tag = listView.getSelectionModel().getSelectedItem();
                 if (tag != null) {
-                    tag.titleProperty().set(TEXT_FIELD.getText());
-                    tag.colorProperty().set(COLOR_PICKER.getValue());
+                    tag.titleProperty().set(textField.getText());
+                    tag.colorProperty().set(colorPicker.getValue());
                     QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
                     queryBuilder.update(References.TAG_TABLE, References.TAG_COLUMN, tag.toArray());
                 }
@@ -79,45 +82,56 @@ public class TagCreator extends VBox {
             }
         });
 
-        delete.setOnAction(event -> {
+        CustomButton deleteButton = new CustomButton(
+                Directory.DELETE_WHITE,
+                Directory.DELETE_GREY
+        );
+
+        deleteButton.setOnAction(event -> {
             try {
-                Tag selectedItem = LIST_VIEW.getSelectionModel().getSelectedItem();
+                Tag selectedItem = listView.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
                     QueryBuilder queryBuilder = new QueryBuilder(Connection.getInstance());
                     queryBuilder.delete(References.TAG_TABLE, selectedItem.getID());
                     TagManager.getList().remove(selectedItem);
-                    TEXT_FIELD.clear();
-                    COLOR_PICKER.setValue(null);
-                    LIST_VIEW.getSelectionModel().clearSelection();
+                    textField.clear();
+                    colorPicker.setValue(null);
+                    listView.getSelectionModel().clearSelection();
                 }
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        LIST_VIEW.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
+        listView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> {
             if (nv != null) {
-                TEXT_FIELD.setText(nv.titleProperty().get());
-                COLOR_PICKER.setValue(nv.colorProperty().get());
+                textField.setText(nv.titleProperty().get());
+                colorPicker.setValue(nv.colorProperty().get());
             }
         });
 
         HBox buttonBox = new HBox();
-        buttonBox.getChildren().addAll(add, edit, delete);
+        buttonBox.getChildren().addAll(addButton, editButton, deleteButton);
         buttonBox.setAlignment(Pos.BASELINE_RIGHT);
         setAlignment(Pos.CENTER);
-        LIST_VIEW.setMaxWidth(Settings.WIDTH_LARGE);
+        listView.setMaxWidth(Settings.WIDTH_LARGE);
         setPadding(Settings.INSETS);
-        backgroundProperty().bind(Settings.primaryBackground);
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
         setSpacing(Settings.SPACING);
 
+        CustomLabel label = new CustomLabel(
+                "Tag Presets",
+                200,
+                Settings.SINGLE_LINE_HEIGHT
+        );
+        
         this.getChildren().addAll(
-                LABEL,
-                LIST_VIEW,
-                TEXT_FIELD,
-                COLOR_PICKER,
+                label,
+                listView,
+                textField,
+                colorPicker,
                 buttonBox
         );
     }
-
 }
+

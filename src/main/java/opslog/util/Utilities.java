@@ -12,12 +12,4 @@ public class Utilities {
         int b = (int) (color.getBlue() * 255);
         return String.format("#%02X%02X%02X", r, g, b);
     }
-
-    public static Tooltip createTooltip(String text) {
-        Tooltip tooltip = new Tooltip(text);
-        tooltip.setStyle(Styles.tooltip());
-        tooltip.setShowDelay(Duration.seconds(0.5));
-        tooltip.setHideDelay(Duration.seconds(0.5));
-        return tooltip;
-    }
 }

@@ -6,11 +6,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import opslog.controls.button.Icon;
 import opslog.App;
-import opslog.controls.simple.CustomMenuItem;
 import opslog.ui.checklist.ChecklistView;
 import opslog.ui.log.LogView;
 import opslog.ui.settings.SettingsView;
-import opslog.ui.window.WindowPane;
 import opslog.util.Directory;
 import opslog.util.Styles;
 import javafx.scene.control.SeparatorMenuItem;
@@ -19,26 +17,26 @@ public class MainMenu extends ContextMenu{
 
 	private static final CustomMenuItem checklistItem = new CustomMenuItem(
 			"Checklist",
-			Icon.loadImage(Directory.CHECKLIST_WHITE),
-			Icon.loadImage(Directory.CHECKLIST_GREY)
+			Icon.loadImage(Directory.CHECKLIST_GREY),
+			Icon.loadImage(Directory.CHECKLIST_WHITE)
 	);
 
 	private static final CustomMenuItem logItem = new CustomMenuItem(
 			"Log",
-			Icon.loadImage(Directory.LOG_WHITE),
-			Icon.loadImage(Directory.LOG_GREY)
+			Icon.loadImage(Directory.LOG_GREY),
+			Icon.loadImage(Directory.LOG_WHITE)
 	);
 
 	private static final CustomMenuItem calendarItem = new CustomMenuItem(
 			"Calendar",
-			Icon.loadImage(Directory.CALENDAR_WHITE),
-			Icon.loadImage(Directory.CALENDAR_GREY)
+			Icon.loadImage(Directory.CALENDAR_GREY),
+			Icon.loadImage(Directory.CALENDAR_WHITE)
 	);
 
 	private static final CustomMenuItem settingsItem = new CustomMenuItem(
 			"Settings",
-			Icon.loadImage(Directory.SETTINGS_WHITE),
-			Icon.loadImage(Directory.SETTINGS_GREY)
+			Icon.loadImage(Directory.SETTINGS_GREY),
+			Icon.loadImage(Directory.SETTINGS_WHITE)
 	);
 
 	private final LogView lv;

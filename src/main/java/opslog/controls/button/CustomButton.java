@@ -1,25 +1,21 @@
 package opslog.controls.button;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import opslog.util.Settings;
-import opslog.util.Utilities;
 
 
 public class CustomButton extends Button {
 
-    public CustomButton(String image, String imageHover, String toolTip) {
-        Tooltip tooltip = Utilities.createTooltip(toolTip);
-        tooltip.setAnchorX(this.getLayoutX()-100);
-        Tooltip.install(this,tooltip);
+    public CustomButton(String image, String imageHover) {
 		setAlignment(Pos.CENTER);
         setFocusTraversable(true);
-        setPadding(Settings.INSETS_ZERO);
-        prefWidthProperty().bind(Settings.buttonSize);
-        prefHeightProperty().bind(Settings.buttonSize);
-        backgroundProperty().bind(Settings.transparentBackground);
-        borderProperty().bind(Settings.transparentBorder);
+        setPadding(new Insets(0.0));
+		prefWidth(Settings.BUTTON_SIZE);
+        prefHeight(Settings.BUTTON_SIZE);
+		setBackground(Settings.TRANSPARENT_BACKGROUND);
+		setBorder(Settings.TRANSPARENT_BORDER);
 
         try {
             setGraphic(Icon.loadImage(image));
@@ -52,36 +48,36 @@ public class CustomButton extends Button {
 		setFocusTraversable(true);
 		
 		setFont(Settings.fontProperty.get());
-		setTextFill(Settings.textColor.get());
+		setTextFill(Settings.textFillProperty.get());
 
-		backgroundProperty().bind(Settings.secondaryBackground);
-		borderProperty().bind(Settings.secondaryBorder);
+		backgroundProperty().bind(Settings.secondaryBackgroundProperty);
+		borderProperty().bind(Settings.secondaryBorderProperty);
 
 		hoverProperty().addListener((obs,ov,nv) -> {
 			borderProperty().unbind();
 			if(nv){
-				setBorder(Settings.focusBorder.get());
+				setBorder(Settings.focusBorderProperty.get());
 			}else{
-				borderProperty().bind(Settings.secondaryBorder);
+				borderProperty().bind(Settings.secondaryBorderProperty);
 			}
 		});
 
 		focusedProperty().addListener((obs,ov,nv) -> {
 			borderProperty().unbind();
 			if(nv){
-				setBorder(Settings.focusBorder.get());
+				setBorder(Settings.focusBorderProperty.get());
 			}else{
-				borderProperty().bind(Settings.secondaryBorder);
+				borderProperty().bind(Settings.secondaryBorderProperty);
 			}
 		});
 
 		pressedProperty().addListener((obs,ov,nv) -> {
 			backgroundProperty().unbind();
 			if(nv){
-			   setBackground(Settings.primaryBackground.get());
+			   setBackground(Settings.primaryBackgroundProperty.get());
 			} else {
-				backgroundProperty().bind(Settings.secondaryBackground);
-				borderProperty().bind(Settings.secondaryBorder);
+				backgroundProperty().bind(Settings.secondaryBackgroundProperty);
+				borderProperty().bind(Settings.secondaryBorderProperty);
 			}
 		});
 		

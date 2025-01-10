@@ -7,7 +7,7 @@ import javafx.scene.layout.VBox;
 import opslog.controls.button.CustomButton;
 import opslog.controls.simple.CustomLabel;
 import opslog.controls.simple.CustomTextField;
-import opslog.controls.table.CustomListView;
+import opslog.controls.simple.CustomListView;
 import opslog.managers.TypeManager;
 import opslog.object.Type;
 import opslog.sql.QueryBuilder;
@@ -20,45 +20,47 @@ import java.sql.SQLException;
 
 public class TypeCreator extends VBox {
 
-    public static final CustomLabel typeLabel = new CustomLabel(
-            "Type Presets", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
+    public final CustomListView<Type> listView = new CustomListView<>(
+            TypeManager.getList(),
+            200,
+            250,
+            SelectionMode.SINGLE
     );
-    public static final CustomListView<Type> listView = new CustomListView<>(
-            TypeManager.getList(), Settings.WIDTH_LARGE, Settings.HEIGHT_LARGE, SelectionMode.SINGLE
+
+    public final CustomTextField titleTextField = new CustomTextField(
+            "Title",
+            200,
+            Settings.SINGLE_LINE_HEIGHT
     );
-    public static final CustomTextField titleTextField = new CustomTextField(
-            "Title", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomTextField patternTextField = new CustomTextField(
-            "Pattern", Settings.WIDTH_LARGE, Settings.SINGLE_LINE_HEIGHT
-    );
-    public static final CustomButton add = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add"
-    );
-    public static final CustomButton edit = new CustomButton(
-            Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit"
-    );
-    public static final CustomButton delete = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete"
+
+    public final CustomTextField patternTextField = new CustomTextField(
+            "Pattern",
+            200,
+            Settings.SINGLE_LINE_HEIGHT
     );
 
     public TypeCreator() {
         super();
-        HBox typeBtns = new HBox();
-        typeBtns.getChildren().addAll(add, edit, delete);
-        typeBtns.setAlignment(Pos.BASELINE_RIGHT);
 
-        backgroundProperty().bind(Settings.primaryBackground);
-        setSpacing(Settings.SPACING);
-        setAlignment(Pos.CENTER);
-        setPadding(Settings.INSETS);
-        listView.setMaxWidth(Settings.WIDTH_LARGE);
-        this.getChildren().addAll(
-                typeLabel,
-                listView,
-                titleTextField,
-                patternTextField,
-                typeBtns
+        CustomLabel typeLabel = new CustomLabel(
+                "Type Presets",
+                200,
+                Settings.SINGLE_LINE_HEIGHT
+        );
+
+        CustomButton add = new CustomButton(
+                Directory.ADD_WHITE,
+                Directory.ADD_GREY
+        );
+
+        CustomButton edit = new CustomButton(
+                Directory.EDIT_WHITE,
+                Directory.EDIT_GREY
+        );
+
+        CustomButton delete = new CustomButton(
+                Directory.DELETE_WHITE,
+                Directory.DELETE_GREY
         );
 
         add.setOnAction(event -> {
@@ -119,6 +121,28 @@ public class TypeCreator extends VBox {
                 patternTextField.setText(nv.patternProperty().get());
             }
         });
+
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
+        setSpacing(Settings.SPACING);
+        setAlignment(Pos.CENTER);
+        setPadding(Settings.INSETS);
+        listView.setMaxWidth(Settings.WIDTH_LARGE);
+
+        HBox typeBtns = new HBox();
+        typeBtns.getChildren().addAll(
+                add,
+                edit,
+                delete
+        );
+        typeBtns.setAlignment(Pos.BASELINE_RIGHT);
+
+        this.getChildren().addAll(
+                typeLabel,
+                listView,
+                titleTextField,
+                patternTextField,
+                typeBtns
+        );
     }
 
 }

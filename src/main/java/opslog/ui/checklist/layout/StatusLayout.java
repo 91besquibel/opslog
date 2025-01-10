@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Orientation;
 
 import opslog.controls.button.CustomButton;
-import opslog.controls.table.CustomListView;
+import opslog.controls.simple.CustomListView;
 import opslog.controls.table.ScheduleTable;
 import opslog.managers.ChecklistManager;
 import opslog.managers.ScheduledTaskManager;
@@ -29,10 +29,10 @@ import opslog.util.Directory;
 public class StatusLayout extends VBox {
 
     public static final CustomButton SWAP = new CustomButton(
-            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Editor View"
+            Directory.SWAP_WHITE, Directory.SWAP_GREY
     );
     public static final CustomButton SCHEDULE = new CustomButton(
-            Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY, "Schedule"
+            Directory.ADD_CALENDAR_WHITE, Directory.ADD_CALENDAR_GREY
     );
     public static final ScheduleTable SCHEDULE_TABLE = new ScheduleTable();
     
@@ -59,7 +59,7 @@ public class StatusLayout extends VBox {
         hbox.maxHeight(Settings.SINGLE_LINE_HEIGHT);
         VBox left = new VBox();
         left.getChildren().addAll(hbox,SCHEDULE_TABLE);
-        left.backgroundProperty().bind(Settings.primaryBackground);
+        left.backgroundProperty().bind(Settings.primaryBackgroundProperty);
         
         CustomLabel rightLabel = new CustomLabel(
             "Templates",
@@ -75,7 +75,7 @@ public class StatusLayout extends VBox {
         VBox.setVgrow(checklistListView,Priority.ALWAYS);
         VBox right = new VBox();   
         right.getChildren().addAll(rightLabel,checklistListView);
-        right.backgroundProperty().bind(Settings.primaryBackground);
+        right.backgroundProperty().bind(Settings.primaryBackgroundProperty);
         right.setPadding(Settings.INSETS);
         
 
@@ -87,10 +87,10 @@ public class StatusLayout extends VBox {
             right
         );
         splitPane.setDividerPositions(0.80f, .20f);
-        splitPane.backgroundProperty().bind(Settings.rootBackground);
+        splitPane.backgroundProperty().bind(Settings.rootBackgroundProperty);
         VBox.setVgrow(splitPane,Priority.ALWAYS);
         getChildren().add(splitPane);
-        backgroundProperty().bind(Settings.rootBackground);
+        backgroundProperty().bind(Settings.rootBackgroundProperty);
         
     }
 

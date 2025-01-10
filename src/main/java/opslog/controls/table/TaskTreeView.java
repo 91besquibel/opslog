@@ -3,11 +3,9 @@ package opslog.controls.table;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 
 import opslog.controls.ContextMenu.ChecklistMenu;
@@ -19,6 +17,7 @@ import opslog.object.event.Checklist;
 import opslog.object.event.Task;
 import opslog.ui.checklist.layout.EditorLayout;
 import opslog.util.Settings;
+import opslog.controls.Util;
 
 public class TaskTreeView extends TreeTableView<Task>{
 
@@ -31,23 +30,17 @@ public class TaskTreeView extends TreeTableView<Task>{
 		TreeTableColumn<Task, ObservableList<Tag>> tagColumn = tagColumn();
 		TreeTableColumn<Task, String> descriptionColumn = descriptionColumn();
 
-		getColumns().addAll(
-			titleColumn,
-			typeColumn,
-			tagColumn, 
-			descriptionColumn
-		);
+		getColumns().add(titleColumn);
+		getColumns().add(typeColumn);
+		getColumns().add(tagColumn);
+		getColumns().add(descriptionColumn);
 		
-		backgroundProperty().bind(Settings.primaryBackground);
+		backgroundProperty().bind(Settings.primaryBackgroundProperty);
 		setColumnResizePolicy(TreeTableView.UNCONSTRAINED_RESIZE_POLICY);
 		setEditable(true);
 		autosize();
 
-		setRowFactory(tv -> {
-			TreeTableRow<Task> row = Util.createTreeRow();
-			row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
-			return row;
-		});
+		setRowFactory(Util::newTreeTableRow);
 
 		setOnDragDropped(this::drop);
 		setOnDragOver(this::over);
@@ -56,8 +49,8 @@ public class TaskTreeView extends TreeTableView<Task>{
 	private TreeTableColumn<Task, String> titleColumn() {
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().titleProperty());
-		column.setGraphic(Util.createHeader("Title"));
-		column.setCellFactory(col -> Util.createTreeCell());
+		column.setGraphic(Util.newHeader("Title"));
+		column.setCellFactory(col -> Util.newTreeTableCell());
 		column.setMinWidth(110);
 		return column;
 	}
@@ -65,42 +58,27 @@ public class TaskTreeView extends TreeTableView<Task>{
 	private TreeTableColumn<Task, Type> typeColumn() {
 		TreeTableColumn<Task, Type> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().typeProperty());
-		column.setGraphic(Util.createHeader("Type"));
+		column.setGraphic(Util.newHeader("Type"));
 		column.setMinWidth(110);
-		column.setCellFactory(col -> Util.createTreeCell());
+		column.setCellFactory(col -> Util.newTreeTableCell());
 		return column;
 	}
 
 	private TreeTableColumn<Task, ObservableList<Tag>> tagColumn() {
 		TreeTableColumn<Task, ObservableList<Tag>> column = new TreeTableColumn<>();
 		column.setCellValueFactory(cellData ->new SimpleObjectProperty<>(cellData.getValue().getValue().tagList()));
-		column.setGraphic(Util.createHeader("Tag"));
+		column.setGraphic(Util.newHeader("Tag"));
 		column.setMinWidth(110);
-		column.setCellFactory(col -> new TreeTableCell<>() {
-            @Override
-            protected void updateItem(ObservableList<Tag> item, boolean empty) {
-                super.updateItem(item, empty);
-				{
-					borderProperty().bind(Settings.transparentBorder);
-					setAlignment(Pos.CENTER);
-					setPadding(Settings.INSETS);
-				}
-				if (empty || item == null) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(Util.tagBox(item));
-                }
-            }
-        });
+		column.setCellFactory(Util::newTagTreeTableCell);
 		return column;
 	}
 
 	private TreeTableColumn<Task, String> descriptionColumn() {
 		TreeTableColumn<Task, String> column = new TreeTableColumn<>();
 		column.setCellValueFactory(param -> param.getValue().getValue().descriptionProperty());
-		column.setGraphic(Util.createHeader("Description"));
+		column.setGraphic(Util.newHeader("Description"));
 		column.setMinWidth(110);
-		column.setCellFactory(col -> Util.createTreeCell());
+		column.setCellFactory(col -> Util.newTreeTableCell());
 		
 		// Adjust column width based on treeTableView total width
 		this.widthProperty().addListener((obs, oldWidth, newWidth) -> {

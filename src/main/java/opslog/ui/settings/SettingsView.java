@@ -29,7 +29,7 @@ public class SettingsView extends VBox {
         tilePane.setVgap(10);
         tilePane.setPadding(Settings.INSETS);
         tilePane.setPrefColumns(4);
-        tilePane.backgroundProperty().bind(Settings.rootBackground);
+        tilePane.backgroundProperty().bind(Settings.rootBackgroundProperty);
 
         HBox hbox = new HBox(tilePane);
         HBox.setHgrow(tilePane, Priority.ALWAYS);
@@ -37,7 +37,7 @@ public class SettingsView extends VBox {
         ScrollPane scrollPane = new ScrollPane(hbox);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.backgroundProperty().bind(Settings.rootBackground);
+        scrollPane.backgroundProperty().bind(Settings.rootBackgroundProperty);
         this.getChildren().add(scrollPane);
     }
 }

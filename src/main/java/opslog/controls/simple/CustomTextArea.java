@@ -1,8 +1,10 @@
 package opslog.controls.simple;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.TextArea;
 import opslog.util.Settings;
 import opslog.util.Styles;
+import opslog.controls.Util;
 
 public class CustomTextArea extends TextArea {
 
@@ -11,39 +13,27 @@ public class CustomTextArea extends TextArea {
         setPrefWidth(width);
         setPrefHeight(height);
         setWrapText(true);
-		setPadding(Settings.INSETS_ZERO);
+		setPadding(new Insets(0, 0, 0, 0));
         setFocusTraversable(true);
         fontProperty().bind(Settings.fontProperty);
-        backgroundProperty().bind(Settings.secondaryBackground);
-        borderProperty().bind(Settings.secondaryBorder);
+        backgroundProperty().bind(Settings.secondaryBackgroundProperty);
+        borderProperty().bind(Settings.secondaryBorderProperty);
         setStyle(Styles.getTextStyle());
 
-        focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-            borderProperty().unbind();
-            if (isFocused) {
-                setBorder(Settings.focusBorder.get());
-            } else {
-                borderProperty().bind(Settings.secondaryBorder);
-            }
-        });
+        focusedProperty().addListener(
+                (obs, wasFocused, isFocused) -> Util.handleFocusChange(this,isFocused)
+        );
 
-        hoverProperty().addListener((obs, wasFocused, isFocused) -> {
-            borderProperty().unbind();
-            if (isFocused) {
-                setBorder(Settings.focusBorder.get());
-            } else {
-                borderProperty().bind(Settings.secondaryBorder);
-            }
-        });
+        hoverProperty().addListener(
+                (obs, wasHover, isHover) -> Util.handleHoverChange(this,isHover)
+        );
 
-        Settings.textColor.addListener((obs, oldColor, newColor) -> {
-            setStyle(Styles.getTextStyle());
-        });
-        Settings.textSize.addListener((obs, oldSize, newSize) -> {
-            setStyle(Styles.getTextStyle());
-        });
-        Settings.textFont.addListener((obs, oldFont, newFont) -> {
-            setStyle(Styles.getTextStyle());
-        });
+        Settings.textFillProperty.addListener(
+                (obs, oldColor, newColor) -> setStyle(Styles.getTextStyle())
+        );
+
+        Settings.textSize.addListener(
+                (obs, oldSize, newSize) -> setStyle(Styles.getTextStyle())
+        );
     }
 }

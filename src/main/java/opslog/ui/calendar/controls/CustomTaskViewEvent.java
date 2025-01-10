@@ -13,6 +13,7 @@ import com.calendarfx.view.popover.RecurrencePopup;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -67,27 +68,27 @@ public class CustomTaskViewEvent extends EntryPopOverPane {
 		this.entry = entry;
 
 		getStyleClass().add("entry-details-view");
-		backgroundProperty().bind(Settings.primaryBackground);
-		borderProperty().bind(Settings.secondaryBorder);
+		backgroundProperty().bind(Settings.primaryBackgroundProperty);
+		borderProperty().bind(Settings.secondaryBorderProperty);
 		maxWidth(300);
 
 		Label fullDayLabel = new Label(Messages.getString("EntryDetailsView.FULL_DAY"));
-		fullDayLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		fullDayLabel.textFillProperty().bind(Settings.textColor);
+		fullDayLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+		fullDayLabel.textFillProperty().bind(Settings.textFillProperty);
 
 		Label recurrentLabel = new Label(Messages.getString("EntryDetailsView.REPEAT"));
-		recurrentLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		recurrentLabel.textFillProperty().bind(Settings.textColor);
+		recurrentLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+		recurrentLabel.textFillProperty().bind(Settings.textFillProperty);
 
 		summaryLabel = new Label();
 		summaryLabel.getStyleClass().add("recurrence-summary-label");
 		summaryLabel.setWrapText(true);
 		summaryLabel.setMaxWidth(300);
-		summaryLabel.fontProperty().bind(Settings.fontCalendarSmall);
-		summaryLabel.textFillProperty().bind(Settings.textColor);
+		summaryLabel.fontProperty().bind(Settings.fontSmallProperty);
+		summaryLabel.textFillProperty().bind(Settings.textFillProperty);
 
 		CheckBox fullDay = new CheckBox();
-		fullDay.backgroundProperty().bind(Settings.secondaryBackground);
+		fullDay.backgroundProperty().bind(Settings.secondaryBackgroundProperty);
 		fullDay.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
 		startTimeField.setValue(entry.getStartTime());
@@ -146,8 +147,8 @@ public class CustomTaskViewEvent extends EntryPopOverPane {
 		EntryHeaderView headerView = new EntryHeaderView(entry, dateControl.getCalendars());
 
 		Label typeLabel = new Label("Type: " + entry.getType().titleProperty().get());
-		typeLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		typeLabel.textFillProperty().bind(Settings.textColor);
+		typeLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+		typeLabel.textFillProperty().bind(Settings.textFillProperty);
 		
 		HBox tagBox = new HBox();
 		for(Tag tag: entry.tagList()){
@@ -156,14 +157,14 @@ public class CustomTaskViewEvent extends EntryPopOverPane {
 				new Background(
 					new BackgroundFill(
 						tag.colorProperty().get(),
-						Settings.CORNER_RADII, 
-						Settings.INSETS_ZERO
+						Settings.CORNER_RADII,
+							new Insets(0.0)
 					)
 				)
 			);
 			tagLabel.setPadding(Settings.INSETS);
-			tagLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-			tagLabel.textFillProperty().bind(Settings.textColor);
+			tagLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+			tagLabel.textFillProperty().bind(Settings.textFillProperty);
 			tagBox.getChildren().add(tagLabel);
 		}
 		tagBox.setSpacing(Settings.SPACING);
@@ -171,16 +172,16 @@ public class CustomTaskViewEvent extends EntryPopOverPane {
 		Text text = new Text();
 		text.setText("Description: " + entry.getDescription());
 		text.setLineSpacing(2);
-		text.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		text.fillProperty().bind(Settings.textColor);
+		text.fontProperty().bind(Settings.fontExtraSmallProperty);
+		text.fillProperty().bind(Settings.textFillProperty);
 		Label descriptionLabel = new Label();
 		descriptionLabel.setWrapText(true);
 		descriptionLabel.setGraphic(text);
-		descriptionLabel.borderProperty().bind(Settings.transparentBorder);
+		descriptionLabel.setBorder(Settings.TRANSPARENT_BORDER);
 
 		Label completionLabel = new Label("Completed: ");
-		completionLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		completionLabel.textFillProperty().bind(Settings.textColor);
+		completionLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+		completionLabel.textFillProperty().bind(Settings.textFillProperty);
 		
 		HBox completionBox = new HBox(
 			5,

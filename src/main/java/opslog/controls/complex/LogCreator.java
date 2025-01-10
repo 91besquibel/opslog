@@ -2,6 +2,7 @@ package opslog.controls.complex;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -42,15 +43,27 @@ public class LogCreator extends VBox {
 	);
 
     public final CustomButton addLog = new CustomButton(
-            Directory.ADD_WHITE, Directory.ADD_GREY, "Add");
+            Directory.ADD_WHITE, Directory.ADD_GREY
+    );
     public final CustomButton updateLog = new CustomButton(
-            Directory.EDIT_WHITE, Directory.EDIT_GREY, "Edit");
+            Directory.EDIT_WHITE, Directory.EDIT_GREY
+    );
     public final CustomButton removeLog = new CustomButton(
-            Directory.DELETE_WHITE, Directory.DELETE_GREY, "Delete");
+            Directory.DELETE_WHITE, Directory.DELETE_GREY
+    );
 
     public LogCreator(){
-		
-		multiSelector.setMenuList(TagManager.getList());
+
+        TagManager.getList().addListener((ListChangeListener<Tag>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(tag -> multiSelector.getMenu().getMenuItems().add(tag));
+                }
+                if (c.wasRemoved()) {
+                    c.getRemoved().forEach(tag -> multiSelector.getMenu().getMenuItems().remove(tag));
+                }
+            }
+        });
 		multiSelector.setPromptText("Tags");
 		multiSelector.prefWidthProperty().bind(this.widthProperty());
 		

@@ -15,9 +15,7 @@ public class ChecklistMenu extends ContextMenu {
     public ChecklistMenu() {
         super();
         setStyle(Styles.contextMenu());
-        deleteAll.setOnAction(event -> {
-            EditorLayout.taskTreeView.setRoot(null);
-        });
+        deleteAll.setOnAction(event -> EditorLayout.taskTreeView.setRoot(null));
 
         delete.setOnAction(event -> {
             TreeItem<Task> selectedItem = EditorLayout.taskTreeView.getSelectionModel().getSelectedItem();

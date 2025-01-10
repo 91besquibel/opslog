@@ -47,7 +47,7 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
     private final CheckComboBox<Tag> tagPicker = new CheckComboBox<>(TagManager.getList());
     private final CustomTextField initialsField = new CustomTextField("Initials",300,Settings.SINGLE_LINE_HEIGHT);
     private final CustomComboBox<Format> formatPicker = new CustomComboBox<>("Format",300,Settings.SINGLE_LINE_HEIGHT);
-    private final CustomTextArea descriptionArea = new CustomTextArea(300,Settings.HEIGHT_SMALL);
+    private final CustomTextArea descriptionArea = new CustomTextArea(300,100);
     private final CheckBox completionCheckBox = new CheckBox();
     private ScheduledEntry entry;
 
@@ -81,27 +81,27 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         this.entry = entry;
         
         getStyleClass().add("entry-details-view");
-        backgroundProperty().bind(Settings.primaryBackground);
-        borderProperty().bind(Settings.secondaryBorder);
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
+        borderProperty().bind(Settings.secondaryBorderProperty);
         maxWidth(300);
 
         Label fullDayLabel = new Label(Messages.getString("EntryDetailsView.FULL_DAY"));
-        fullDayLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-        fullDayLabel.textFillProperty().bind(Settings.textColor);
+        fullDayLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+        fullDayLabel.textFillProperty().bind(Settings.textFillProperty);
 
         Label recurrentLabel = new Label(Messages.getString("EntryDetailsView.REPEAT"));
-        recurrentLabel.fontProperty().bind(Settings.fontCalendarExtraSmall);
-        recurrentLabel.textFillProperty().bind(Settings.textColor);
+        recurrentLabel.fontProperty().bind(Settings.fontExtraSmallProperty);
+        recurrentLabel.textFillProperty().bind(Settings.textFillProperty);
 
         summaryLabel = new Label();
         summaryLabel.getStyleClass().add("recurrence-summary-label");
         summaryLabel.setWrapText(true);
         summaryLabel.setMaxWidth(300);
-        summaryLabel.fontProperty().bind(Settings.fontCalendarSmall);
-        summaryLabel.textFillProperty().bind(Settings.textColor);
+        summaryLabel.fontProperty().bind(Settings.fontSmallProperty);
+        summaryLabel.textFillProperty().bind(Settings.textFillProperty);
 
         CheckBox fullDay = new CheckBox();
-        fullDay.backgroundProperty().bind(Settings.secondaryBackground);
+        fullDay.backgroundProperty().bind(Settings.secondaryBackgroundProperty);
         fullDay.disableProperty().bind(entry.getCalendar().readOnlyProperty());
 
         startTimeField.setValue(entry.getStartTime());
@@ -161,10 +161,10 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
 		);
 		
         recurrenceButton.disableProperty().bind(entry.getCalendar().readOnlyProperty());
-		recurrenceButton.backgroundProperty().bind(Settings.secondaryBackground);
-		recurrenceButton.fontProperty().bind(Settings.fontCalendarExtraSmall);
-		recurrenceButton.textFillProperty().bind(Settings.textColor);
-		recurrenceButton.borderProperty().bind(Settings.secondaryBorder);
+		recurrenceButton.backgroundProperty().bind(Settings.secondaryBackgroundProperty);
+		recurrenceButton.fontProperty().bind(Settings.fontExtraSmallProperty);
+		recurrenceButton.textFillProperty().bind(Settings.textFillProperty);
+		recurrenceButton.borderProperty().bind(Settings.secondaryBorderProperty);
         
         VBox vbox = new VBox();
         EntryHeaderView headerView = new EntryHeaderView(entry, dateControl.getCalendars());
@@ -184,7 +184,7 @@ public class CustomEntryViewEvent extends EntryPopOverPane {
         for(Tag tag: entry.tagList()){
             tagPicker.getCheckModel().check(tag);
         }
-        tagPicker.backgroundProperty().bind(Settings.secondaryBackground);
+        tagPicker.backgroundProperty().bind(Settings.secondaryBackgroundProperty);
         tagPicker.setPrefHeight(Settings.SINGLE_LINE_HEIGHT);
         tagPicker.setMinWidth(300);
         

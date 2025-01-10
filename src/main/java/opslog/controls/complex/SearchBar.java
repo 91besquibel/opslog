@@ -1,32 +1,22 @@
 package opslog.controls.complex;
 
-import java.time.LocalDate;
 import java.util.List;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
 import javafx.geometry.Side;
-import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 
-import javafx.beans.property.*;
 import opslog.controls.ContextMenu.FilterMenu;
 import opslog.controls.button.CustomButton;
-import opslog.object.Tag;
-import opslog.object.Type;
 import opslog.sql.hikari.Connection;
 import opslog.controls.simple.*;
 import opslog.sql.Search;
 import opslog.ui.search.SearchView;
 import opslog.util.Directory;
 import opslog.util.Settings;
-import javafx.geometry.Pos;
 
 public class SearchBar extends HBox {
-
-	// Search Values and filters
-	private final ObservableList<LocalDate> dates = FXCollections.observableArrayList();
-	private final StringProperty keywordProperty = new SimpleStringProperty();
 
 	// Search Bar
 	public final CustomTextField textField = new CustomTextField(
@@ -37,80 +27,120 @@ public class SearchBar extends HBox {
 
 	private final CustomButton filterButton = new CustomButton(
 			Directory.FILTER_WHITE,
-			Directory.FILTER_GREY,
-			"Filter"
+			Directory.FILTER_GREY
 	);
 
 	private final FilterMenu filterMenu = new FilterMenu();
 
 	public SearchBar() {
-		filterMenu.getTableOptions().setOnAction(
-				event -> filterMenu.getTableSubMenu().show(
-						filterButton,
-						Side.BOTTOM,
-						0,
-						0
-				)
-		);
-
-		filterMenu.getTypeFilters().setOnAction(
-				event -> filterMenu.getTypeSubMenu().show(
-						filterButton,
-						Side.BOTTOM,
-						0,
-						0
-				)
-		);
-
-		filterMenu.getTagFilters().setOnAction(
-				event -> filterMenu.getTagSubMenu().show(
-						filterButton,
-						Side.BOTTOM,
-						0,
-						0
-				)
-		);
-
 		filterButton.contextMenuProperty().set(filterMenu);
-		filterButton.backgroundProperty().bind(Settings.primaryBackground);
-		filterButton.borderProperty().bind(Settings.transparentBorder);
-
-		filterButton.pressedProperty().addListener((obs, ov, nv) -> {
-			filterButton.backgroundProperty().unbind();
-			if (filterButton.isPressed()){
-				filterButton.setBackground(Settings.selectedBackground.get());
-			}else {
-				filterButton.backgroundProperty().bind(Settings.primaryBackground);
-			}
-		});
+		filterButton.setBackground(Settings.TRANSPARENT_BACKGROUND);
+		filterButton.setBorder(Settings.TRANSPARENT_BORDER);
 
 		filterButton.setOnAction(event -> {
 			try{
-				filterMenu.show(filterButton,Side.BOTTOM,0,0);
+				filterMenu.show(
+						filterButton,
+						Side.LEFT,
+						0,
+						0
+				);
 			}catch(Exception e){
 				e.printStackTrace();
+			}
+		});
+
+		filterMenu.getTableMenuItem().setOnAction(event -> {
+			if(!filterMenu.getTableMenu().isShowing()){
+
+				filterMenu.getTableMenu().update();
+
+				if (filterMenu.getTagMenu().isShowing()){
+					filterMenu.getTagMenu().hide();
+				}
+
+				if (filterMenu.getTypeMenu().isShowing()){
+					filterMenu.getTypeMenu().hide();
+				}
+
+				double x = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMinX() - filterMenu.getWidth();
+				double y = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMaxY();
+				System.out.println("Showing at: " + x + ", " + y);
+				filterMenu.getTableMenu().show(
+						filterButton,
+						x,
+						y
+				);
+			}
+		});
+
+		filterMenu.getTypeMenuItem().setOnAction(event -> {
+			if (!filterMenu.getTypeMenu().isShowing()) {
+
+				filterMenu.getTypeMenu().update();
+
+				if (filterMenu.getTagMenu().isShowing()) {
+					filterMenu.getTagMenu().hide();
+				}
+
+				if (filterMenu.getTableMenu().isShowing()) {
+					filterMenu.getTableMenu().hide();
+				}
+
+				double x = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMinX() - (filterMenu.getWidth()*1.70);
+				double y = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMaxY();
+				System.out.println("Showing at: " + x + ", " + y + " filterMenu width: " + filterMenu.getWidth() + ", filterMenu height: " + filterMenu.getHeight());
+				filterMenu.getTypeMenu().show(
+						filterButton,
+						x,
+						y
+				);
+			}
+		});
+
+		filterMenu.getTagMenuItem().setOnAction(event -> {
+			if(!filterMenu.getTagMenu().isShowing()) {
+
+				filterMenu.getTagMenu().update();
+
+				if (filterMenu.getTypeMenu().isShowing()){
+					filterMenu.getTypeMenu().hide();
+				}
+
+				if (filterMenu.getTableMenu().isShowing()){
+					filterMenu.getTableMenu().hide();
+				}
+
+				Bounds boundsInScreen = filterButton.localToScreen(filterButton.getBoundsInLocal());
+				double buttonX = boundsInScreen.getMinX();
+				double buttonY = boundsInScreen.getMinY();
+
+				double filterMenuLeftX = buttonX - filterMenu.getWidth();
+				double tagMenuLeftX = filterMenuLeftX - filterMenu.getTagMenu().getWidth();
+
+				double x = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMinX() - filterMenu.getTagMenu().getWidth();
+				double y = filterButton.localToScreen(filterButton.getBoundsInLocal()).getMaxY();
+				System.out.println("Showing at: " + x + ", " + y);
+				filterMenu.getTagMenu().show(
+						filterButton,
+						tagMenuLeftX,
+						y
+				);
+
 			}
 		});
 
 		textField.setOnAction(e -> handleQuery());
 		textField.setAlignment(Pos.CENTER_RIGHT);
 		textField.backgroundProperty().unbind();
-		textField.backgroundProperty().bind(Settings.primaryBackground);
+		textField.backgroundProperty().bind(Settings.primaryBackgroundProperty);
 		textField.borderProperty().unbind();
-		textField.borderProperty().bind(Settings.primaryBorder);
+		textField.borderProperty().bind(Settings.primaryBorderProperty);
 
 		this.setAlignment(Pos.CENTER);
-		this.borderProperty().bind(Settings.primaryBorder);
-		this.backgroundProperty().bind(Settings.primaryBackground);
+		this.borderProperty().bind(Settings.primaryBorderProperty);
+		this.backgroundProperty().bind(Settings.primaryBackgroundProperty);
 		this.getChildren().addAll(textField, filterButton);
-	}
-
-	public CustomTextField getTextField(){
-		return textField;
-	}
-
-	public ObservableList<LocalDate> dateList(){
-		return dates;
 	}
 
 	private void handleQuery() {
@@ -157,9 +187,5 @@ public class SearchBar extends HBox {
 			//noinspection CallToPrintStackTrace
 			e.printStackTrace();
 		}
-	}
-
-	public CustomButton getFilterButton() {
-		return filterButton;
 	}
 }

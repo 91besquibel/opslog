@@ -1,8 +1,10 @@
 package opslog.controls.simple;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import opslog.util.Settings;
 import opslog.util.Styles;
+import opslog.controls.Util;
 
 public class CustomTextField extends TextField {
 
@@ -12,39 +14,29 @@ public class CustomTextField extends TextField {
         setMaxWidth(width);
         setMinHeight(height);
         setPrefHeight(height);
+        setPadding(new Insets(0,0,0,10));
 
         fontProperty().bind(Settings.fontProperty);
-        borderProperty().bind(Settings.secondaryBorder);
-        backgroundProperty().bind(Settings.secondaryBackground);
+        borderProperty().bind(Settings.secondaryBorderProperty);
+        backgroundProperty().bind(Settings.secondaryBackgroundProperty);
         
         setStyle(Styles.getTextStyle());
 
-        focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-            borderProperty().unbind();
-            if (isFocused) {
-                setBorder(Settings.focusBorder.get());
-            } else {
-                borderProperty().bind(Settings.transparentBorder);
-            }
-        });
+        focusedProperty().addListener(
+                (obs, wasFocused, isFocused) -> Util.handleFocusChange(this,isFocused)
+        );
 
-        hoverProperty().addListener((obs, wasFocused, isFocused) -> {
-            borderProperty().unbind();
-            if (isFocused) {
-                setBorder(Settings.focusBorder.get());
-            } else {
-                borderProperty().bind(Settings.transparentBorder);
-            }
-        });
+        hoverProperty().addListener(
+                (obs, wasHover, isHover) -> Util.handleHoverChange(this,isHover)
+        );
 
-        Settings.textColor.addListener((obs, oldColor, newColor) -> {
-            setStyle(Styles.getTextStyle());
-        });
-        Settings.textSize.addListener((obs, oldSize, newSize) -> {
-            setStyle(Styles.getTextStyle());
-        });
-        Settings.textFont.addListener((obs, oldFont, newFont) -> {
-            setStyle(Styles.getTextStyle());
-        });
+        Settings.textFillProperty.addListener(
+                (obs, oldColor, newColor) -> setStyle(Styles.getTextStyle())
+        );
+
+        Settings.textSize.addListener(
+                (obs, oldSize, newSize) -> setStyle(Styles.getTextStyle())
+        );
+
     }
 }

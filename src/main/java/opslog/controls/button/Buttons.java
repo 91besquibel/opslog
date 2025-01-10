@@ -11,8 +11,7 @@ public class Buttons {
     public static Button exitAppBtn() {
         CustomButton exit = new CustomButton(
             Directory.EXIT_WHITE, 
-            Directory.EXIT_RED, 
-            "Exit"
+            Directory.EXIT_RED
         );
         exit.setOnAction(event -> {
             System.exit(0);
@@ -23,8 +22,7 @@ public class Buttons {
     public static Button exitWinBtn() {
         CustomButton exit = new CustomButton(
             Directory.EXIT_WHITE, 
-            Directory.EXIT_RED, 
-            "Exit"
+            Directory.EXIT_RED
         );
         exit.setOnAction(event -> {
             Stage stage = (Stage) exit.getScene().getWindow();
@@ -36,8 +34,7 @@ public class Buttons {
     public static Button minBtn() {
         CustomButton minimize = new CustomButton(
             Directory.MINIMIZE_WHITE, 
-            Directory.MINIMIZE_YELLOW, 
-            "Minimize"
+            Directory.MINIMIZE_YELLOW
         );
         minimize.setOnAction(
             event -> ((Stage) minimize.getScene().getWindow()).setIconified(true)
@@ -49,8 +46,7 @@ public class Buttons {
         final double[] dimensions = {originalWidth, originalHeight};
         CustomButton maximize = new CustomButton(
             Directory.MAXIMIZE_WHITE, 
-            Directory.MAXIMIZE_GREEN, 
-            "Maximize"
+            Directory.MAXIMIZE_GREEN
         );
         maximize.setOnAction(event -> {
             Stage stage = (Stage) maximize.getScene().getWindow();

@@ -4,16 +4,18 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.MenuItem;
-import opslog.controls.simple.CustomDatePicker;
-import opslog.controls.simple.CustomMenuItem;
+import javafx.scene.paint.Color;
+import opslog.controls.simple.CustomTextField;
 import opslog.managers.TagManager;
 import opslog.managers.TypeManager;
 import opslog.object.Tag;
 import opslog.object.Type;
+import opslog.util.DateTime;
+import opslog.util.Settings;
 import opslog.util.Styles;
 import javafx.geometry.Side;
 import java.time.temporal.ChronoUnit;
@@ -24,194 +26,107 @@ import java.util.HashMap;
 
 public class FilterMenu extends ContextMenu {
 
-    private static final HashMap<Tag,MenuItem> tagMap = new HashMap<>();
-    private static final HashMap<Type,MenuItem> typeMap = new HashMap<>();
     private static final ObservableList<Tag> tagList = FXCollections.observableArrayList();
     private static final ObservableList<Type> typeList = FXCollections.observableArrayList();
 	private static final ObservableList<LocalDate> dates = FXCollections.observableArrayList();
 
-    private static final CustomMenuItem TABLE_OPTIONS = new CustomMenuItem("Table");
-	private static final CustomMenuItem TAG_FILTERS = new CustomMenuItem("Tag");
-	private static final CustomMenuItem TYPE_FILTERS = new CustomMenuItem("Type");
-	private static final CustomDatePicker START_DATE_PICKER = new CustomDatePicker();
-	private static final CustomDatePicker STOP_DATE_PICKER = new CustomDatePicker();
+    private static final CustomMenuItem TABLE_MENUITEM = new CustomMenuItem("Table");
+	private static final MultipleSelectionMenu<String> TABLE_MENU = new MultipleSelectionMenu<>();
+    private static final CustomCheckMenuItem LOG_MENUITEM = new CustomCheckMenuItem("Log");
+    private static final CustomCheckMenuItem CALENDAR_MENUITEM = new CustomCheckMenuItem("Calendar");
 
-	private static final ContextMenu TABLE_SUBMENU = new ContextMenu();
-	private static final ContextMenu TYPE_SUBMENU = new ContextMenu();
-	private static final ContextMenu TAG_SUBMENU = new ContextMenu();
-	
-    private final CheckMenuItem LOG = new CheckMenuItem("Log");
-    private final CheckMenuItem CALENDAR = new CheckMenuItem("Calendar");
-    
+	private static final CustomMenuItem TAG_MENUITEM = new CustomMenuItem("Tag");
+	private static final MultipleSelectionMenu<Tag> TAG_MENU = new MultipleSelectionMenu<>();
+
+	private static final CustomMenuItem TYPE_MENUITEM = new CustomMenuItem("Type");
+	private static final MultipleSelectionMenu<Type> TYPE_MENU = new MultipleSelectionMenu<>();
+
+    private static final CustomTextField startTextField = new CustomTextField(
+            "Start: yyyy-mm-dd",120, 30
+    );
+    private static final CustomTextField stopTextField = new CustomTextField(
+            "Stop: yyyy-mm-dd",120, 30
+    );
 
     public FilterMenu() {
         super();
-        setStyle(Styles.contextMenu());
-        TABLE_SUBMENU.setStyle(Styles.contextMenu());
-        TYPE_SUBMENU.setStyle(Styles.contextMenu());
-        TAG_SUBMENU.setStyle(Styles.contextMenu());
-		
-		MenuItem start = new MenuItem();
-		start.setGraphic(START_DATE_PICKER);
-		START_DATE_PICKER.setMaxWidth(150);
-		START_DATE_PICKER.valueProperty().addListener((obs,ov,nv) -> {
-			getDates();
-		});
-		
+        TABLE_MENUITEM.setStyle(Styles.menuItem());
+        TABLE_MENU.setStyle(Styles.contextMenu());
+        TABLE_MENU.getItems().add(LOG_MENUITEM);
+        TABLE_MENU.getItems().add(new SeparatorMenuItem());
+        TABLE_MENU.getItems().add(CALENDAR_MENUITEM);
 
-		MenuItem stop = new MenuItem();
-		stop.setGraphic(STOP_DATE_PICKER);
-		STOP_DATE_PICKER.setMaxWidth(150);
+        LOG_MENUITEM.setStyle(Styles.menuItem());
+        CALENDAR_MENUITEM.setStyle(Styles.menuItem());
 
-		STOP_DATE_PICKER.valueProperty().addListener((obs,ov,nv) -> {
-			getDates();
-		});
-
-        TABLE_OPTIONS.setStyle(Styles.menuItem());
-        LOG.setStyle(Styles.menuItem());
-        CALENDAR.setStyle(Styles.menuItem());
-        TAG_FILTERS.setStyle(Styles.menuItem());
-        TYPE_FILTERS.setStyle(Styles.menuItem());
-
-		TAG_FILTERS.setOnAction(event -> {
-			TAG_SUBMENU.show(TAG_FILTERS.getParentPopup().getOwnerNode(), Side.BOTTOM, 0, 0);
-		});
-        Platform.runLater(() -> {
-            TABLE_SUBMENU.getItems().add(LOG);
-			TABLE_SUBMENU.getItems().add(new SeparatorMenuItem());
-        });
-
-        Platform.runLater(() -> {
-            TABLE_SUBMENU.getItems().add(CALENDAR);
-        });
-
-        TagManager.getList().addListener(
-                (ListChangeListener<Tag>) change ->{
-                    while (change.next()) {
-                        if (change.wasAdded()) {
-                            for (Tag tag : change.getAddedSubList()) {
-                                addTagMenuItem(tag);
-                            }
-                        }
-                        if(change.wasRemoved()) {
-                            for (Tag tag : change.getRemoved()) {
-                                removeTagMenuItem(tag);
-                            }
-                        }
+        TYPE_MENUITEM.setStyle(Styles.menuItem());
+        TYPE_MENU.setStyle(Styles.contextMenu());
+        TypeManager.getList().addListener((ListChangeListener<Type>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    for (Type type : c.getAddedSubList()) {
+                        TYPE_MENU.getMenuItems().add(type);
                     }
                 }
-        );
-
-        TypeManager.getList().addListener(
-                (ListChangeListener<Type>) change ->{
-                    while (change.next()) {
-                        if (change.wasAdded()) {
-                            for (Type type : change.getAddedSubList()) {
-                                addTypeMenuItem(type);
-                            }
-                        }
-                        if(change.wasRemoved()) {
-                            for (Type type : change.getRemoved()) {
-                                removeTypeMenuItem(type);
-                            }
-                        }
+                if (c.wasRemoved()) {
+                    for (Type type : c.getRemoved()) {
+                        TYPE_MENU.getMenuItems().remove(type);
                     }
                 }
-        );
+            }
+        });
 
-        getItems().addAll(
-			TABLE_OPTIONS, 
-			new SeparatorMenuItem(),
-			TYPE_FILTERS, 
-			new SeparatorMenuItem(),
-			TAG_FILTERS,
-			new SeparatorMenuItem(),
-			start,
-			stop
+        TAG_MENUITEM.setStyle(Styles.menuItem());
+        TAG_MENU.setStyle(Styles.contextMenu());
+        TagManager.getList().addListener((ListChangeListener<Tag>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    for (Tag tag : c.getAddedSubList()) {
+                        TAG_MENU.getMenuItems().add(tag);
+                    }
+                }
+                if (c.wasRemoved()) {
+                    for (Tag tag : c.getRemoved()) {
+                        TAG_MENU.getMenuItems().remove(tag);
+                    }
+                }
+            }
+        });
+
+        startTextField.setPadding(new Insets(0));
+        startTextField.fontProperty().unbind();
+        startTextField.fontProperty().bind(Settings.fontExtraSmallProperty);
+        MenuItem startDateField = new MenuItem();
+        startDateField.setGraphic(startTextField);
+        startTextField.setOnAction(event -> getDates());
+
+        stopTextField.setPadding(new Insets(0));
+        stopTextField.fontProperty().unbind();
+        stopTextField.fontProperty().bind(Settings.fontExtraSmallProperty);
+        MenuItem stopDateField = new MenuItem();
+        stopDateField.setGraphic(stopTextField);
+        startTextField.setOnAction(event -> getDates());
+
+        dates.add(LocalDate.now());
+
+        this.maxWidth(startTextField.getWidth()-20);
+        this.setOnAutoHide(event -> super.hide());
+        this.setStyle(Styles.contextMenu());
+        this.getItems().addAll(
+                TABLE_MENUITEM,
+			    new SeparatorMenuItem(),
+                TYPE_MENUITEM,
+			    new SeparatorMenuItem(),
+                TAG_MENUITEM,
+			    new SeparatorMenuItem(),
+			    startDateField,
+                new SeparatorMenuItem(),
+                stopDateField
 		);
     }
 
-    public CustomMenuItem getTableOptions() {
-        return TABLE_OPTIONS;
-    }
-
-    public ContextMenu getTableSubMenu(){
-        return TABLE_SUBMENU;
-    }
-
-    public CustomMenuItem getTagFilters(){
-        return TAG_FILTERS;
-    }
-
-    public ContextMenu getTagSubMenu(){
-        return TAG_SUBMENU;
-    }
-
-    public CustomMenuItem getTypeFilters(){
-        return TYPE_FILTERS;
-    }
-
-    public ContextMenu getTypeSubMenu(){
-        return TYPE_SUBMENU;
-    }
-
-    public CheckMenuItem getLog() {
-        return LOG;
-    }
-
-    public CheckMenuItem getCalendar() {
-        return CALENDAR;
-    }
-
-	public ObservableList<LocalDate> getDateList(){
-		return dates;
-	}
-
-    private void addTypeMenuItem(Type type) {
-        CheckMenuItem menuItem = new CheckMenuItem();
-        menuItem.textProperty().bind(type.titleProperty());
-        menuItem.setStyle(Styles.menuItem());
-        menuItem.selectedProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                typeList.add(type);
-            } else {
-                typeList.remove(type);
-            }
-        });
-		Platform.runLater(() -> {
-			TYPE_SUBMENU.getItems().add(menuItem);
-			typeMap.put(type, menuItem);
-		});
-    }
-
-    private void addTagMenuItem(Tag tag) {
-        CheckMenuItem menuItem = new CheckMenuItem();
-        menuItem.textProperty().bind(tag.titleProperty());
-        menuItem.setStyle(Styles.menuItem());
-        menuItem.selectedProperty().addListener((obs, ov, nv) -> {
-            if (nv) {
-                tagList.add(tag);
-            } else {
-                tagList.remove(tag);
-            }
-        });
-		Platform.runLater(() -> {
-        	TAG_SUBMENU.getItems().add(menuItem);
-			tagMap.put(tag, menuItem);
-		});
-        
-    }
-
-    private void removeTagMenuItem(Tag tag) {
-        TAG_SUBMENU.getItems().remove(tagMap.get(tag));
-        tagMap.remove(tag);
-        tagList.remove(tag);
-    }
-
-    private void removeTypeMenuItem(Type type) {
-        TYPE_SUBMENU.getItems().remove(typeMap.get(type));
-        typeMap.remove(type);
-        typeList.remove(type);
+    public ObservableList<LocalDate> getDateList(){
+        return dates;
     }
 
     public ObservableList<Type> getTypeList(){
@@ -222,14 +137,74 @@ public class FilterMenu extends ContextMenu {
         return tagList;
     }
 
-	private void getDates(){
-		dates.clear();
-		LocalDate startDate = START_DATE_PICKER.getValue();
-		LocalDate stopDate = STOP_DATE_PICKER.getValue();
-		long numDays = startDate.until(stopDate,ChronoUnit.DAYS);
-		for(int i = 0; i < numDays; i++){
-			//starting with the startdate add each date between the two datepicker
-			dates.add(startDate.plusDays(i));
-		}
-	}
+    public CustomMenuItem getTableMenuItem() {
+        return TABLE_MENUITEM;
+    }
+
+    public MultipleSelectionMenu<String> getTableMenu(){
+        return TABLE_MENU;
+    }
+
+    public CustomMenuItem getTagMenuItem(){
+        return TAG_MENUITEM;
+    }
+
+    public MultipleSelectionMenu<Tag> getTagMenu(){
+        return TAG_MENU;
+    }
+
+    public CustomMenuItem getTypeMenuItem(){
+        return TYPE_MENUITEM;
+    }
+
+    public MultipleSelectionMenu<Type> getTypeMenu(){
+        return TYPE_MENU;
+    }
+
+    public CheckMenuItem getLog() {
+        return LOG_MENUITEM;
+    }
+
+    public CheckMenuItem getCalendar() {
+        return CALENDAR_MENUITEM;
+    }
+
+    private LocalDate parseLocalDate(CustomTextField textField) {
+        try {
+            LocalDate date = LocalDate.parse(textField.getText(), DateTime.DATE_FORMAT);
+            textField.setText(date.toString());
+            textField.setStyle("-fx-text-fill: " + Color.web(Settings.textFillProperty.get().toString()));
+            return date;
+        } catch (Exception e) {
+            textField.setText(LocalDate.now().toString());
+            textField.setStyle("-fx-text-fill: red");
+            return LocalDate.now();
+        }
+    }
+
+    private void getDates() {
+        LocalDate startDate = parseLocalDate(startTextField);
+        LocalDate stopDate = parseLocalDate(stopTextField);
+        if (startDate.isBefore(stopDate)) {
+            dates.clear();
+            long numDays = startDate.until(stopDate,ChronoUnit.DAYS);
+            for(int i = 0; i < numDays; i++){
+                dates.clear();
+                dates.add(startDate.plusDays(i));
+            }
+        } else if(startDate.isEqual(stopDate)){
+            dates.clear();
+            dates.add(startDate);
+        }
+    }
+
+    @Override
+    public void hide() {
+        if (!TABLE_MENUITEM.isVisible() ||
+                !TYPE_MENUITEM.isVisible() ||
+                !TAG_MENUITEM.isVisible()) {
+            // if no other menu is visible then
+            super.hide();
+        }
+    }
 }

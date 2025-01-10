@@ -16,7 +16,7 @@ import opslog.util.Settings;
 public class LogView extends VBox {
 
     public static final CustomButton swapView = new CustomButton(
-            Directory.SWAP_WHITE, Directory.SWAP_GREY, "Swap"
+            Directory.SWAP_WHITE, Directory.SWAP_GREY
     );
     public static final CustomLabel labelLeftSide = new CustomLabel(
             "Create Log", 300, Settings.SINGLE_LINE_HEIGHT
@@ -53,7 +53,7 @@ public class LogView extends VBox {
 
         leftSide.setSpacing(Settings.SPACING);
         leftSide.setAlignment(Pos.CENTER);
-        leftSide.backgroundProperty().bind(Settings.primaryBackground);
+        leftSide.backgroundProperty().bind(Settings.primaryBackgroundProperty);
         leftSide.setPadding(Settings.INSETS);
         leftSide.setMaxWidth(300);
 
@@ -61,12 +61,13 @@ public class LogView extends VBox {
         logTable.getSelectionModel().clearSelection();
         VBox.setVgrow(logTable,Priority.ALWAYS);
         rightSide.setAlignment(Pos.CENTER);
-        rightSide.backgroundProperty().bind(Settings.primaryBackground);
+        rightSide.backgroundProperty().bind(Settings.primaryBackgroundProperty);
+        rightSide.setPadding(Settings.INSETS);
 
         VBox.setVgrow(splitPane,Priority.ALWAYS);
-        splitPane.backgroundProperty().bind(Settings.rootBackground);
+        splitPane.backgroundProperty().bind(Settings.rootBackgroundProperty);
         getChildren().add(splitPane);
-        backgroundProperty().bind(Settings.rootBackground);
+        backgroundProperty().bind(Settings.rootBackgroundProperty);
 
         LogController.initialize();
     }

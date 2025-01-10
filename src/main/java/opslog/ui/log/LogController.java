@@ -25,7 +25,7 @@ public class LogController {
             if(nv != null){
                 LogView.logCreator.typeSelection.valueProperty().set(nv.typeProperty().get());
                 for(Tag tag : nv.tagList()) {
-                    if(LogView.logCreator.multiSelector.getMenu().getList().contains(tag)){
+                    if(LogView.logCreator.multiSelector.getMenu().getMenuItems().contains(tag)){
                         LogView.logCreator.multiSelector.getMenu().getSelected().add(tag);
                     }
                 }

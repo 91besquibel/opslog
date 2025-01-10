@@ -43,7 +43,7 @@ public class ChecklistCreator extends VBox {
         SELECTOR.setItems(ChecklistManager.getList());
         TYPE_SELECTOR.setItems(TypeManager.getList());
 		
-		TAG_SELECTOR.setMenuList(TagManager.getList());
+		TAG_SELECTOR.getMenu().getMenuItems().setAll(TagManager.getList());
 		TAG_SELECTOR.setPromptText("Tags");
 		TAG_SELECTOR.prefWidthProperty().bind(this.widthProperty());
 

@@ -1,6 +1,5 @@
 package opslog.controls.ContextMenu;
 
-import com.calendarfx.model.Entry;
 import com.calendarfx.view.DateControl;
 import javafx.application.Platform;
 import javafx.scene.control.ContextMenu;

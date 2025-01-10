@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import javafx.scene.control.*;
 import opslog.object.ScheduledTask;
 import opslog.util.Settings;
+import opslog.controls.Util;
 
 public class ScheduleTable extends TableView<ScheduledTask> {
 
@@ -17,13 +18,9 @@ public class ScheduleTable extends TableView<ScheduledTask> {
         getColumns().add(stopDateColumn());
         getColumns().add(stopTimeColumn());
 
-        backgroundProperty().bind(Settings.primaryBackground);
+        backgroundProperty().bind(Settings.primaryBackgroundProperty);
         setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        setRowFactory(tv-> {
-            TableRow<ScheduledTask> row  = Util.createRow();
-            row.prefWidthProperty().bind(this.widthProperty().subtract(10.0));
-            return row;
-        });
+        setRowFactory(Util::newTableRow);
         setPadding(Settings.INSETS);
 
         widthProperty().addListener((obs, oldWidth, newWidth) -> refresh());
@@ -34,15 +31,15 @@ public class ScheduleTable extends TableView<ScheduledTask> {
     private TableColumn<ScheduledTask, String> titleColumn(){
         TableColumn<ScheduledTask, String> column = new TableColumn<>();
         column.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
-        column.setGraphic(Util.createHeader("Title"));
+        column.setGraphic(Util.newHeader("Title"));
         column.setMinWidth(100);
-        column.setCellFactory(Util::createCell);
+        column.setCellFactory(Util::newTableCell);
         return column;
     }
 
     private TableColumn<ScheduledTask, LocalDate> startDateColumn() {
         TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>();
-        column.setGraphic(Util.createHeader("Start"));
+        column.setGraphic(Util.newHeader("Start"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
         column.setCellFactory(Util::editableDateCell);
 		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
@@ -69,7 +66,7 @@ public class ScheduleTable extends TableView<ScheduledTask> {
 
     private TableColumn<ScheduledTask, LocalDate> stopDateColumn() {
         TableColumn<ScheduledTask, LocalDate> column = new TableColumn<>();
-        column.setGraphic(Util.createHeader("Stop"));
+        column.setGraphic(Util.newHeader("Stop"));
         column.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
  		column.setCellFactory(Util::editableDateCell);
 		column.prefWidthProperty().bind(this.widthProperty().subtract(100).divide(4));
